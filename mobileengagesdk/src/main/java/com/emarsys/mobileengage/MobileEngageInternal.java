@@ -60,19 +60,19 @@ class MobileEngageInternal {
         this.manager.setDefaultHeaders(headers);
     }
 
-    public MobileEngageStatusListener getStatusListener() {
+    MobileEngageStatusListener getStatusListener() {
         return statusListener;
     }
 
-    public CoreCompletionHandler getCompletionHandler() {
+    CoreCompletionHandler getCompletionHandler() {
         return completionHandler;
     }
 
-    public RequestManager getManager() {
+    RequestManager getManager() {
         return manager;
     }
 
-    public void setPushToken(String pushToken){
+    void setPushToken(String pushToken) {
         this.pushToken = pushToken;
     }
 
@@ -80,7 +80,7 @@ class MobileEngageInternal {
         return pushToken;
     }
 
-    public void appLogin() {
+    void appLogin() {
         JSONObject payload;
         try {
             payload = new JSONObject()
@@ -105,14 +105,14 @@ class MobileEngageInternal {
         manager.submit(model, completionHandler);
     }
 
-    public void appLogin(int contactField,
-                         @NonNull String contactFieldValue) {
+    void appLogin(int contactField,
+                  @NonNull String contactFieldValue) {
     }
 
-    public void appLogout() {
+    void appLogout() {
     }
 
-    public void trackCustomEvent(@NonNull String eventName,
-                                 @Nullable JSONObject eventAttributes) {
+    void trackCustomEvent(@NonNull String eventName,
+                          @Nullable JSONObject eventAttributes) {
     }
 }
