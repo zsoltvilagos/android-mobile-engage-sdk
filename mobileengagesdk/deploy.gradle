@@ -1,0 +1,34 @@
+apply plugin: 'com.github.dcendents.android-maven'
+
+install {
+    repositories.mavenInstaller {
+        pom.project {
+            packaging 'aar'
+            groupId 'com.emarsys'
+            artifactId 'engage'
+            version '0.1.0'
+            name 'core'
+            url 'https://github.com/emartech/android-mobile-engage-sdk'
+            description 'Emarsys Mobile Engage SDK for Android'
+            inceptionYear '2017'
+            licenses {
+                license {
+                    name 'Apache-2.0'
+                    url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    distribution 'repo'
+                }
+            }
+            scm {
+                connection 'https://github.com/emartech/android-mobile-engage-sdk.git'
+                developerConnection 'https://github.com/emartech/android-mobile-engage-sdk.git'
+                url 'https://github.com/emartech/android-mobile-engage-sdk'
+            }
+            developers {
+                developer {
+                    id 'emarsys-mobile-team'
+                    name 'Emarsys-Technologies Kft.'
+                }
+            }
+        }
+    }
+}
