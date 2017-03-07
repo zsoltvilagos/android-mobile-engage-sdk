@@ -21,15 +21,16 @@ class MobileEngageInternal {
     private static String ENDPOINT_BASE = "https://push.eservice.emarsys.net/api/mobileengage/v2/";
     private static String ENDPOINT_LOGIN = ENDPOINT_BASE + "users/login";
 
-    private final Application application;
     private final String applicationId;
     private final String applicationSecret;
-    private final MobileEngageStatusListener statusListener;
-    private final RequestManager manager;
+    private String pushToken;
     private final DeviceInfo deviceInfo;
+    private final Application application;
+    private final RequestManager manager;
     private final CoreCompletionHandler completionHandler;
+    private final MobileEngageStatusListener statusListener;
 
-    public MobileEngageInternal(Application application, MobileEngageConfig config, RequestManager manager) {
+    MobileEngageInternal(Application application, MobileEngageConfig config, RequestManager manager) {
         this.application = application;
         this.applicationId = config.getApplicationID();
         this.applicationSecret = config.getApplicationSecret();
@@ -72,7 +73,11 @@ class MobileEngageInternal {
     }
 
     public void setPushToken(String pushToken){
+        this.pushToken = pushToken;
+    }
 
+    public String getPushToken() {
+        return pushToken;
     }
 
     public void appLogin() {
