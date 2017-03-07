@@ -27,7 +27,7 @@ public class MobileEngageTest {
     }
 
     @Test
-    public void setup_initializesInstance(){
+    public void testSetup_initializesInstance(){
         String appID = "56789876";
         String appSecret = "secret";
         MobileEngageConfig baseConfig = new MobileEngageConfig.Builder()
@@ -41,7 +41,7 @@ public class MobileEngageTest {
     }
 
     @Test
-    public void setPushToken(){
+    public void testSetPushToken(){
         String pushtoken = "pushtoken";
         MobileEngage.instance = mobileEngageInternal;
         MobileEngage.setPushToken(pushtoken);
@@ -49,28 +49,28 @@ public class MobileEngageTest {
     }
 
     @Test
-    public void appLogin_anonymous_callsInternal() {
+    public void testAppLogin_anonymous_callsInternal() {
         MobileEngage.instance = mobileEngageInternal;
         MobileEngage.appLogin();
         verify(mobileEngageInternal).appLogin();
     }
 
     @Test
-    public void appLogin_withUser() {
+    public void testAppLogin_withUser() {
         MobileEngage.instance = mobileEngageInternal;
         MobileEngage.appLogin(4, "contactFieldValue");
         verify(mobileEngageInternal).appLogin(4, "contactFieldValue");
     }
 
     @Test
-    public void appLogout() {
+    public void testAppLogout() {
         MobileEngage.instance = mobileEngageInternal;
         MobileEngage.appLogout();
         verify(mobileEngageInternal).appLogout();
     }
 
     @Test
-    public void trackCustomEvent() throws Exception{
+    public void testTrackCustomEvent() throws Exception{
         MobileEngage.instance = mobileEngageInternal;
         JSONObject attributes = mock(JSONObject.class);
         MobileEngage.trackCustomEvent("event", attributes);

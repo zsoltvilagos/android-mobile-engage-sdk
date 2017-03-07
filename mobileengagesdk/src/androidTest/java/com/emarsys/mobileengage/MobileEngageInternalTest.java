@@ -64,7 +64,7 @@ public class MobileEngageInternalTest {
     }
 
     @Test
-    public void setup_constructorInitializesFields(){
+    public void testSetup_constructorInitializesFields(){
         MobileEngageInternal engage = new MobileEngageInternal(application, baseConfig, manager);
         new DeviceInfo(context);
         assertEquals(baseConfig.getStatusListener(), engage.getStatusListener());
@@ -73,7 +73,7 @@ public class MobileEngageInternalTest {
     }
 
     @Test
-    public void setup_withAuthHeaderSet(){
+    public void testSetup_withAuthHeaderSet(){
         RequestManager requestManager = mock(RequestManager.class);
         new MobileEngageInternal(application, baseConfig, requestManager);
 
