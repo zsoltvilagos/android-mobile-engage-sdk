@@ -14,6 +14,7 @@ import com.emarsys.core.util.HeaderUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -76,27 +77,12 @@ class MobileEngageInternal {
         this.pushToken = pushToken;
     }
 
-    public String getPushToken() {
+    String getPushToken() {
         return pushToken;
     }
 
     void appLogin() {
-        JSONObject payload;
-        try {
-            payload = new JSONObject()
-                    .put("application_id", applicationId)
-                    .put("hardware_id", deviceInfo.getHwid())
-                    .put("platform", deviceInfo.getPlatform())
-                    .put("language", deviceInfo.getLanguage())
-                    .put("timezone", deviceInfo.getTimezone())
-                    .put("device_model", deviceInfo.getModel())
-                    .put("application_version", deviceInfo.getApplicationVersion())
-                    .put("os_version", deviceInfo.getOsVersion())
-                    .put("push_token", false);
-        } catch (JSONException je) {
-            throw new IllegalStateException(je);
-        }
-
+        JSONObject payload = createBasePayload();
         RequestModel model = new RequestModel.Builder()
                 .url(ENDPOINT_LOGIN)
                 .payload(payload)
@@ -107,6 +93,18 @@ class MobileEngageInternal {
 
     void appLogin(int contactField,
                   @NonNull String contactFieldValue) {
+        Map<String, Object> additionalPayload = new HashMap<>();
+        additionalPayload.put("contact_field_id", contactField);
+        additionalPayload.put("contact_field_value", contactFieldValue);
+
+        JSONObject payload = createBasePayload(additionalPayload);
+
+        RequestModel model = new RequestModel.Builder()
+                .url(ENDPOINT_LOGIN)
+                .payload(payload)
+                .build();
+
+        manager.submit(model, completionHandler);
     }
 
     void appLogout() {
@@ -114,5 +112,37 @@ class MobileEngageInternal {
 
     void trackCustomEvent(@NonNull String eventName,
                           @Nullable JSONObject eventAttributes) {
+    }
+
+    private JSONObject createBasePayload(){
+        return createBasePayload(Collections.EMPTY_MAP);
+    }
+
+    private JSONObject createBasePayload(Map<String, Object> additionalPayload) {
+        JSONObject json;
+        try {
+            json = new JSONObject()
+                    .put("application_id", applicationId)
+                    .put("hardware_id", deviceInfo.getHwid())
+                    .put("platform", deviceInfo.getPlatform())
+                    .put("language", deviceInfo.getLanguage())
+                    .put("timezone", deviceInfo.getTimezone())
+                    .put("device_model", deviceInfo.getModel())
+                    .put("application_version", deviceInfo.getApplicationVersion())
+                    .put("os_version", deviceInfo.getOsVersion());
+
+            if (pushToken == null) {
+                json.put("push_token", false);
+            } else {
+                json.put("push_token", pushToken);
+            }
+
+            for (Map.Entry<String, Object> entry : additionalPayload.entrySet()) {
+                json.put(entry.getKey(), entry.getValue());
+            }
+        } catch (JSONException je) {
+            throw new IllegalStateException(je);
+        }
+        return json;
     }
 }

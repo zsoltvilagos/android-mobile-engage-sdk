@@ -8,7 +8,6 @@ import android.support.test.runner.AndroidJUnit4;
 import com.emarsys.core.CoreCompletionHandler;
 import com.emarsys.core.DeviceInfo;
 import com.emarsys.core.request.RequestManager;
-import com.emarsys.core.request.RequestMethod;
 import com.emarsys.core.request.RequestModel;
 
 import org.json.JSONObject;
@@ -18,6 +17,7 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
@@ -45,7 +45,7 @@ public class MobileEngageInternalTest {
     private MobileEngageInternal mobileEngage;
 
     @Before
-    public void init(){
+    public void init() {
         authHeader = new HashMap<>();
         authHeader.put("Authorization", "Basic dXNlcjpwYXNz");
         manager = mock(RequestManager.class);
@@ -64,7 +64,7 @@ public class MobileEngageInternalTest {
     }
 
     @Test
-    public void testSetup_constructorInitializesFields(){
+    public void testSetup_constructorInitializesFields() {
         MobileEngageInternal engage = new MobileEngageInternal(application, baseConfig, manager);
         new DeviceInfo(context);
         assertEquals(baseConfig.getStatusListener(), engage.getStatusListener());
@@ -73,7 +73,7 @@ public class MobileEngageInternalTest {
     }
 
     @Test
-    public void testSetup_withAuthHeaderSet(){
+    public void testSetup_withAuthHeaderSet() {
         RequestManager requestManager = mock(RequestManager.class);
         new MobileEngageInternal(application, baseConfig, requestManager);
 
@@ -81,11 +81,10 @@ public class MobileEngageInternalTest {
     }
 
     @Test
-    public void testAppLogin_anonymous_requestManagerCalledWithCorrectRequestModel() throws Exception{
-        JSONObject payload = createBasePayload(deviceInfo).put("push_token", false);
+    public void testAppLogin_anonymous_requestManagerCalledWithCorrectRequestModel() throws Exception {
+        JSONObject payload = createBasePayload(deviceInfo, mobileEngage);
         RequestModel expected = new RequestModel.Builder()
                 .url(ENDPOINT_LOGIN)
-                .method(RequestMethod.POST)
                 .payload(payload)
                 .headers(authHeader)
                 .build();
@@ -102,12 +101,31 @@ public class MobileEngageInternalTest {
     }
 
     @Test
-    public void testAppLogin_requestManagerCallecdWithCorrectRequestModel() throws Exception{
-        JSONObject payload = createBasePayload(deviceInfo);
+    public void testAppLogin_requestManagerCalledWithCorrectRequestModel() throws Exception {
+        int contactField = 3;
+        String contactFieldValue = "value";
+        JSONObject payload = createBasePayload(deviceInfo, mobileEngage)
+                .put("contact_field_id", contactField)
+                .put("contact_field_value", contactFieldValue);
+        RequestModel expected = new RequestModel.Builder()
+                .url(ENDPOINT_LOGIN)
+                .payload(payload)
+                .headers(authHeader)
+                .build();
+
+        ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
+
+        mobileEngage.appLogin(contactField, contactFieldValue);
+
+        verify(manager).setDefaultHeaders(authHeader);
+        verify(manager).submit(captor.capture(), any(CoreCompletionHandler.class));
+
+        RequestModel result = captor.getValue();
+        assertRequestModels(expected, result);
     }
 
-    private JSONObject createBasePayload(DeviceInfo info) throws Exception{
-        return new JSONObject()
+    private JSONObject createBasePayload(DeviceInfo info, MobileEngageInternal mobileEngage) throws Exception {
+        JSONObject json = new JSONObject()
                 .put("application_id", APPLICATION_ID)
                 .put("hardware_id", deviceInfo.getHwid())
                 .put("platform", deviceInfo.getPlatform())
@@ -116,11 +134,30 @@ public class MobileEngageInternalTest {
                 .put("device_model", deviceInfo.getModel())
                 .put("application_version", deviceInfo.getApplicationVersion())
                 .put("os_version", deviceInfo.getOsVersion());
+
+        String pushToken = mobileEngage.getPushToken();
+        if (pushToken == null) {
+            json.put("push_token", false);
+        } else {
+            json.put("push_token", pushToken);
+        }
+
+        return json;
     }
 
-    private void assertRequestModels(RequestModel expected, RequestModel result){
+    private void assertRequestModels(RequestModel expected, RequestModel result) throws Exception{
         assertEquals(expected.getUrl(), result.getUrl());
         assertEquals(expected.getMethod(), result.getMethod());
-        assertEquals(expected.getPayload().toString(), result.getPayload().toString());
+        assertEquals(jsonToMap(expected.getPayload()), jsonToMap(result.getPayload()));
+    }
+
+    private Map<String, Object> jsonToMap(JSONObject json) throws Exception {
+        Map<String, Object> result = new HashMap<>();
+        Iterator<String> iterator = json.keys();
+        while (iterator.hasNext()) {
+            String key = iterator.next();
+            result.put(key, json.get(key));
+        }
+        return result;
     }
 }
