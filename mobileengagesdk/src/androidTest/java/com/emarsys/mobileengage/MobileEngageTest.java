@@ -4,10 +4,11 @@ import android.app.Application;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
-import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.util.Map;
 
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.mock;
@@ -72,7 +73,7 @@ public class MobileEngageTest {
     @Test
     public void testTrackCustomEvent() throws Exception{
         MobileEngage.instance = mobileEngageInternal;
-        JSONObject attributes = mock(JSONObject.class);
+        Map<String, String> attributes = mock(Map.class);
         MobileEngage.trackCustomEvent("event", attributes);
         verify(mobileEngageInternal).trackCustomEvent("event", attributes);
     }
