@@ -2,6 +2,7 @@ package com.emarsys.mobileengage;
 
 import android.app.Application;
 import android.content.Context;
+import android.content.Intent;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
@@ -10,6 +11,7 @@ import com.emarsys.core.DeviceInfo;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.request.RequestModel;
 
+import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -161,6 +163,34 @@ public class MobileEngageInternalTest {
         ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
 
         mobileEngage.trackCustomEvent(eventName, eventAttributes);
+
+        verify(manager).setDefaultHeaders(authHeader);
+        verify(manager).submit(captor.capture(), any(CoreCompletionHandler.class));
+
+        RequestModel result = captor.getValue();
+        assertRequestModels(expected, result);
+    }
+
+    @Test
+    public void testTrackMessageOpen_requestManagerCalledWithCorrectRequestModel() throws Exception {
+        Intent intent = new Intent();
+        JSONObject json = new JSONObject()
+                .put("key1", "value1")
+                .put("u", "{\"sid\": \"+43c_lODSmXqCvdOz\"}");
+        intent.putExtra("pw_data_json_string", json.toString());
+
+        Map<String, Object> payload = createBasePayload();
+        payload.put("sid", "+43c_lODSmXqCvdOz");
+
+        RequestModel expected = new RequestModel.Builder()
+                .url(ENDPOINT_BASE + "events/message_open")
+                .payload(payload)
+                .headers(authHeader)
+                .build();
+
+        ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
+
+        mobileEngage.trackMessageOpen(intent);
 
         verify(manager).setDefaultHeaders(authHeader);
         verify(manager).submit(captor.capture(), any(CoreCompletionHandler.class));

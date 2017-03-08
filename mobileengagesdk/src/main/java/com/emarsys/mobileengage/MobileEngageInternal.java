@@ -1,6 +1,7 @@
 package com.emarsys.mobileengage;
 
 import android.app.Application;
+import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -10,6 +11,9 @@ import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.request.RequestModel;
 import com.emarsys.core.response.ResponseModel;
 import com.emarsys.core.util.HeaderUtils;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -114,17 +118,47 @@ class MobileEngageInternal {
     }
 
     void trackCustomEvent(@NonNull String eventName,
-                          @Nullable Map<String, String>  eventAttributes) {
+                          @Nullable Map<String, String> eventAttributes) {
         Map<String, Object> payload = createBasePayload();
         payload.put("attributes", eventAttributes);
         RequestModel model = new RequestModel.Builder()
-                .url(getTrackCustomEventUrl(eventName))
+                .url(getEventUrl(eventName))
                 .payload(payload)
                 .build();
         manager.submit(model, completionHandler);
     }
 
-    private String getTrackCustomEventUrl(String eventName) {
+    void trackMessageOpen(Intent intent) {
+        String messageId = getMessageId(intent);
+
+        if (messageId != null) {
+            Map<String, Object> payload = createBasePayload();
+            payload.put("sid", messageId);
+            RequestModel model = new RequestModel.Builder()
+                    .url(getEventUrl("message_open"))
+                    .payload(payload)
+                    .build();
+            manager.submit(model, completionHandler);
+        } else {
+            statusListener.onError(null, new IllegalArgumentException("No messageId found!"));
+        }
+    }
+
+    String getMessageId(Intent intent) {
+        try {
+            JSONObject pushwooshData = new JSONObject(intent.getExtras().getString("pw_data_json_string"));
+            if (pushwooshData.has("u")) {
+                JSONObject content = new JSONObject(pushwooshData.getString("u"));
+                if (content.has("sid")) {
+                    return content.getString("sid");
+                }
+            }
+        } catch (JSONException je) {
+        }
+        return null;
+    }
+
+    private String getEventUrl(String eventName) {
         return ENDPOINT_BASE + "events/" + eventName;
     }
 

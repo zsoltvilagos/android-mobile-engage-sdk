@@ -1,6 +1,7 @@
 package com.emarsys.mobileengage;
 
 import android.app.Application;
+import android.content.Intent;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
@@ -28,7 +29,7 @@ public class MobileEngageTest {
     }
 
     @Test
-    public void testSetup_initializesInstance(){
+    public void testSetup_initializesInstance() {
         String appID = "56789876";
         String appSecret = "secret";
         MobileEngageConfig baseConfig = new MobileEngageConfig.Builder()
@@ -42,7 +43,7 @@ public class MobileEngageTest {
     }
 
     @Test
-    public void testSetPushToken(){
+    public void testSetPushToken() {
         String pushtoken = "pushtoken";
         MobileEngage.instance = mobileEngageInternal;
         MobileEngage.setPushToken(pushtoken);
@@ -71,10 +72,18 @@ public class MobileEngageTest {
     }
 
     @Test
-    public void testTrackCustomEvent() throws Exception{
+    public void testTrackCustomEvent() throws Exception {
         MobileEngage.instance = mobileEngageInternal;
         Map<String, String> attributes = mock(Map.class);
         MobileEngage.trackCustomEvent("event", attributes);
         verify(mobileEngageInternal).trackCustomEvent("event", attributes);
+    }
+
+    @Test
+    public void testTrackMessageOpen() {
+        MobileEngage.instance = mobileEngageInternal;
+        Intent intent = mock(Intent.class);
+        MobileEngage.trackMessageOpen(intent);
+        verify(mobileEngageInternal).trackMessageOpen(intent);
     }
 }

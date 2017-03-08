@@ -1,12 +1,11 @@
 package com.emarsys.mobileengage;
 
 import android.app.Application;
+import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.emarsys.core.request.RequestManager;
-
-import org.json.JSONObject;
 
 import java.util.Map;
 
@@ -42,6 +41,10 @@ public class MobileEngage {
     public static void trackCustomEvent(@NonNull String eventName,
                                         @Nullable Map<String, String>  eventAttributes) {
         instance.trackCustomEvent(eventName, eventAttributes);
+    }
+
+    public static void trackMessageOpen(Intent intent) {
+        instance.trackMessageOpen(intent);
     }
 
 }
