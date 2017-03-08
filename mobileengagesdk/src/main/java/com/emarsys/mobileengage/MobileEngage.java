@@ -25,26 +25,26 @@ public class MobileEngage {
         instance.setPushToken(pushToken);
     }
 
-    public static void appLogin() {
-        instance.appLogin();
+    public static String appLogin() {
+        return instance.appLogin();
     }
 
-    public static void appLogin(int contactField,
-                                @NonNull String contactFieldValue) {
-        instance.appLogin(contactField, contactFieldValue);
+    public static String appLogin(int contactField,
+                                  @NonNull String contactFieldValue) {
+        return instance.appLogin(contactField, contactFieldValue);
     }
 
-    public static void appLogout() {
-        instance.appLogout();
+    public static String appLogout() {
+        return instance.appLogout();
     }
 
-    public static void trackCustomEvent(@NonNull String eventName,
-                                        @Nullable Map<String, String>  eventAttributes) {
-        instance.trackCustomEvent(eventName, eventAttributes);
+    public static String trackCustomEvent(@NonNull String eventName,
+                                          @Nullable Map<String, String>  eventAttributes) {
+        return instance.trackCustomEvent(eventName, eventAttributes);
     }
 
-    public static void trackMessageOpen(Intent intent) {
-        instance.trackMessageOpen(intent);
+    public static String trackMessageOpen(Intent intent) {
+        return instance.trackMessageOpen(intent);
     }
 
 }

@@ -2,6 +2,7 @@ package com.emarsys.mobileengage;
 
 import android.app.Application;
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -83,7 +84,7 @@ class MobileEngageInternal {
         return pushToken;
     }
 
-    void appLogin() {
+    String appLogin() {
         Map<String, Object> payload = injectLoginPayload(createBasePayload());
         RequestModel model = new RequestModel.Builder()
                 .url(ENDPOINT_LOGIN)
@@ -91,10 +92,11 @@ class MobileEngageInternal {
                 .build();
 
         manager.submit(model, completionHandler);
+        return model.getId();
     }
 
-    void appLogin(int contactField,
-                  @NonNull String contactFieldValue) {
+    String appLogin(int contactField,
+                    @NonNull String contactFieldValue) {
         Map<String, Object> additionalPayload = new HashMap<>();
         additionalPayload.put("contact_field_id", contactField);
         additionalPayload.put("contact_field_value", contactFieldValue);
@@ -107,18 +109,20 @@ class MobileEngageInternal {
                 .build();
 
         manager.submit(model, completionHandler);
+        return model.getId();
     }
 
-    void appLogout() {
+    String appLogout() {
         RequestModel model = new RequestModel.Builder()
                 .url(ENDPOINT_LOGOUT)
                 .payload(createBasePayload())
                 .build();
         manager.submit(model, completionHandler);
+        return model.getId();
     }
 
-    void trackCustomEvent(@NonNull String eventName,
-                          @Nullable Map<String, String> eventAttributes) {
+    String trackCustomEvent(@NonNull String eventName,
+                            @Nullable Map<String, String> eventAttributes) {
         Map<String, Object> payload = createBasePayload();
         payload.put("attributes", eventAttributes);
         RequestModel model = new RequestModel.Builder()
@@ -126,9 +130,10 @@ class MobileEngageInternal {
                 .payload(payload)
                 .build();
         manager.submit(model, completionHandler);
+        return model.getId();
     }
 
-    void trackMessageOpen(Intent intent) {
+    String trackMessageOpen(Intent intent) {
         String messageId = getMessageId(intent);
 
         if (messageId != null) {
@@ -139,18 +144,23 @@ class MobileEngageInternal {
                     .payload(payload)
                     .build();
             manager.submit(model, completionHandler);
+            return model.getId();
         } else {
             statusListener.onError(null, new IllegalArgumentException("No messageId found!"));
+            return null;
         }
     }
 
     String getMessageId(Intent intent) {
         try {
-            JSONObject pushwooshData = new JSONObject(intent.getExtras().getString("pw_data_json_string"));
-            if (pushwooshData.has("u")) {
-                JSONObject content = new JSONObject(pushwooshData.getString("u"));
-                if (content.has("sid")) {
-                    return content.getString("sid");
+            if (intent != null) {
+                Bundle bundle = intent.getExtras();
+                if (bundle != null) {
+                    String customData = bundle.getString("pw_data_json_string");
+                    if (customData != null) {
+                        String content = new JSONObject(customData).getString("u");
+                        return new JSONObject(content).getString("sid");
+                    }
                 }
             }
         } catch (JSONException je) {

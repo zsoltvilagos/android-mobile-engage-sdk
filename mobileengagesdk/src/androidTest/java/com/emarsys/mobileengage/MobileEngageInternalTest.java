@@ -103,6 +103,17 @@ public class MobileEngageInternalTest {
     }
 
     @Test
+    public void testAppLogin_anonymous_returnsRequestModelId() {
+        ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
+
+        String result = mobileEngage.appLogin();
+
+        verify(manager).submit(captor.capture(), any(CoreCompletionHandler.class));
+
+        assertEquals(captor.getValue().getId(), result);
+    }
+
+    @Test
     public void testAppLogin_requestManagerCalledWithCorrectRequestModel() throws Exception {
         int contactField = 3;
         String contactFieldValue = "value";
@@ -127,6 +138,17 @@ public class MobileEngageInternalTest {
     }
 
     @Test
+    public void testAppLogin_returnsRequestModelId() {
+        ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
+
+        String result = mobileEngage.appLogin(5, "value");
+
+        verify(manager).submit(captor.capture(), any(CoreCompletionHandler.class));
+
+        assertEquals(captor.getValue().getId(), result);
+    }
+
+    @Test
     public void testAppLogout_requestManagerCalledWithCorrectRequestModel() {
         Map<String, Object> payload = createBasePayload();
         RequestModel expected = new RequestModel.Builder()
@@ -144,6 +166,17 @@ public class MobileEngageInternalTest {
 
         RequestModel result = captor.getValue();
         assertRequestModels(expected, result);
+    }
+
+    @Test
+    public void testAppLogout_returnsRequestModelId() {
+        ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
+
+        String result = mobileEngage.appLogout();
+
+        verify(manager).submit(captor.capture(), any(CoreCompletionHandler.class));
+
+        assertEquals(captor.getValue().getId(), result);
     }
 
     @Test
@@ -170,6 +203,17 @@ public class MobileEngageInternalTest {
 
         RequestModel result = captor.getValue();
         assertRequestModels(expected, result);
+    }
+
+    @Test
+    public void testTrackCustomEvent_returnsRequestModelId() {
+        ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
+
+        String result = mobileEngage.trackCustomEvent("event", new HashMap<String, String>());
+
+        verify(manager).submit(captor.capture(), any(CoreCompletionHandler.class));
+
+        assertEquals(captor.getValue().getId(), result);
     }
 
     @Test
@@ -201,8 +245,43 @@ public class MobileEngageInternalTest {
     }
 
     @Test
-    public void testGetMessageId_shouldBeNull() {
+    public void testTrackMessageOpen_returnsNullWithEmptyIntent() {
+        String result = mobileEngage.trackMessageOpen(new Intent());
+        assertNull(result);
+    }
+
+    @Test
+    public void testTrackMessageOpen_returnsNullWithNullIntent() {
+        String result = mobileEngage.trackMessageOpen(null);
+        assertNull(result);
+    }
+
+    @Test
+    public void testTrackMessageOpen_returnsRequestModelId() throws Exception {
+        Intent intent = new Intent();
+        JSONObject json = new JSONObject()
+                .put("key1", "value1")
+                .put("u", "{\"sid\": \"+43c_lODSmXqCvdOz\"}");
+        intent.putExtra("pw_data_json_string", json.toString());
+
+        ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
+
+        String result = mobileEngage.trackMessageOpen(intent);
+
+        verify(manager).submit(captor.capture(), any(CoreCompletionHandler.class));
+
+        assertEquals(captor.getValue().getId(), result);
+    }
+
+    @Test
+    public void testGetMessageId_shouldReturnNullWithEmptyIntent() {
         String result = mobileEngage.getMessageId(new Intent());
+        assertNull(result);
+    }
+
+    @Test
+    public void testGetMessageId_shouldReturnNullWithNullIntent() {
+        String result = mobileEngage.getMessageId(null);
         assertNull(result);
     }
 
