@@ -22,6 +22,7 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -197,6 +198,23 @@ public class MobileEngageInternalTest {
 
         RequestModel result = captor.getValue();
         assertRequestModels(expected, result);
+    }
+
+    @Test
+    public void testGetMessageId_shouldBeNull() {
+        String result = mobileEngage.getMessageId(new Intent());
+        assertNull(result);
+    }
+
+    @Test
+    public void testGetMessageId_shoudReturnTheCorrectSIDValue() throws Exception {
+        Intent intent = new Intent();
+        JSONObject json = new JSONObject()
+                .put("key1", "value1")
+                .put("u", "{\"sid\": \"+43c_lODSmXqCvdOz\"}");
+        intent.putExtra("pw_data_json_string", json.toString());
+        String result = mobileEngage.getMessageId(intent);
+        assertEquals("+43c_lODSmXqCvdOz", result);
     }
 
     private Map<String, Object> createBasePayload() {
