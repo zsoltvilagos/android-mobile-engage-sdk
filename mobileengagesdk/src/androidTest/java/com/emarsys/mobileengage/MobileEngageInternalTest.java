@@ -10,14 +10,12 @@ import com.emarsys.core.DeviceInfo;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.request.RequestModel;
 
-import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
@@ -149,15 +147,5 @@ public class MobileEngageInternalTest {
         assertEquals(expected.getUrl(), result.getUrl());
         assertEquals(expected.getMethod(), result.getMethod());
         assertEquals(expected.getPayload(), result.getPayload());
-    }
-
-    private Map<String, Object> jsonToMap(JSONObject json) throws Exception {
-        Map<String, Object> result = new HashMap<>();
-        Iterator<String> iterator = json.keys();
-        while (iterator.hasNext()) {
-            String key = iterator.next();
-            result.put(key, json.get(key));
-        }
-        return result;
     }
 }
