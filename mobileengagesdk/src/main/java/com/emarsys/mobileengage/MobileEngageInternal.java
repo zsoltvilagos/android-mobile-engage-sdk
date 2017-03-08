@@ -111,7 +111,7 @@ class MobileEngageInternal {
     }
 
     void trackCustomEvent(@NonNull String eventName,
-                          @Nullable JSONObject eventAttributes) {
+                          @Nullable Map<String, String>  eventAttributes) {
     }
 
     private Map<String, Object> createBasePayload() {

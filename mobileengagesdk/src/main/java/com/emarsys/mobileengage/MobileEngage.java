@@ -8,6 +8,8 @@ import com.emarsys.core.request.RequestManager;
 
 import org.json.JSONObject;
 
+import java.util.Map;
+
 public class MobileEngage {
     private static final String TAG = "MobileEngage";
     static MobileEngageInternal instance;
@@ -38,7 +40,7 @@ public class MobileEngage {
     }
 
     public static void trackCustomEvent(@NonNull String eventName,
-                                        @Nullable JSONObject eventAttributes) {
+                                        @Nullable Map<String, String>  eventAttributes) {
         instance.trackCustomEvent(eventName, eventAttributes);
     }
 
