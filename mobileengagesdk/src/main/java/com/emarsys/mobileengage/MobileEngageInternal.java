@@ -82,7 +82,7 @@ class MobileEngageInternal {
     }
 
     void appLogin() {
-        JSONObject payload = createBasePayload();
+        Map<String, Object> payload = createBasePayload();
         RequestModel model = new RequestModel.Builder()
                 .url(ENDPOINT_LOGIN)
                 .payload(payload)
@@ -97,7 +97,7 @@ class MobileEngageInternal {
         additionalPayload.put("contact_field_id", contactField);
         additionalPayload.put("contact_field_value", contactFieldValue);
 
-        JSONObject payload = createBasePayload(additionalPayload);
+        Map<String, Object> payload = createBasePayload(additionalPayload);
 
         RequestModel model = new RequestModel.Builder()
                 .url(ENDPOINT_LOGIN)
@@ -114,34 +114,29 @@ class MobileEngageInternal {
                           @Nullable JSONObject eventAttributes) {
     }
 
-    private JSONObject createBasePayload(){
+    private Map<String, Object> createBasePayload() {
         return createBasePayload(Collections.EMPTY_MAP);
     }
 
-    private JSONObject createBasePayload(Map<String, Object> additionalPayload) {
-        JSONObject json;
-        try {
-            json = new JSONObject()
-                    .put("application_id", applicationId)
-                    .put("hardware_id", deviceInfo.getHwid())
-                    .put("platform", deviceInfo.getPlatform())
-                    .put("language", deviceInfo.getLanguage())
-                    .put("timezone", deviceInfo.getTimezone())
-                    .put("device_model", deviceInfo.getModel())
-                    .put("application_version", deviceInfo.getApplicationVersion())
-                    .put("os_version", deviceInfo.getOsVersion());
+    private Map<String, Object> createBasePayload(Map<String, Object> additionalPayload) {
+        Map<String, Object> json = new HashMap<>();
+        json.put("application_id", applicationId);
+        json.put("hardware_id", deviceInfo.getHwid());
+        json.put("platform", deviceInfo.getPlatform());
+        json.put("language", deviceInfo.getLanguage());
+        json.put("timezone", deviceInfo.getTimezone());
+        json.put("device_model", deviceInfo.getModel());
+        json.put("application_version", deviceInfo.getApplicationVersion());
+        json.put("os_version", deviceInfo.getOsVersion());
 
-            if (pushToken == null) {
-                json.put("push_token", false);
-            } else {
-                json.put("push_token", pushToken);
-            }
+        if (pushToken == null) {
+            json.put("push_token", false);
+        } else {
+            json.put("push_token", pushToken);
+        }
 
-            for (Map.Entry<String, Object> entry : additionalPayload.entrySet()) {
-                json.put(entry.getKey(), entry.getValue());
-            }
-        } catch (JSONException je) {
-            throw new IllegalStateException(je);
+        for (Map.Entry<String, Object> entry : additionalPayload.entrySet()) {
+            json.put(entry.getKey(), entry.getValue());
         }
         return json;
     }

@@ -82,7 +82,7 @@ public class MobileEngageInternalTest {
 
     @Test
     public void testAppLogin_anonymous_requestManagerCalledWithCorrectRequestModel() throws Exception {
-        JSONObject payload = createBasePayload(deviceInfo, mobileEngage);
+        Map<String, Object> payload = createBasePayload(deviceInfo, mobileEngage);
         RequestModel expected = new RequestModel.Builder()
                 .url(ENDPOINT_LOGIN)
                 .payload(payload)
@@ -104,9 +104,9 @@ public class MobileEngageInternalTest {
     public void testAppLogin_requestManagerCalledWithCorrectRequestModel() throws Exception {
         int contactField = 3;
         String contactFieldValue = "value";
-        JSONObject payload = createBasePayload(deviceInfo, mobileEngage)
-                .put("contact_field_id", contactField)
-                .put("contact_field_value", contactFieldValue);
+        Map<String, Object> payload = createBasePayload(deviceInfo, mobileEngage);
+        payload.put("contact_field_id", contactField);
+        payload.put("contact_field_value", contactFieldValue);
         RequestModel expected = new RequestModel.Builder()
                 .url(ENDPOINT_LOGIN)
                 .payload(payload)
@@ -124,31 +124,31 @@ public class MobileEngageInternalTest {
         assertRequestModels(expected, result);
     }
 
-    private JSONObject createBasePayload(DeviceInfo info, MobileEngageInternal mobileEngage) throws Exception {
-        JSONObject json = new JSONObject()
-                .put("application_id", APPLICATION_ID)
-                .put("hardware_id", deviceInfo.getHwid())
-                .put("platform", deviceInfo.getPlatform())
-                .put("language", deviceInfo.getLanguage())
-                .put("timezone", deviceInfo.getTimezone())
-                .put("device_model", deviceInfo.getModel())
-                .put("application_version", deviceInfo.getApplicationVersion())
-                .put("os_version", deviceInfo.getOsVersion());
+    private Map<String, Object> createBasePayload(DeviceInfo info, MobileEngageInternal mobileEngage) throws Exception {
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("application_id", APPLICATION_ID);
+        payload.put("hardware_id", deviceInfo.getHwid());
+        payload.put("platform", deviceInfo.getPlatform());
+        payload.put("language", deviceInfo.getLanguage());
+        payload.put("timezone", deviceInfo.getTimezone());
+        payload.put("device_model", deviceInfo.getModel());
+        payload.put("application_version", deviceInfo.getApplicationVersion());
+        payload.put("os_version", deviceInfo.getOsVersion());
 
         String pushToken = mobileEngage.getPushToken();
         if (pushToken == null) {
-            json.put("push_token", false);
+            payload.put("push_token", false);
         } else {
-            json.put("push_token", pushToken);
+            payload.put("push_token", pushToken);
         }
 
-        return json;
+        return payload;
     }
 
-    private void assertRequestModels(RequestModel expected, RequestModel result) throws Exception{
+    private void assertRequestModels(RequestModel expected, RequestModel result) throws Exception {
         assertEquals(expected.getUrl(), result.getUrl());
         assertEquals(expected.getMethod(), result.getMethod());
-        assertEquals(jsonToMap(expected.getPayload()), jsonToMap(result.getPayload()));
+        assertEquals(expected.getPayload(), result.getPayload());
     }
 
     private Map<String, Object> jsonToMap(JSONObject json) throws Exception {
