@@ -11,9 +11,6 @@ import com.emarsys.core.request.RequestModel;
 import com.emarsys.core.response.ResponseModel;
 import com.emarsys.core.util.HeaderUtils;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -21,6 +18,7 @@ import java.util.Map;
 class MobileEngageInternal {
     private static String ENDPOINT_BASE = "https://push.eservice.emarsys.net/api/mobileengage/v2/";
     private static String ENDPOINT_LOGIN = ENDPOINT_BASE + "users/login";
+    private static String ENDPOINT_LOGOUT = ENDPOINT_BASE + "users/logout";
 
     private final String applicationId;
     private final String applicationSecret;
@@ -82,7 +80,7 @@ class MobileEngageInternal {
     }
 
     void appLogin() {
-        Map<String, Object> payload = createBasePayload();
+        Map<String, Object> payload = injectLoginPayload(createBasePayload());
         RequestModel model = new RequestModel.Builder()
                 .url(ENDPOINT_LOGIN)
                 .payload(payload)
@@ -97,7 +95,7 @@ class MobileEngageInternal {
         additionalPayload.put("contact_field_id", contactField);
         additionalPayload.put("contact_field_value", contactFieldValue);
 
-        Map<String, Object> payload = createBasePayload(additionalPayload);
+        Map<String, Object> payload = injectLoginPayload(createBasePayload(additionalPayload));
 
         RequestModel model = new RequestModel.Builder()
                 .url(ENDPOINT_LOGIN)
@@ -108,6 +106,11 @@ class MobileEngageInternal {
     }
 
     void appLogout() {
+        RequestModel model = new RequestModel.Builder()
+                .url(ENDPOINT_LOGOUT)
+                .payload(createBasePayload())
+                .build();
+        manager.submit(model, completionHandler);
     }
 
     void trackCustomEvent(@NonNull String eventName,
@@ -119,25 +122,30 @@ class MobileEngageInternal {
     }
 
     private Map<String, Object> createBasePayload(Map<String, Object> additionalPayload) {
-        Map<String, Object> json = new HashMap<>();
-        json.put("application_id", applicationId);
-        json.put("hardware_id", deviceInfo.getHwid());
-        json.put("platform", deviceInfo.getPlatform());
-        json.put("language", deviceInfo.getLanguage());
-        json.put("timezone", deviceInfo.getTimezone());
-        json.put("device_model", deviceInfo.getModel());
-        json.put("application_version", deviceInfo.getApplicationVersion());
-        json.put("os_version", deviceInfo.getOsVersion());
-
-        if (pushToken == null) {
-            json.put("push_token", false);
-        } else {
-            json.put("push_token", pushToken);
-        }
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("application_id", applicationId);
+        payload.put("hardware_id", deviceInfo.getHwid());
 
         for (Map.Entry<String, Object> entry : additionalPayload.entrySet()) {
-            json.put(entry.getKey(), entry.getValue());
+            payload.put(entry.getKey(), entry.getValue());
         }
-        return json;
+        return payload;
+    }
+
+    private Map<String, Object> injectLoginPayload(Map<String, Object> payload) {
+        payload.put("platform", deviceInfo.getPlatform());
+        payload.put("language", deviceInfo.getLanguage());
+        payload.put("timezone", deviceInfo.getTimezone());
+        payload.put("device_model", deviceInfo.getModel());
+        payload.put("application_version", deviceInfo.getApplicationVersion());
+        payload.put("os_version", deviceInfo.getOsVersion());
+
+        if (pushToken == null) {
+            payload.put("push_token", false);
+        } else {
+            payload.put("push_token", pushToken);
+        }
+
+        return payload;
     }
 }

@@ -31,6 +31,7 @@ public class MobileEngageInternalTest {
     private static String APPLICATION_SECRET = "pass";
     private static String ENDPOINT_BASE = "https://push.eservice.emarsys.net/api/mobileengage/v2/";
     private static String ENDPOINT_LOGIN = ENDPOINT_BASE + "users/login";
+    private static String ENDPOINT_LOGOUT = ENDPOINT_BASE + "users/logout";
 
     private MobileEngageStatusListener statusListener;
     private Map<String, String> authHeader;
@@ -80,7 +81,7 @@ public class MobileEngageInternalTest {
 
     @Test
     public void testAppLogin_anonymous_requestManagerCalledWithCorrectRequestModel() throws Exception {
-        Map<String, Object> payload = createBasePayload(deviceInfo, mobileEngage);
+        Map<String, Object> payload = injectLoginPayload(createBasePayload());
         RequestModel expected = new RequestModel.Builder()
                 .url(ENDPOINT_LOGIN)
                 .payload(payload)
@@ -102,7 +103,7 @@ public class MobileEngageInternalTest {
     public void testAppLogin_requestManagerCalledWithCorrectRequestModel() throws Exception {
         int contactField = 3;
         String contactFieldValue = "value";
-        Map<String, Object> payload = createBasePayload(deviceInfo, mobileEngage);
+        Map<String, Object> payload = injectLoginPayload(createBasePayload());
         payload.put("contact_field_id", contactField);
         payload.put("contact_field_value", contactFieldValue);
         RequestModel expected = new RequestModel.Builder()
@@ -122,10 +123,35 @@ public class MobileEngageInternalTest {
         assertRequestModels(expected, result);
     }
 
-    private Map<String, Object> createBasePayload(DeviceInfo info, MobileEngageInternal mobileEngage) throws Exception {
+    @Test
+    public void testAppLogout_requestManagerCalledWithCorrectRequestModel() {
+        Map<String, Object> payload = createBasePayload();
+        RequestModel expected = new RequestModel.Builder()
+                .url(ENDPOINT_LOGOUT)
+                .payload(payload)
+                .headers(authHeader)
+                .build();
+
+        ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
+
+        mobileEngage.appLogout();
+
+        verify(manager).setDefaultHeaders(authHeader);
+        verify(manager).submit(captor.capture(), any(CoreCompletionHandler.class));
+
+        RequestModel result = captor.getValue();
+        assertRequestModels(expected, result);
+    }
+
+    private Map<String, Object> createBasePayload() {
         Map<String, Object> payload = new HashMap<>();
         payload.put("application_id", APPLICATION_ID);
         payload.put("hardware_id", deviceInfo.getHwid());
+
+        return payload;
+    }
+
+    private Map<String, Object> injectLoginPayload(Map<String, Object> payload) {
         payload.put("platform", deviceInfo.getPlatform());
         payload.put("language", deviceInfo.getLanguage());
         payload.put("timezone", deviceInfo.getTimezone());
@@ -143,7 +169,7 @@ public class MobileEngageInternalTest {
         return payload;
     }
 
-    private void assertRequestModels(RequestModel expected, RequestModel result) throws Exception {
+    private void assertRequestModels(RequestModel expected, RequestModel result) {
         assertEquals(expected.getUrl(), result.getUrl());
         assertEquals(expected.getMethod(), result.getMethod());
         assertEquals(expected.getPayload(), result.getPayload());
