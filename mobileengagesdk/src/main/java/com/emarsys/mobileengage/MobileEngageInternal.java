@@ -115,6 +115,17 @@ class MobileEngageInternal {
 
     void trackCustomEvent(@NonNull String eventName,
                           @Nullable Map<String, String>  eventAttributes) {
+        Map<String, Object> payload = createBasePayload();
+        payload.put("attributes", eventAttributes);
+        RequestModel model = new RequestModel.Builder()
+                .url(getTrackCustomEventUrl(eventName))
+                .payload(payload)
+                .build();
+        manager.submit(model, completionHandler);
+    }
+
+    private String getTrackCustomEventUrl(String eventName) {
+        return ENDPOINT_BASE + "events/" + eventName;
     }
 
     private Map<String, Object> createBasePayload() {

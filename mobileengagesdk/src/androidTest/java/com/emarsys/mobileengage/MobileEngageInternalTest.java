@@ -143,6 +143,32 @@ public class MobileEngageInternalTest {
         assertRequestModels(expected, result);
     }
 
+    @Test
+    public void testTrackCustomEvent_requestManagerCalledWithCorrectRequestModel() {
+        String eventName = "cartoon";
+        Map<String, String> eventAttributes = new HashMap<>();
+        eventAttributes.put("tom", "jerry");
+
+        Map<String, Object> payload = createBasePayload();
+        payload.put("attributes", eventAttributes);
+
+        RequestModel expected = new RequestModel.Builder()
+                .url(ENDPOINT_BASE + "events/" + eventName)
+                .payload(payload)
+                .headers(authHeader)
+                .build();
+
+        ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
+
+        mobileEngage.trackCustomEvent(eventName, eventAttributes);
+
+        verify(manager).setDefaultHeaders(authHeader);
+        verify(manager).submit(captor.capture(), any(CoreCompletionHandler.class));
+
+        RequestModel result = captor.getValue();
+        assertRequestModels(expected, result);
+    }
+
     private Map<String, Object> createBasePayload() {
         Map<String, Object> payload = new HashMap<>();
         payload.put("application_id", APPLICATION_ID);
