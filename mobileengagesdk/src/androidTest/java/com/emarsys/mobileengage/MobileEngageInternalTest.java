@@ -272,18 +272,6 @@ public class MobileEngageInternalTest {
     }
 
     @Test
-    public void testGetMessageId_shouldReturnNullWithEmptyIntent() {
-        String result = mobileEngage.getMessageId(new Intent());
-        assertNull(result);
-    }
-
-    @Test
-    public void testGetMessageId_shouldReturnNullWithNullIntent() {
-        String result = mobileEngage.getMessageId(null);
-        assertNull(result);
-    }
-
-    @Test
     public void testGetMessageId_shoudReturnTheCorrectSIDValue() throws Exception {
         Intent intent = new Intent();
         JSONObject json = new JSONObject()

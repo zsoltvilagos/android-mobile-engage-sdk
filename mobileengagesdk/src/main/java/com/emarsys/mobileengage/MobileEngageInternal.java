@@ -3,6 +3,8 @@ package com.emarsys.mobileengage;
 import android.app.Application;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -33,8 +35,9 @@ class MobileEngageInternal {
     private final RequestManager manager;
     private final CoreCompletionHandler completionHandler;
     private final MobileEngageStatusListener statusListener;
+    private final Handler handler = new Handler(Looper.getMainLooper());
 
-    MobileEngageInternal(Application application, MobileEngageConfig config, RequestManager manager) {
+    MobileEngageInternal(final Application application, MobileEngageConfig config, RequestManager manager) {
         this.application = application;
         this.applicationId = config.getApplicationID();
         this.applicationSecret = config.getApplicationSecret();
@@ -46,15 +49,27 @@ class MobileEngageInternal {
         this.deviceInfo = new DeviceInfo(application.getApplicationContext());
 
         this.completionHandler = new CoreCompletionHandler() {
-            @Override
-            public void onSuccess(String s, ResponseModel responseModel) {
 
+            @Override
+            public void onSuccess(final String id, ResponseModel responseModel) {
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        statusListener.onStatusLog(id, "OK");
+                    }
+                });
             }
 
             @Override
-            public void onError(String s, Exception e) {
-
+            public void onError(final String id, final Exception e) {
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        statusListener.onError(id, e);
+                    }
+                });
             }
+
         };
     }
 
@@ -146,8 +161,14 @@ class MobileEngageInternal {
             manager.submit(model, completionHandler);
             return model.getId();
         } else {
-            statusListener.onError(null, new IllegalArgumentException("No messageId found!"));
-            return null;
+            final String uuid = RequestModel.nextId();
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    statusListener.onError(uuid, new IllegalArgumentException("No messageId found!"));
+                }
+            });
+            return uuid;
         }
     }
 

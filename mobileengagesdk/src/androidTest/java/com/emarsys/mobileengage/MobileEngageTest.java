@@ -60,8 +60,8 @@ public class MobileEngageTest {
     @Test
     public void testAppLogin_withUser() {
         MobileEngage.instance = mobileEngageInternal;
-        MobileEngage.appLogin(4, "contactFieldValue");
-        verify(mobileEngageInternal).appLogin(4, "contactFieldValue");
+        MobileEngage.appLogin(4, "CONTACT_FIELD_VALUE");
+        verify(mobileEngageInternal).appLogin(4, "CONTACT_FIELD_VALUE");
     }
 
     @Test
