@@ -245,16 +245,6 @@ public class MobileEngageInternalTest {
     }
 
     @Test
-    public void testTrackMessageOpen_returnsNullWithEmptyIntent() {
-        assertNull(mobileEngage.trackMessageOpen(new Intent()));
-    }
-
-    @Test
-    public void testTrackMessageOpen_returnsNullWithNullIntent() {
-        assertNull(mobileEngage.trackMessageOpen(null));
-    }
-
-    @Test
     public void testTrackMessageOpen_returnsRequestModelId() throws Exception {
         Intent intent = new Intent();
         JSONObject json = new JSONObject()
@@ -269,6 +259,18 @@ public class MobileEngageInternalTest {
         verify(manager).submit(captor.capture(), any(CoreCompletionHandler.class));
 
         assertEquals(captor.getValue().getId(), result);
+    }
+
+    @Test
+    public void testGetMessageId_shouldReturnNullWithEmptyIntent() {
+        String result = mobileEngage.getMessageId(new Intent());
+        assertNull(result);
+    }
+
+    @Test
+    public void testGetMessageId_shouldReturnNullWithNullIntent() {
+        String result = mobileEngage.getMessageId(null);
+        assertNull(result);
     }
 
     @Test

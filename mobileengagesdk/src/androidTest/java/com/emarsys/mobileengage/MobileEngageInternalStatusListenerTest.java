@@ -48,6 +48,7 @@ public class MobileEngageInternalStatusListenerTest {
     private Application application;
     private Context context;
     private CountDownLatch managerLatch;
+    private CountDownLatch statusListenerLatch;
     private Intent intent;
 
     @Before
@@ -66,6 +67,7 @@ public class MobileEngageInternalStatusListenerTest {
 
         manager = mock(RequestManager.class);
         managerLatch = new CountDownLatch(1);
+        statusListenerLatch = new CountDownLatch(1);
         succeedingManager = new FakeRequestManager(SUCCESS, managerLatch);
         failingManager = new FakeRequestManager(FAILURE, managerLatch);
 
@@ -131,9 +133,12 @@ public class MobileEngageInternalStatusListenerTest {
 
     @Test(timeout = TIMEOUT)
     public void testTrackMessageOpen_statusListenerCalledWithFailure_whenIntentIsNull() throws Exception {
+        mainThreadStatusListener.latch = statusListenerLatch;
         mobileEngageWith(mainThreadStatusListener, manager);
+
         mobileEngage.trackMessageOpen(null);
-        Thread.sleep(TIME);
+
+        statusListenerLatch.await();
         assertEquals(0, mainThreadStatusListener.onStatusLogCount);
         assertEquals(1, mainThreadStatusListener.onErrorCount);
     }
@@ -210,28 +215,35 @@ public class MobileEngageInternalStatusListenerTest {
 
     @Test(timeout = TIMEOUT)
     public void testTrackMessageOpen_statusListenerCalledOnMainThread_FailureWithIntentNull() throws Exception {
+        mainThreadStatusListener.latch = statusListenerLatch;
         mobileEngageWith(mainThreadStatusListener, manager);
+
         mobileEngage.trackMessageOpen(null);
-        Thread.sleep(TIME);
+
+        statusListenerLatch.await();
         assertEquals(0, mainThreadStatusListener.onStatusLogCount);
         assertEquals(1, mainThreadStatusListener.onErrorCount);
     }
 
-    @Test
-    public void testGetMessageId_shouldReturnIdWithEmptyIntent() throws InterruptedException {
+    @Test(timeout = TIMEOUT)
+    public void testTrackMessageOpen_returnsNullWithEmptyIntent() throws Exception {
+        mainThreadStatusListener.latch = statusListenerLatch;
         mobileEngageWith(mainThreadStatusListener, manager);
-        String expected = mobileEngage.getMessageId(new Intent());
 
-        Thread.sleep(TIME);
+        String expected = mobileEngage.trackMessageOpen(new Intent());
+
+        statusListenerLatch.await();
         assertEquals(expected, mainThreadStatusListener.errorId);
     }
 
-    @Test
-    public void testGetMessageId_shouldReturnNullWithNullIntent() throws InterruptedException {
+    @Test(timeout = TIMEOUT)
+    public void testTrackMessageOpen_returnsNullWithNullIntent() throws Exception {
+        mainThreadStatusListener.latch = statusListenerLatch;
         mobileEngageWith(mainThreadStatusListener, manager);
-        String expected = mobileEngage.getMessageId(null);
 
-        Thread.sleep(TIME);
+        String expected = mobileEngage.trackMessageOpen(null);
+
+        statusListenerLatch.await();
         assertEquals(expected, mainThreadStatusListener.errorId);
     }
 
