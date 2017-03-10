@@ -246,14 +246,12 @@ public class MobileEngageInternalTest {
 
     @Test
     public void testTrackMessageOpen_returnsNullWithEmptyIntent() {
-        String result = mobileEngage.trackMessageOpen(new Intent());
-        assertNull(result);
+        assertNull(mobileEngage.trackMessageOpen(new Intent()));
     }
 
     @Test
     public void testTrackMessageOpen_returnsNullWithNullIntent() {
-        String result = mobileEngage.trackMessageOpen(null);
-        assertNull(result);
+        assertNull(mobileEngage.trackMessageOpen(null));
     }
 
     @Test
