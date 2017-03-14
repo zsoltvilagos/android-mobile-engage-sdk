@@ -20,10 +20,8 @@ import java.util.concurrent.CountDownLatch;
 import static com.emarsys.mobileengage.fake.FakeRequestManager.ResponseType.FAILURE;
 import static com.emarsys.mobileengage.fake.FakeRequestManager.ResponseType.SUCCESS;
 import static junit.framework.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class MobileEngageInternalStatusListenerTest {
@@ -47,7 +45,6 @@ public class MobileEngageInternalStatusListenerTest {
     private RequestManager succeedingManager;
     private Application application;
     private Context context;
-    private CountDownLatch managerLatch;
     private CountDownLatch statusListenerLatch;
     private Intent intent;
 
@@ -66,14 +63,22 @@ public class MobileEngageInternalStatusListenerTest {
         intent.putExtra("pw_data_json_string", json.toString());
 
         manager = mock(RequestManager.class);
-        managerLatch = new CountDownLatch(1);
         statusListenerLatch = new CountDownLatch(1);
-        succeedingManager = new FakeRequestManager(SUCCESS, managerLatch);
-        failingManager = new FakeRequestManager(FAILURE, managerLatch);
+        succeedingManager = new FakeRequestManager(SUCCESS, null);
+        failingManager = new FakeRequestManager(FAILURE, null);
 
         statusListener = mock(MobileEngageStatusListener.class);
         mainThreadStatusListener = new FakeStatusListener();
-        mobileEngageWith(statusListener, succeedingManager);
+        mainThreadStatusListener.latch = statusListenerLatch;
+        mobileEngageWith(mainThreadStatusListener, succeedingManager);
+    }
+
+    private void mobileEngageWith(MobileEngageStatusListener statusListener, RequestManager requestManager) {
+        baseConfig = new MobileEngageConfig.Builder()
+                .credentials(APPLICATION_ID, APPLICATION_SECRET)
+                .statusListener(statusListener)
+                .build();
+        mobileEngage = new MobileEngageInternal(application, baseConfig, requestManager);
     }
 
     @Test(timeout = TIMEOUT)
@@ -103,177 +108,69 @@ public class MobileEngageInternalStatusListenerTest {
 
     @Test(timeout = TIMEOUT)
     public void testAppLogin_anonymus_statusListenerCalledWithFailure() throws Exception {
-        mobileEngageWith(statusListener, failingManager);
+        mobileEngageWith(mainThreadStatusListener, failingManager);
         eventuallyAssertFailure(mobileEngage.appLogin());
     }
 
     @Test(timeout = TIMEOUT)
     public void testAppLogin_statusListenerCalledWithFailure() throws Exception {
-        mobileEngageWith(statusListener, failingManager);
+        mobileEngageWith(mainThreadStatusListener, failingManager);
         eventuallyAssertFailure(mobileEngage.appLogin(CONTACT_FIELD_ID, CONTACT_FIELD_VALUE));
     }
 
     @Test(timeout = TIMEOUT)
     public void testAppLogout_statusListenerCalledWithFailure() throws Exception {
-        mobileEngageWith(statusListener, failingManager);
+        mobileEngageWith(mainThreadStatusListener, failingManager);
         eventuallyAssertFailure(mobileEngage.appLogout());
     }
 
     @Test(timeout = TIMEOUT)
     public void testTrackCustomEvent_statusListenerCalledWithFailure() throws Exception {
-        mobileEngageWith(statusListener, failingManager);
+        mobileEngageWith(mainThreadStatusListener, failingManager);
         eventuallyAssertFailure(mobileEngage.trackCustomEvent(EVENT_NAME, null));
     }
 
     @Test(timeout = TIMEOUT)
     public void testTrackMessageOpen_statusListenerCalledWithFailure() throws Exception {
-        mobileEngageWith(statusListener, failingManager);
+        mobileEngageWith(mainThreadStatusListener, failingManager);
         eventuallyAssertFailure(mobileEngage.trackMessageOpen(intent));
     }
 
     @Test(timeout = TIMEOUT)
     public void testTrackMessageOpen_statusListenerCalledWithFailure_whenIntentIsNull() throws Exception {
-        mainThreadStatusListener.latch = statusListenerLatch;
         mobileEngageWith(mainThreadStatusListener, manager);
+        eventuallyAssertFailure(mobileEngage.trackMessageOpen(null), IllegalArgumentException.class, "No messageId found!");
 
-        mobileEngage.trackMessageOpen(null);
-
-        statusListenerLatch.await();
-        assertEquals(0, mainThreadStatusListener.onStatusLogCount);
-        assertEquals(1, mainThreadStatusListener.onErrorCount);
-    }
-
-    @Test(timeout = TIMEOUT)
-    public void testAppLogin_anonymus_statusListenerCalledOnMainThread_Success() throws Exception {
-        mobileEngageWith(mainThreadStatusListener, succeedingManager);
-        mobileEngage.appLogin();
-        eventuallyAssertSuccess();
-    }
-
-    @Test(timeout = TIMEOUT)
-    public void testAppLogin_statusListenerCalledOnMainThread_Success() throws Exception {
-        mobileEngageWith(mainThreadStatusListener, succeedingManager);
-        mobileEngage.appLogin(CONTACT_FIELD_ID, CONTACT_FIELD_VALUE);
-        eventuallyAssertSuccess();
-    }
-
-    @Test(timeout = TIMEOUT)
-    public void testAppLogout_statusListenerCalledOnMainThread_Success() throws Exception {
-        mobileEngageWith(mainThreadStatusListener, succeedingManager);
-        mobileEngage.appLogout();
-        eventuallyAssertSuccess();
-    }
-
-    @Test(timeout = TIMEOUT)
-    public void testTrackCustomEvent_statusListenerCalledOnMainThread_Success() throws Exception {
-        mobileEngageWith(mainThreadStatusListener, succeedingManager);
-        mobileEngage.trackCustomEvent(EVENT_NAME, null);
-        eventuallyAssertSuccess();
-    }
-
-    @Test(timeout = TIMEOUT)
-    public void testTrackMessagerOpen_statusListenerCalledOnMainThread_Success() throws Exception {
-        mobileEngageWith(mainThreadStatusListener, succeedingManager);
-        mobileEngage.trackMessageOpen(intent);
-        eventuallyAssertSuccess();
-    }
-
-    @Test(timeout = TIMEOUT)
-    public void testAppLogin_anonymus_statusListenerCalledOnMainThread_Failure() throws Exception {
-        mobileEngageWith(mainThreadStatusListener, failingManager);
-        mobileEngage.appLogin();
-        eventuallyAssertFailure();
-    }
-
-    @Test(timeout = TIMEOUT)
-    public void testAppLogin_statusListenerCalledOnMainThread_Failure() throws Exception {
-        mobileEngageWith(mainThreadStatusListener, failingManager);
-        mobileEngage.appLogin(CONTACT_FIELD_ID, CONTACT_FIELD_VALUE);
-        eventuallyAssertFailure();
-    }
-
-    @Test(timeout = TIMEOUT)
-    public void testAppLogout_statusListenerCalledOnMainThread_Failure() throws Exception {
-        mobileEngageWith(mainThreadStatusListener, failingManager);
-        mobileEngage.appLogout();
-        eventuallyAssertFailure();
-    }
-
-    @Test(timeout = TIMEOUT)
-    public void testTrackCustomEvent_statusListenerCalledOnMainThread_Failure() throws Exception {
-        mobileEngageWith(mainThreadStatusListener, failingManager);
-        mobileEngage.trackCustomEvent(EVENT_NAME, null);
-        eventuallyAssertFailure();
-    }
-
-    @Test(timeout = TIMEOUT)
-    public void testTrackMessageOpen_statusListenerCalledOnMainThread_Failure() throws Exception {
-        mobileEngageWith(mainThreadStatusListener, failingManager);
-        mobileEngage.trackMessageOpen(intent);
-        eventuallyAssertFailure();
-    }
-
-    @Test(timeout = TIMEOUT)
-    public void testTrackMessageOpen_statusListenerCalledOnMainThread_FailureWithIntentNull() throws Exception {
-        mainThreadStatusListener.latch = statusListenerLatch;
-        mobileEngageWith(mainThreadStatusListener, manager);
-
-        mobileEngage.trackMessageOpen(null);
-
-        statusListenerLatch.await();
-        assertEquals(0, mainThreadStatusListener.onStatusLogCount);
-        assertEquals(1, mainThreadStatusListener.onErrorCount);
     }
 
     @Test(timeout = TIMEOUT)
     public void testTrackMessageOpen_returnsNullWithEmptyIntent() throws Exception {
-        mainThreadStatusListener.latch = statusListenerLatch;
         mobileEngageWith(mainThreadStatusListener, manager);
+        eventuallyAssertFailure(mobileEngage.trackMessageOpen(new Intent()), IllegalArgumentException.class, "No messageId found!");
+    }
 
-        String expected = mobileEngage.trackMessageOpen(new Intent());
-
+    private void eventuallyAssertSuccess(String expectedId) throws Exception {
         statusListenerLatch.await();
-        assertEquals(expected, mainThreadStatusListener.errorId);
-    }
-
-    @Test(timeout = TIMEOUT)
-    public void testTrackMessageOpen_returnsNullWithNullIntent() throws Exception {
-        mainThreadStatusListener.latch = statusListenerLatch;
-        mobileEngageWith(mainThreadStatusListener, manager);
-
-        String expected = mobileEngage.trackMessageOpen(null);
-
-        statusListenerLatch.await();
-        assertEquals(expected, mainThreadStatusListener.errorId);
-    }
-
-    private void mobileEngageWith(MobileEngageStatusListener statusListener, RequestManager requestManager) {
-        baseConfig = new MobileEngageConfig.Builder()
-                .credentials(APPLICATION_ID, APPLICATION_SECRET)
-                .statusListener(statusListener)
-                .build();
-        mobileEngage = new MobileEngageInternal(application, baseConfig, requestManager);
-    }
-
-    private void eventuallyAssertSuccess() throws Exception {
-        managerLatch.await();
         assertEquals(1, mainThreadStatusListener.onStatusLogCount);
         assertEquals(0, mainThreadStatusListener.onErrorCount);
+        assertEquals(expectedId, mainThreadStatusListener.successId);
+        assertEquals("OK", mainThreadStatusListener.successLog);
+        assertNull(mainThreadStatusListener.errorId);
+        assertNull(mainThreadStatusListener.errorCause);
     }
 
-    private void eventuallyAssertFailure() throws Exception {
-        managerLatch.await();
+    private void eventuallyAssertFailure(String expectedId) throws Exception {
+        eventuallyAssertFailure(expectedId, Exception.class, null);
+    }
+
+    private void eventuallyAssertFailure(String expectedId, Class type, String errorMessage) throws Exception {
+        statusListenerLatch.await();
         assertEquals(0, mainThreadStatusListener.onStatusLogCount);
         assertEquals(1, mainThreadStatusListener.onErrorCount);
-    }
-
-    private void eventuallyAssertSuccess(String expected) throws InterruptedException {
-        managerLatch.await();
-        verify(statusListener).onStatusLog(eq(expected), any(String.class));
-    }
-
-    private void eventuallyAssertFailure(String expected) throws InterruptedException {
-        managerLatch.await();
-        verify(statusListener).onError(eq(expected), any(Exception.class));
+        assertEquals(expectedId, mainThreadStatusListener.errorId);
+        assertEquals(type, mainThreadStatusListener.errorCause.getClass());
+        assertEquals(errorMessage, mainThreadStatusListener.errorCause.getMessage());
+        assertNull(mainThreadStatusListener.successId);
+        assertNull(mainThreadStatusListener.successLog);
     }
 }

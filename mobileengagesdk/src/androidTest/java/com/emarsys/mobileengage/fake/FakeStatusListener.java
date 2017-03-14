@@ -13,10 +13,13 @@ public class FakeStatusListener implements MobileEngageStatusListener {
     public String errorId;
     public String successId;
     public CountDownLatch latch;
+    public Exception errorCause;
+    public String successLog;
 
     @Override
     public void onError(String id, Exception cause) {
         errorId = id;
+        errorCause = cause;
         if (Looper.myLooper() == Looper.getMainLooper()) {
             onErrorCount++;
         }
@@ -28,6 +31,7 @@ public class FakeStatusListener implements MobileEngageStatusListener {
     @Override
     public void onStatusLog(String id, String log) {
         successId = id;
+        successLog = log;
         if (Looper.myLooper() == Looper.getMainLooper()) {
             onStatusLogCount++;
         }

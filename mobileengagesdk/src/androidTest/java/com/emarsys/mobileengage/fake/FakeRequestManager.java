@@ -15,7 +15,7 @@ public class FakeRequestManager extends RequestManager {
     }
 
     private ResponseType responseType;
-    private CountDownLatch latch;
+    public CountDownLatch latch;
 
     public FakeRequestManager(ResponseType responseType, CountDownLatch latch) {
         this.responseType = responseType;
@@ -27,17 +27,14 @@ public class FakeRequestManager extends RequestManager {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                try {
-                    Thread.sleep(200);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
                 if (responseType == ResponseType.SUCCESS) {
                     handler.onSuccess(model.getId(), new ResponseModel.Builder().statusCode(200).message("OK").build());
                 } else {
                     handler.onError(model.getId(), new Exception());
                 }
-                latch.countDown();
+                if (latch != null) {
+                    latch.countDown();
+                }
             }
         }).start();
     }
