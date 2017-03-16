@@ -51,11 +51,11 @@ class MobileEngageInternal {
         this.completionHandler = new CoreCompletionHandler() {
 
             @Override
-            public void onSuccess(final String id, ResponseModel responseModel) {
+            public void onSuccess(final String id, final ResponseModel responseModel) {
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
-                        statusListener.onStatusLog(id, "OK");
+                        statusListener.onStatusLog(id, responseModel.getMessage());
                     }
                 });
             }
@@ -66,6 +66,20 @@ class MobileEngageInternal {
                     @Override
                     public void run() {
                         statusListener.onError(id, e);
+                    }
+                });
+            }
+
+            @Override
+            public void onError(final String id, final ResponseModel responseModel) {
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        Exception exception = new MobileEngageException(
+                                responseModel.getStatusCode(),
+                                responseModel.getMessage(),
+                                responseModel.getBody());
+                        statusListener.onError(id, exception);
                     }
                 });
             }
