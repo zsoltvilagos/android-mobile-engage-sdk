@@ -5,9 +5,9 @@ install {
         pom.project {
             packaging 'aar'
             groupId 'com.emarsys'
-            artifactId 'engage'
+            artifactId 'mobile-engage'
             version '0.1.0'
-            name 'core'
+            name 'mobile-engage'
             url 'https://github.com/emartech/android-mobile-engage-sdk'
             description 'Emarsys Mobile Engage SDK for Android'
             inceptionYear '2017'
