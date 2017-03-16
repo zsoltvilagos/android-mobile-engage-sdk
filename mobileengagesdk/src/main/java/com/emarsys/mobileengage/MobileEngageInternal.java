@@ -90,6 +90,7 @@ class MobileEngageInternal {
     private void initializeRequestManager(String id, String secret) {
         Map<String, String> headers = new HashMap<>();
         headers.put("Authorization", HeaderUtils.createBasicAuth(id, secret));
+        headers.put("Content-Type", "application/json");
         this.manager.setDefaultHeaders(headers);
     }
 

@@ -37,7 +37,7 @@ public class MobileEngageInternalTest {
     private static String ENDPOINT_LOGOUT = ENDPOINT_BASE + "users/logout";
 
     private MobileEngageStatusListener statusListener;
-    private Map<String, String> authHeader;
+    private Map<String, String> defaultHeaders;
     private MobileEngageConfig baseConfig;
     private RequestManager manager;
     private Application application;
@@ -48,8 +48,9 @@ public class MobileEngageInternalTest {
 
     @Before
     public void init() {
-        authHeader = new HashMap<>();
-        authHeader.put("Authorization", "Basic dXNlcjpwYXNz");
+        defaultHeaders = new HashMap<>();
+        defaultHeaders.put("Authorization", "Basic dXNlcjpwYXNz");
+        defaultHeaders.put("Content-Type", "application/json");
         manager = mock(RequestManager.class);
         context = InstrumentationRegistry.getTargetContext();
         deviceInfo = new DeviceInfo(context);
@@ -76,10 +77,7 @@ public class MobileEngageInternalTest {
 
     @Test
     public void testSetup_withAuthHeaderSet() {
-        RequestManager requestManager = mock(RequestManager.class);
-        new MobileEngageInternal(application, baseConfig, requestManager);
-
-        verify(manager).setDefaultHeaders(authHeader);
+        verify(manager).setDefaultHeaders(defaultHeaders);
     }
 
     @Test
@@ -88,14 +86,14 @@ public class MobileEngageInternalTest {
         RequestModel expected = new RequestModel.Builder()
                 .url(ENDPOINT_LOGIN)
                 .payload(payload)
-                .headers(authHeader)
+                .headers(defaultHeaders)
                 .build();
 
         ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
 
         mobileEngage.appLogin();
 
-        verify(manager).setDefaultHeaders(authHeader);
+        verify(manager).setDefaultHeaders(defaultHeaders);
         verify(manager).submit(captor.capture(), any(CoreCompletionHandler.class));
 
         RequestModel result = captor.getValue();
@@ -123,14 +121,14 @@ public class MobileEngageInternalTest {
         RequestModel expected = new RequestModel.Builder()
                 .url(ENDPOINT_LOGIN)
                 .payload(payload)
-                .headers(authHeader)
+                .headers(defaultHeaders)
                 .build();
 
         ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
 
         mobileEngage.appLogin(contactField, contactFieldValue);
 
-        verify(manager).setDefaultHeaders(authHeader);
+        verify(manager).setDefaultHeaders(defaultHeaders);
         verify(manager).submit(captor.capture(), any(CoreCompletionHandler.class));
 
         RequestModel result = captor.getValue();
@@ -154,14 +152,14 @@ public class MobileEngageInternalTest {
         RequestModel expected = new RequestModel.Builder()
                 .url(ENDPOINT_LOGOUT)
                 .payload(payload)
-                .headers(authHeader)
+                .headers(defaultHeaders)
                 .build();
 
         ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
 
         mobileEngage.appLogout();
 
-        verify(manager).setDefaultHeaders(authHeader);
+        verify(manager).setDefaultHeaders(defaultHeaders);
         verify(manager).submit(captor.capture(), any(CoreCompletionHandler.class));
 
         RequestModel result = captor.getValue();
@@ -191,14 +189,14 @@ public class MobileEngageInternalTest {
         RequestModel expected = new RequestModel.Builder()
                 .url(ENDPOINT_BASE + "events/" + eventName)
                 .payload(payload)
-                .headers(authHeader)
+                .headers(defaultHeaders)
                 .build();
 
         ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
 
         mobileEngage.trackCustomEvent(eventName, eventAttributes);
 
-        verify(manager).setDefaultHeaders(authHeader);
+        verify(manager).setDefaultHeaders(defaultHeaders);
         verify(manager).submit(captor.capture(), any(CoreCompletionHandler.class));
 
         RequestModel result = captor.getValue();
@@ -230,14 +228,14 @@ public class MobileEngageInternalTest {
         RequestModel expected = new RequestModel.Builder()
                 .url(ENDPOINT_BASE + "events/message_open")
                 .payload(payload)
-                .headers(authHeader)
+                .headers(defaultHeaders)
                 .build();
 
         ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
 
         mobileEngage.trackMessageOpen(intent);
 
-        verify(manager).setDefaultHeaders(authHeader);
+        verify(manager).setDefaultHeaders(defaultHeaders);
         verify(manager).submit(captor.capture(), any(CoreCompletionHandler.class));
 
         RequestModel result = captor.getValue();
