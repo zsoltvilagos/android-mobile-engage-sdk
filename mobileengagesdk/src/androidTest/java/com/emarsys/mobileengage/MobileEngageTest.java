@@ -20,22 +20,23 @@ import static org.mockito.Mockito.when;
 public class MobileEngageTest {
     private MobileEngageInternal mobileEngageInternal;
     private Application application;
+    private MobileEngageConfig baseConfig;
 
     @Before
     public void init() {
+        String appID = "56789876";
+        String appSecret = "secret";
+
         application = mock(Application.class);
         when(application.getApplicationContext()).thenReturn(InstrumentationRegistry.getTargetContext());
         mobileEngageInternal = mock(MobileEngageInternal.class);
+        baseConfig = new MobileEngageConfig.Builder()
+                .credentials(appID, appSecret)
+                .build();
     }
 
     @Test
     public void testSetup_initializesInstance() {
-        String appID = "56789876";
-        String appSecret = "secret";
-        MobileEngageConfig baseConfig = new MobileEngageConfig.Builder()
-                .credentials(appID, appSecret)
-                .build();
-
         MobileEngage.instance = null;
         MobileEngage.setup(application, baseConfig);
 
@@ -85,5 +86,30 @@ public class MobileEngageTest {
         Intent intent = mock(Intent.class);
         MobileEngage.trackMessageOpen(intent);
         verify(mobileEngageInternal).trackMessageOpen(intent);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testSetup_whenApplicationIsNull() {
+        MobileEngage.setup(null, baseConfig);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testSetup_whenConfigIsNull() {
+        MobileEngage.setup(application, null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testAppLogin_whenContactFieldValueIsNull() {
+        MobileEngage.appLogin(0, null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testTrackCustomEvent_whenEventNameIsNull() {
+        MobileEngage.trackCustomEvent(null, null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testTrackMessageOpen_whenIntentIsNull() {
+        MobileEngage.trackMessageOpen(null);
     }
 }

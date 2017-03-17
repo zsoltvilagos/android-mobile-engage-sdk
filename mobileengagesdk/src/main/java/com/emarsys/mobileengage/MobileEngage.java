@@ -6,6 +6,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.emarsys.core.request.RequestManager;
+import com.emarsys.core.util.Assert;
 
 import java.util.Map;
 
@@ -18,6 +19,8 @@ public class MobileEngage {
     }
 
     public static void setup(@NonNull Application application, @NonNull MobileEngageConfig config) {
+        Assert.notNull(application, "Application must not be null!");
+        Assert.notNull(config, "Config must not be null!");
         setupWithRequestManager(application, config, new RequestManager());
     }
 
@@ -31,6 +34,7 @@ public class MobileEngage {
 
     public static String appLogin(int contactField,
                                   @NonNull String contactFieldValue) {
+        Assert.notNull(contactFieldValue, "ContactFieldValue must not be null!");
         return instance.appLogin(contactField, contactFieldValue);
     }
 
@@ -40,10 +44,12 @@ public class MobileEngage {
 
     public static String trackCustomEvent(@NonNull String eventName,
                                           @Nullable Map<String, String>  eventAttributes) {
+        Assert.notNull(eventName, "EventName must not be null!");
         return instance.trackCustomEvent(eventName, eventAttributes);
     }
 
     public static String trackMessageOpen(Intent intent) {
+        Assert.notNull(intent, "Intent must not be null!");
         return instance.trackMessageOpen(intent);
     }
 
