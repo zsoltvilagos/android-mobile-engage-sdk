@@ -58,21 +58,21 @@ public class MobileEngageTest {
     }
 
     @Test
-    public void testAppLogin_withUser() {
+    public void testAppLogin_withUser_callsInternal() {
         MobileEngage.instance = mobileEngageInternal;
         MobileEngage.appLogin(4, "CONTACT_FIELD_VALUE");
         verify(mobileEngageInternal).appLogin(4, "CONTACT_FIELD_VALUE");
     }
 
     @Test
-    public void testAppLogout() {
+    public void testAppLogout_callsInternal() {
         MobileEngage.instance = mobileEngageInternal;
         MobileEngage.appLogout();
         verify(mobileEngageInternal).appLogout();
     }
 
     @Test
-    public void testTrackCustomEvent() throws Exception {
+    public void testTrackCustomEvent_callsInternal() throws Exception {
         MobileEngage.instance = mobileEngageInternal;
         Map<String, String> attributes = mock(Map.class);
         MobileEngage.trackCustomEvent("event", attributes);
@@ -80,7 +80,7 @@ public class MobileEngageTest {
     }
 
     @Test
-    public void testTrackMessageOpen() {
+    public void testTrackMessageOpen_callsInternal() {
         MobileEngage.instance = mobileEngageInternal;
         Intent intent = mock(Intent.class);
         MobileEngage.trackMessageOpen(intent);
