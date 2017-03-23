@@ -44,11 +44,19 @@ public class MobileEngageTest {
     }
 
     @Test
-    public void testSetPushToken() {
+    public void testSetPushToken_callsInternal() {
         String pushtoken = "pushtoken";
         MobileEngage.instance = mobileEngageInternal;
         MobileEngage.setPushToken(pushtoken);
         verify(mobileEngageInternal).setPushToken(pushtoken);
+    }
+
+    @Test
+    public void testSetStatusListener_callsInternal() {
+        MobileEngageStatusListener listener = mock(MobileEngageStatusListener.class);
+        MobileEngage.instance = mobileEngageInternal;
+        MobileEngage.setStatusListener(listener);
+        verify(mobileEngageInternal).setStatusListener(listener);
     }
 
     @Test

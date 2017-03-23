@@ -9,6 +9,7 @@ import com.emarsys.core.request.RequestManager;
 import com.emarsys.mobileengage.fake.FakeRequestManager;
 import com.emarsys.mobileengage.fake.FakeStatusListener;
 
+import org.hamcrest.Matchers;
 import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
@@ -20,9 +21,13 @@ import java.util.concurrent.CountDownLatch;
 import static com.emarsys.mobileengage.fake.FakeRequestManager.ResponseType.FAILURE;
 import static com.emarsys.mobileengage.fake.FakeRequestManager.ResponseType.SUCCESS;
 import static junit.framework.Assert.assertEquals;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.hamcrest.core.AllOf.allOf;
 
 public class MobileEngageInternalStatusListenerTest {
 
@@ -45,7 +50,7 @@ public class MobileEngageInternalStatusListenerTest {
     private RequestManager succeedingManager;
     private Application application;
     private Context context;
-    private CountDownLatch statusListenerLatch;
+    private CountDownLatch latch;
     private Intent intent;
 
     @Before
@@ -63,13 +68,13 @@ public class MobileEngageInternalStatusListenerTest {
         intent.putExtra("pw_data_json_string", json.toString());
 
         manager = mock(RequestManager.class);
-        statusListenerLatch = new CountDownLatch(1);
+        latch = new CountDownLatch(1);
         succeedingManager = new FakeRequestManager(SUCCESS, null);
         failingManager = new FakeRequestManager(FAILURE, null);
 
         statusListener = mock(MobileEngageStatusListener.class);
         mainThreadStatusListener = new FakeStatusListener();
-        mainThreadStatusListener.latch = statusListenerLatch;
+        mainThreadStatusListener.latch = latch;
         mobileEngageWith(mainThreadStatusListener, succeedingManager);
     }
 
@@ -149,8 +154,22 @@ public class MobileEngageInternalStatusListenerTest {
         eventuallyAssertFailure(mobileEngage.trackMessageOpen(new Intent()), IllegalArgumentException.class, "No messageId found!");
     }
 
+    @Test(timeout = TIMEOUT)
+    public void testSetStatusListener_shouldOverridePreviousListener() throws Exception {
+        FakeStatusListener originalListener = new FakeStatusListener();
+        FakeStatusListener newListener = new FakeStatusListener(latch);
+        mobileEngageWith(originalListener, succeedingManager);
+
+        mobileEngage.setStatusListener(newListener);
+        mobileEngage.appLogin();
+
+        latch.await();
+        assertEquals(0, originalListener.onStatusLogCount);
+        assertEquals(0, originalListener.onErrorCount);
+    }
+
     private void eventuallyAssertSuccess(String expectedId) throws Exception {
-        statusListenerLatch.await();
+        latch.await();
         assertEquals(1, mainThreadStatusListener.onStatusLogCount);
         assertEquals(0, mainThreadStatusListener.onErrorCount);
         assertEquals(expectedId, mainThreadStatusListener.successId);
@@ -164,7 +183,7 @@ public class MobileEngageInternalStatusListenerTest {
     }
 
     private void eventuallyAssertFailure(String expectedId, Class type, String errorMessage) throws Exception {
-        statusListenerLatch.await();
+        latch.await();
         assertEquals(0, mainThreadStatusListener.onStatusLogCount);
         assertEquals(1, mainThreadStatusListener.onErrorCount);
         assertEquals(expectedId, mainThreadStatusListener.errorId);

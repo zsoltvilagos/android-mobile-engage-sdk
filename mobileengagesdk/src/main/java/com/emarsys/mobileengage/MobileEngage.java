@@ -28,6 +28,10 @@ public class MobileEngage {
         instance.setPushToken(pushToken);
     }
 
+    public static void setStatusListener(MobileEngageStatusListener listener){
+        instance.setStatusListener(listener);
+    }
+
     public static String appLogin() {
         return instance.appLogin();
     }
