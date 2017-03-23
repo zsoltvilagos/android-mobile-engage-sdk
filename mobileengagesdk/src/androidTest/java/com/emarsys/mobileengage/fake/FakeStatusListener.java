@@ -1,7 +1,5 @@
 package com.emarsys.mobileengage.fake;
 
-import android.os.Looper;
-
 import com.emarsys.mobileengage.MobileEngageStatusListener;
 
 import java.util.concurrent.CountDownLatch;
@@ -16,13 +14,18 @@ public class FakeStatusListener implements MobileEngageStatusListener {
     public Exception errorCause;
     public String successLog;
 
+    public FakeStatusListener() {
+    }
+
+    public FakeStatusListener(CountDownLatch latch) {
+        this.latch = latch;
+    }
+
     @Override
     public void onError(String id, Exception cause) {
         errorId = id;
         errorCause = cause;
-        if (Looper.myLooper() == Looper.getMainLooper()) {
-            onErrorCount++;
-        }
+        onErrorCount++;
         if (latch != null) {
             latch.countDown();
         }
@@ -32,9 +35,7 @@ public class FakeStatusListener implements MobileEngageStatusListener {
     public void onStatusLog(String id, String log) {
         successId = id;
         successLog = log;
-        if (Looper.myLooper() == Looper.getMainLooper()) {
-            onStatusLogCount++;
-        }
+        onStatusLogCount++;
         if (latch != null) {
             latch.countDown();
         }

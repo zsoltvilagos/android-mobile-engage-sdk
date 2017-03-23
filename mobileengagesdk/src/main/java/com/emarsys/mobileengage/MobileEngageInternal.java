@@ -27,14 +27,14 @@ class MobileEngageInternal {
     private static String ENDPOINT_LOGIN = ENDPOINT_BASE + "users/login";
     private static String ENDPOINT_LOGOUT = ENDPOINT_BASE + "users/logout";
 
+    private String pushToken;
+    private MobileEngageStatusListener statusListener;
     private final String applicationId;
     private final String applicationSecret;
-    private String pushToken;
     private final DeviceInfo deviceInfo;
     private final Application application;
     private final RequestManager manager;
     private final CoreCompletionHandler completionHandler;
-    private final MobileEngageStatusListener statusListener;
     private final Handler handler = new Handler(Looper.getMainLooper());
 
     MobileEngageInternal(final Application application, MobileEngageConfig config, RequestManager manager) {
@@ -52,36 +52,23 @@ class MobileEngageInternal {
 
             @Override
             public void onSuccess(final String id, final ResponseModel responseModel) {
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        statusListener.onStatusLog(id, responseModel.getMessage());
-                    }
-                });
+                if (statusListener != null) {
+                    statusListener.onStatusLog(id, responseModel.getMessage());
+                }
             }
 
             @Override
-            public void onError(final String id, final Exception e) {
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        statusListener.onError(id, e);
-                    }
-                });
+            public void onError(final String id, final Exception cause) {
+                handleOnError(id, cause);
             }
 
             @Override
             public void onError(final String id, final ResponseModel responseModel) {
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        Exception exception = new MobileEngageException(
-                                responseModel.getStatusCode(),
-                                responseModel.getMessage(),
-                                responseModel.getBody());
-                        statusListener.onError(id, exception);
-                    }
-                });
+                Exception exception = new MobileEngageException(
+                        responseModel.getStatusCode(),
+                        responseModel.getMessage(),
+                        responseModel.getBody());
+                handleOnError(id, exception);
             }
 
         };
@@ -108,6 +95,10 @@ class MobileEngageInternal {
 
     void setPushToken(String pushToken) {
         this.pushToken = pushToken;
+    }
+
+    void setStatusListener(MobileEngageStatusListener listener) {
+        this.statusListener = listener;
     }
 
     String getPushToken() {
@@ -180,7 +171,7 @@ class MobileEngageInternal {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    statusListener.onError(uuid, new IllegalArgumentException("No messageId found!"));
+                    handleOnError(uuid, new IllegalArgumentException("No messageId found!"));
                 }
             });
             return uuid;
@@ -238,5 +229,11 @@ class MobileEngageInternal {
         }
 
         return payload;
+    }
+
+    private void handleOnError(String id, Exception cause) {
+        if (statusListener != null) {
+            statusListener.onError(id, cause);
+        }
     }
 }
