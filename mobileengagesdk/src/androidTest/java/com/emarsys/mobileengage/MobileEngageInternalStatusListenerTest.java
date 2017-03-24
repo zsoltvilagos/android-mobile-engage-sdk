@@ -29,11 +29,8 @@ import static org.mockito.Mockito.when;
 public class MobileEngageInternalStatusListenerTest {
 
     public static final String EVENT_NAME = "event";
-    public static final String NOT_CALLED_ON_UI_THREAD = "Not called on UI thread";
-    public static final int TIME = 500;
     private static String APPLICATION_ID = "user";
     private static String APPLICATION_SECRET = "pass";
-    private static final long TIMEOUT = 1000;
     private static final int CONTACT_FIELD_ID = 3456;
     public static final String CONTACT_FIELD_VALUE = "value";
 
