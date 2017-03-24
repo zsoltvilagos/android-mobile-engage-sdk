@@ -49,7 +49,7 @@ public class MobileEngageInternalTest {
     private MobileEngageInternal mobileEngage;
 
     @Rule
-    public Timeout globalTimeout = Timeout.seconds(10);
+    public Timeout globalTimeout = Timeout.seconds(30);
 
     @Before
     public void init() {

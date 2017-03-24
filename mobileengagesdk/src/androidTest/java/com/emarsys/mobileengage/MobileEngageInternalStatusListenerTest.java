@@ -48,7 +48,7 @@ public class MobileEngageInternalStatusListenerTest {
     private Intent intent;
 
     @Rule
-    public Timeout globalTimeout = Timeout.seconds(10);
+    public Timeout globalTimeout = Timeout.seconds(30);
 
     @Before
     public void init() throws Exception {
