@@ -13,7 +13,9 @@ import com.emarsys.core.request.RequestModel;
 
 import org.json.JSONObject;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 
@@ -45,6 +47,9 @@ public class MobileEngageInternalTest {
     private DeviceInfo deviceInfo;
 
     private MobileEngageInternal mobileEngage;
+
+    @Rule
+    public Timeout globalTimeout = Timeout.seconds(10);
 
     @Before
     public void init() {

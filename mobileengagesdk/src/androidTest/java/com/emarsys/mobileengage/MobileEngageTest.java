@@ -6,7 +6,9 @@ import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 
 import java.util.Map;
@@ -21,6 +23,9 @@ public class MobileEngageTest {
     private MobileEngageInternal mobileEngageInternal;
     private Application application;
     private MobileEngageConfig baseConfig;
+
+    @Rule
+    public Timeout globalTimeout = Timeout.seconds(10);
 
     @Before
     public void init() {
