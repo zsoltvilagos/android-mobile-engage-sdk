@@ -23,6 +23,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 class MobileEngageInternal {
+    public static final String MOBILEENGAGE_SDK_VERSION_KEY = "X-MOBILEENGAGE-SDK-VERSION";
+    public static final String MOBILEENGAGE_SDK_VERSION = "1.0.0";
     private static String ENDPOINT_BASE = "https://push.eservice.emarsys.net/api/mobileengage/v2/";
     private static String ENDPOINT_LOGIN = ENDPOINT_BASE + "users/login";
     private static String ENDPOINT_LOGOUT = ENDPOINT_BASE + "users/logout";
@@ -78,6 +80,7 @@ class MobileEngageInternal {
         Map<String, String> headers = new HashMap<>();
         headers.put("Authorization", HeaderUtils.createBasicAuth(id, secret));
         headers.put("Content-Type", "application/json");
+        headers.put(MOBILEENGAGE_SDK_VERSION_KEY, MOBILEENGAGE_SDK_VERSION);
         this.manager.setDefaultHeaders(headers);
     }
 

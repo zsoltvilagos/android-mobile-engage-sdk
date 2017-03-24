@@ -51,6 +51,7 @@ public class MobileEngageInternalTest {
         defaultHeaders = new HashMap<>();
         defaultHeaders.put("Authorization", "Basic dXNlcjpwYXNz");
         defaultHeaders.put("Content-Type", "application/json");
+        defaultHeaders.put("X-MOBILEENGAGE-SDK-VERSION", "1.0.0");
         manager = mock(RequestManager.class);
         context = InstrumentationRegistry.getTargetContext();
         deviceInfo = new DeviceInfo(context);
