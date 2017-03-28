@@ -148,7 +148,9 @@ class MobileEngageInternal {
     String trackCustomEvent(@NonNull String eventName,
                             @Nullable Map<String, String> eventAttributes) {
         Map<String, Object> payload = createBasePayload();
-        payload.put("attributes", eventAttributes);
+        if (eventAttributes != null && !eventAttributes.isEmpty()) {
+            payload.put("attributes", new JSONObject(eventAttributes));
+        }
         RequestModel model = new RequestModel.Builder()
                 .url(getEventUrl(eventName))
                 .payload(payload)

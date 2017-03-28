@@ -190,7 +190,7 @@ public class MobileEngageInternalTest {
         eventAttributes.put("tom", "jerry");
 
         Map<String, Object> payload = createBasePayload();
-        payload.put("attributes", eventAttributes);
+        payload.put("attributes", new JSONObject(eventAttributes));
 
         RequestModel expected = new RequestModel.Builder()
                 .url(ENDPOINT_BASE + "events/" + eventName)
@@ -317,6 +317,6 @@ public class MobileEngageInternalTest {
     private void assertRequestModels(RequestModel expected, RequestModel result) {
         assertEquals(expected.getUrl(), result.getUrl());
         assertEquals(expected.getMethod(), result.getMethod());
-        assertEquals(expected.getPayload(), result.getPayload());
+        assertEquals(expected.getPayload().toString(), result.getPayload().toString());
     }
 }
