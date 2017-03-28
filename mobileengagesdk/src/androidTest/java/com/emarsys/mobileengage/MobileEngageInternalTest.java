@@ -206,7 +206,7 @@ public class MobileEngageInternalTest {
         verify(manager).submit(captor.capture(), any(CoreCompletionHandler.class));
 
         RequestModel result = captor.getValue();
-        assertRequestModels(expected, result);
+        assertRequestModels_withPayloadAsString(expected, result);
     }
 
     @Test
@@ -315,6 +315,12 @@ public class MobileEngageInternalTest {
     }
 
     private void assertRequestModels(RequestModel expected, RequestModel result) {
+        assertEquals(expected.getUrl(), result.getUrl());
+        assertEquals(expected.getMethod(), result.getMethod());
+        assertEquals(expected.getPayload(), result.getPayload());
+    }
+
+    private void assertRequestModels_withPayloadAsString(RequestModel expected, RequestModel result) {
         assertEquals(expected.getUrl(), result.getUrl());
         assertEquals(expected.getMethod(), result.getMethod());
         assertEquals(expected.getPayload().toString(), result.getPayload().toString());
