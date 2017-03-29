@@ -27,6 +27,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -286,6 +288,90 @@ public class MobileEngageInternalTest {
         intent.putExtra("pw_data_json_string", json.toString());
         String result = mobileEngage.getMessageId(intent);
         assertEquals("+43c_lODSmXqCvdOz", result);
+    }
+
+    @Test
+    public void testSetPushToken_shouldNotCallAppLogins() {
+        MobileEngageInternal spy = spy(mobileEngage);
+
+        spy.setPushToken("123456789");
+
+        verify(spy, times(0)).appLogin();
+        verify(spy, times(0)).appLogin(any(Integer.class), any(String.class));
+    }
+
+    @Test
+    public void testSetPushToken_shouldCallAnonymousAppLogin() {
+        MobileEngageInternal spy = spy(mobileEngage);
+
+        spy.appLogin();
+        spy.setPushToken("123456789");
+
+        verify(spy, times(2)).appLogin();
+    }
+
+    @Test
+    public void testSetPushToken_shouldCallAppLogin() {
+        int contactFieldId = 12;
+        String contactFieldValue = "asdf";
+        MobileEngageInternal spy = spy(mobileEngage);
+
+        spy.appLogin(contactFieldId, contactFieldValue);
+        spy.setPushToken("123456789");
+
+        verify(spy, times(2)).appLogin(any(Integer.class), any(String.class));
+    }
+
+    @Test
+    public void testSetPushToken_shouldNotCallAnonymousLogin_afterLogout() {
+        MobileEngageInternal spy = spy(mobileEngage);
+
+        spy.appLogin();
+        spy.appLogout();
+        spy.setPushToken("123456789");
+
+        verify(spy, times(1)).appLogin();
+    }
+
+    @Test
+    public void testSetPushToken_shouldNotCallLogin_afterLogout() {
+        int contactFieldId = 12;
+        String contactFieldValue = "asdf";
+        MobileEngageInternal spy = spy(mobileEngage);
+
+        spy.appLogin(contactFieldId, contactFieldValue);
+        spy.appLogout();
+        spy.setPushToken("123456789");
+
+        verify(spy, times(1)).appLogin(any(Integer.class), any(String.class));
+    }
+
+    @Test
+    public void testSetPushToken_appLoginShouldOverride_anonymousAppLogin() {
+        int contactFieldId = 12;
+        String contactFieldValue = "asdf";
+        MobileEngageInternal spy = spy(mobileEngage);
+
+        spy.appLogin();
+        spy.appLogin(contactFieldId, contactFieldValue);
+        spy.setPushToken("123456789");
+
+        verify(spy, times(1)).appLogin();
+        verify(spy, times(2)).appLogin(any(Integer.class), any(String.class));
+    }
+
+    @Test
+    public void testSetPushToken_anonymousAppLoginShouldOverride_appLogin() {
+        int contactFieldId = 12;
+        String contactFieldValue = "asdf";
+        MobileEngageInternal spy = spy(mobileEngage);
+
+        spy.appLogin(contactFieldId, contactFieldValue);
+        spy.appLogin();
+        spy.setPushToken("123456789");
+
+        verify(spy, times(1)).appLogin(any(Integer.class), any(String.class));
+        verify(spy, times(2)).appLogin();
     }
 
     private Map<String, Object> createBasePayload() {

@@ -30,6 +30,7 @@ class MobileEngageInternal {
     private static String ENDPOINT_LOGOUT = ENDPOINT_BASE + "users/logout";
 
     private String pushToken;
+    private ApploginParameters apploginParameters;
     private MobileEngageStatusListener statusListener;
     private final String applicationId;
     private final String applicationSecret;
@@ -37,7 +38,7 @@ class MobileEngageInternal {
     private final Application application;
     private final RequestManager manager;
     private final CoreCompletionHandler completionHandler;
-    private final Handler handler = new Handler(Looper.getMainLooper());
+    private final Handler handler;
 
     MobileEngageInternal(final Application application, MobileEngageConfig config, RequestManager manager) {
         this.application = application;
@@ -50,6 +51,7 @@ class MobileEngageInternal {
 
         this.deviceInfo = new DeviceInfo(application.getApplicationContext());
 
+        this.handler = new Handler(Looper.getMainLooper());
         this.completionHandler = new CoreCompletionHandler() {
 
             @Override
@@ -98,6 +100,13 @@ class MobileEngageInternal {
 
     void setPushToken(String pushToken) {
         this.pushToken = pushToken;
+        if (apploginParameters != null) {
+            if (apploginParameters.hasCredentials()) {
+                appLogin(apploginParameters.getContactFieldId(), apploginParameters.getContactFieldValue());
+            } else {
+                appLogin();
+            }
+        }
     }
 
     void setStatusListener(MobileEngageStatusListener listener) {
@@ -109,6 +118,8 @@ class MobileEngageInternal {
     }
 
     String appLogin() {
+        this.apploginParameters = new ApploginParameters();
+
         Map<String, Object> payload = injectLoginPayload(createBasePayload());
         RequestModel model = new RequestModel.Builder()
                 .url(ENDPOINT_LOGIN)
@@ -119,10 +130,12 @@ class MobileEngageInternal {
         return model.getId();
     }
 
-    String appLogin(int contactField,
+    String appLogin(int contactFieldId,
                     @NonNull String contactFieldValue) {
+        this.apploginParameters = new ApploginParameters(contactFieldId, contactFieldValue);
+
         Map<String, Object> additionalPayload = new HashMap<>();
-        additionalPayload.put("contact_field_id", contactField);
+        additionalPayload.put("contact_field_id", contactFieldId);
         additionalPayload.put("contact_field_value", contactFieldValue);
 
         Map<String, Object> payload = injectLoginPayload(createBasePayload(additionalPayload));
@@ -137,6 +150,8 @@ class MobileEngageInternal {
     }
 
     String appLogout() {
+        this.apploginParameters = null;
+
         RequestModel model = new RequestModel.Builder()
                 .url(ENDPOINT_LOGOUT)
                 .payload(createBasePayload())
