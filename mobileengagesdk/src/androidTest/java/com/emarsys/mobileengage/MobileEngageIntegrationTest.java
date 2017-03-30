@@ -22,6 +22,8 @@ import static org.junit.Assert.assertNull;
 
 public class MobileEngageIntegrationTest {
 
+    private static final String MESSAGE = "{\"google.sent_time\":1490799707291,\"onStart\":true,\"pw_msg\":\"1\",\"p\":\"<fI\",\"userdata\":{\"sid\":\"e6c_QAbjN4NMEio4\"},\"u\":\"{\\\"sid\\\":\\\"e6c_QAbjN4NMEio4\\\"}\",\"title\":\"aaaa\",\"google.message_id\":\"0:1490799707327870%2a5f08eef9fd7ecd\",\"foreground\":false}";
+
     private CountDownLatch latch;
     private FakeStatusListener listener;
 
@@ -77,7 +79,7 @@ public class MobileEngageIntegrationTest {
     }
 
     @Test
-    public void testTrackMessageOpen() throws Exception {
+    public void testTrackMessageOpen_intent() throws Exception {
         Intent intent = new Intent();
         JSONObject json = new JSONObject()
                 .put("key1", "value1")
@@ -85,6 +87,11 @@ public class MobileEngageIntegrationTest {
         intent.putExtra("pw_data_json_string", json.toString());
 
         eventuallyAssertSuccess(MobileEngage.trackMessageOpen(intent));
+    }
+
+    @Test
+    public void testTrackMessageOpen_string() throws Exception {
+        eventuallyAssertSuccess(MobileEngage.trackMessageOpen(MESSAGE));
     }
 
     private void eventuallyAssertSuccess(String id) throws Exception {

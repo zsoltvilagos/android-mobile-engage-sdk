@@ -177,6 +177,40 @@ class MobileEngageInternal {
     String trackMessageOpen(Intent intent) {
         String messageId = getMessageId(intent);
 
+        return handleMessageOpen(messageId);
+    }
+
+    String trackMessageOpen(String message) {
+        String messageId = getMessageId(message);
+
+        return handleMessageOpen(messageId);
+    }
+
+    String getMessageId(Intent intent) {
+        if (intent != null) {
+            Bundle bundle = intent.getExtras();
+            if (bundle != null) {
+                String customData = bundle.getString("pw_data_json_string");
+                return getMessageId(customData);
+
+            }
+        }
+        return null;
+    }
+
+    private String getMessageId(String message) {
+        String sid = null;
+        if (message != null) {
+            try {
+                String content = new JSONObject(message).getString("u");
+                sid = new JSONObject(content).getString("sid");
+            } catch (JSONException e) {
+            }
+        }
+        return sid;
+    }
+
+    private String handleMessageOpen(String messageId) {
         if (messageId != null) {
             Map<String, Object> payload = createBasePayload();
             payload.put("sid", messageId);
@@ -196,23 +230,6 @@ class MobileEngageInternal {
             });
             return uuid;
         }
-    }
-
-    String getMessageId(Intent intent) {
-        try {
-            if (intent != null) {
-                Bundle bundle = intent.getExtras();
-                if (bundle != null) {
-                    String customData = bundle.getString("pw_data_json_string");
-                    if (customData != null) {
-                        String content = new JSONObject(customData).getString("u");
-                        return new JSONObject(content).getString("sid");
-                    }
-                }
-            }
-        } catch (JSONException je) {
-        }
-        return null;
     }
 
     private String getEventUrl(String eventName) {
