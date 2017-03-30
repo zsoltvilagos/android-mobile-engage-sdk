@@ -52,7 +52,7 @@ public class MobileEngage {
         return instance.trackCustomEvent(eventName, eventAttributes);
     }
 
-    public static String trackMessageOpen(Intent intent) {
+    public static String trackMessageOpen(@NonNull Intent intent) {
         Assert.notNull(intent, "Intent must not be null!");
         return instance.trackMessageOpen(intent);
     }
