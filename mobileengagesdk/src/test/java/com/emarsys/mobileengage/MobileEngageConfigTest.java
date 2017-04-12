@@ -17,7 +17,7 @@ public class MobileEngageConfigTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testBuilder_applicationIdShouldNotBeNull() throws Exception {
+    public void testBuilder_applicationCodeShouldNotBeNull() throws Exception {
         new MobileEngageConfig(null, SECRET, statusListener);
     }
 
