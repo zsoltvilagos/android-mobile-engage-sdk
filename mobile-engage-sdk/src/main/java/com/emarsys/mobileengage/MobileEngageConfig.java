@@ -4,9 +4,6 @@ import android.support.annotation.NonNull;
 
 import com.emarsys.core.util.Assert;
 
-import java.util.HashMap;
-import java.util.Map;
-
 
 public class MobileEngageConfig {
 
