@@ -1,0 +1,35 @@
+//apply plugin: 'com.github.dcendents.android-maven'
+group = 'com.emarsys'
+
+install {
+    repositories.mavenInstaller {
+        pom.project {
+            packaging 'aar'
+            groupId 'com.emarsys'
+            artifactId 'mobile-engage-sdk'
+            name 'mobile-engage-sdk'
+//            version '0.1.0'
+//            url 'https://github.com/emartech/android-mobile-engage-sdk'
+//            description 'Emarsys Mobile Engage SDK for Android'
+//            inceptionYear '2017'
+//            licenses {
+//                license {
+//                    name 'Mozilla-1.1'
+//                    url 'https://www.mozilla.org/media/MPL/1.1/index.0c5913925d40.txt'
+//                    distribution 'repo'
+//                }
+//            }
+//            scm {
+//                connection 'https://github.com/emartech/android-mobile-engage-sdk.git'
+//                developerConnection 'https://github.com/emartech/android-mobile-engage-sdk.git'
+//                url 'https://github.com/emartech/android-mobile-engage-sdk'
+//            }
+//            developers {
+//                developer {
+//                    id 'emarsys-mobile-team'
+//                    name 'Emarsys-Technologies Kft.'
+//                }
+//            }
+        }
+    }
+}

@@ -1,0 +1,37 @@
+task sourcesJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier = 'sources'
+}
+
+task javadoc(type: Javadoc) {
+    source = android.sourceSets.main.java.srcDirs
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives javadocJar
+    archives sourcesJar
+}
+
+bintray {
+    user = System.getenv('BINTRAY_USER')
+    key = System.getenv('BINTRAY_API_KEY')
+
+    configurations = ['archives']
+    pkg {
+        repo = 'android'
+        userOrg = 'emarsys'
+        name = 'mobile-engage-sdk'
+        desc = 'Mobile Engage SDK'
+        websiteUrl = 'https://github.com/emartech/android-mobile-engage-sdk'
+        vcsUrl = 'https://github.com/emartech/android-mobile-engage-sdk.git'
+        licenses = ['MPL-2.0']
+        publish = true
+        publicDownloadNumbers = true
+    }
+}
