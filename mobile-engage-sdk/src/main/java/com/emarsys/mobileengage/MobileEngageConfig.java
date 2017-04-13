@@ -7,26 +7,26 @@ import com.emarsys.core.util.Assert;
 
 public class MobileEngageConfig {
 
-    private final String applicationID;
-    private final String applicationSecret;
+    private final String applicationCode;
+    private final String applicationPassword;
     private final MobileEngageStatusListener statusListener;
 
-    MobileEngageConfig(String applicationID,
-                       String applicationSecret,
+    MobileEngageConfig(String applicationCode,
+                       String applicationPassword,
                        MobileEngageStatusListener statusListener) {
-        Assert.notNull(applicationID, "ApplicationID must not be null");
-        Assert.notNull(applicationSecret, "Token must not be null");
-        this.applicationID = applicationID;
-        this.applicationSecret = applicationSecret;
+        Assert.notNull(applicationCode, "ApplicationCode must not be null");
+        Assert.notNull(applicationPassword, "ApplicationPassword must not be null");
+        this.applicationCode = applicationCode;
+        this.applicationPassword = applicationPassword;
         this.statusListener = statusListener;
     }
 
-    public String getApplicationID() {
-        return applicationID;
+    public String getApplicationCode() {
+        return applicationCode;
     }
 
-    public String getApplicationSecret() {
-        return applicationSecret;
+    public String getApplicationPassword() {
+        return applicationPassword;
     }
 
     public MobileEngageStatusListener getStatusListener() {
@@ -40,9 +40,9 @@ public class MobileEngageConfig {
 
         MobileEngageConfig that = (MobileEngageConfig) o;
 
-        if (getApplicationID() != null ? !getApplicationID().equals(that.getApplicationID()) : that.getApplicationID() != null)
+        if (getApplicationCode() != null ? !getApplicationCode().equals(that.getApplicationCode()) : that.getApplicationCode() != null)
             return false;
-        if (getApplicationSecret() != null ? !getApplicationSecret().equals(that.getApplicationSecret()) : that.getApplicationSecret() != null)
+        if (getApplicationPassword() != null ? !getApplicationPassword().equals(that.getApplicationPassword()) : that.getApplicationPassword() != null)
             return false;
         return getStatusListener() != null ? getStatusListener().equals(that.getStatusListener()) : that.getStatusListener() == null;
 
@@ -50,21 +50,21 @@ public class MobileEngageConfig {
 
     @Override
     public int hashCode() {
-        int result = getApplicationID() != null ? getApplicationID().hashCode() : 0;
-        result = 31 * result + (getApplicationSecret() != null ? getApplicationSecret().hashCode() : 0);
+        int result = getApplicationCode() != null ? getApplicationCode().hashCode() : 0;
+        result = 31 * result + (getApplicationPassword() != null ? getApplicationPassword().hashCode() : 0);
         result = 31 * result + (getStatusListener() != null ? getStatusListener().hashCode() : 0);
         return result;
     }
 
     public static class Builder {
-        private String applicationID;
-        private String applicationSecret;
+        private String applicationCode;
+        private String applicationPassword;
         private MobileEngageStatusListener statusListener;
 
-        public Builder credentials(@NonNull String applicationID,
-                                   @NonNull String applicationSecret) {
-            this.applicationID = applicationID;
-            this.applicationSecret = applicationSecret;
+        public Builder credentials(@NonNull String applicationCode,
+                                   @NonNull String applicationPassword) {
+            this.applicationCode = applicationCode;
+            this.applicationPassword = applicationPassword;
             return this;
         }
 
@@ -74,7 +74,7 @@ public class MobileEngageConfig {
         }
 
         public MobileEngageConfig build() {
-            return new MobileEngageConfig(applicationID, applicationSecret, statusListener);
+            return new MobileEngageConfig(applicationCode, applicationPassword, statusListener);
         }
     }
 }

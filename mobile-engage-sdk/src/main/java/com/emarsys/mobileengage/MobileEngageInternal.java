@@ -32,8 +32,7 @@ class MobileEngageInternal {
     private String pushToken;
     private ApploginParameters apploginParameters;
     private MobileEngageStatusListener statusListener;
-    private final String applicationId;
-    private final String applicationSecret;
+    private final MobileEngageConfig config;
     private final DeviceInfo deviceInfo;
     private final Application application;
     private final RequestManager manager;
@@ -42,12 +41,11 @@ class MobileEngageInternal {
 
     MobileEngageInternal(final Application application, MobileEngageConfig config, RequestManager manager) {
         this.application = application;
-        this.applicationId = config.getApplicationID();
-        this.applicationSecret = config.getApplicationSecret();
+        this.config = config;
         this.statusListener = config.getStatusListener();
 
         this.manager = manager;
-        initializeRequestManager(config.getApplicationID(), config.getApplicationSecret());
+        initializeRequestManager(config.getApplicationCode(), config.getApplicationPassword());
 
         this.deviceInfo = new DeviceInfo(application.getApplicationContext());
 
@@ -242,7 +240,7 @@ class MobileEngageInternal {
 
     private Map<String, Object> createBasePayload(Map<String, Object> additionalPayload) {
         Map<String, Object> payload = new HashMap<>();
-        payload.put("application_id", applicationId);
+        payload.put("application_id", config.getApplicationCode());
         payload.put("hardware_id", deviceInfo.getHwid());
 
         for (Map.Entry<String, Object> entry : additionalPayload.entrySet()) {
