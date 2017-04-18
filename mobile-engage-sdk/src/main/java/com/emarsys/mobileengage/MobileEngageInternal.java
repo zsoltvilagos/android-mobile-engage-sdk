@@ -256,6 +256,7 @@ class MobileEngageInternal {
         payload.put("device_model", deviceInfo.getModel());
         payload.put("application_version", deviceInfo.getApplicationVersion());
         payload.put("os_version", deviceInfo.getOsVersion());
+        payload.put("ems_sdk", MOBILEENGAGE_SDK_VERSION);
 
         if (pushToken == null) {
             payload.put("push_token", false);

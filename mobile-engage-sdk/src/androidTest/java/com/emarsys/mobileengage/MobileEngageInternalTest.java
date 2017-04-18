@@ -22,6 +22,7 @@ import org.mockito.ArgumentCaptor;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.emarsys.mobileengage.MobileEngageInternal.MOBILEENGAGE_SDK_VERSION;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -58,7 +59,7 @@ public class MobileEngageInternalTest {
         defaultHeaders = new HashMap<>();
         defaultHeaders.put("Authorization", "Basic dXNlcjpwYXNz");
         defaultHeaders.put("Content-Type", "application/json");
-        defaultHeaders.put("X-MOBILEENGAGE-SDK-VERSION", "1.0.0");
+        defaultHeaders.put("X-MOBILEENGAGE-SDK-VERSION", MOBILEENGAGE_SDK_VERSION);
         manager = mock(RequestManager.class);
         context = InstrumentationRegistry.getTargetContext();
         deviceInfo = new DeviceInfo(context);
@@ -389,6 +390,7 @@ public class MobileEngageInternalTest {
         payload.put("device_model", deviceInfo.getModel());
         payload.put("application_version", deviceInfo.getApplicationVersion());
         payload.put("os_version", deviceInfo.getOsVersion());
+        payload.put("ems_sdk", MOBILEENGAGE_SDK_VERSION);
 
         String pushToken = mobileEngage.getPushToken();
         if (pushToken == null) {
