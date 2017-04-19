@@ -14,6 +14,7 @@ import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.request.RequestModel;
 import com.emarsys.core.response.ResponseModel;
 import com.emarsys.core.util.HeaderUtils;
+import com.google.firebase.iid.FirebaseInstanceId;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -48,6 +49,8 @@ class MobileEngageInternal {
         initializeRequestManager(config.getApplicationCode(), config.getApplicationPassword());
 
         this.deviceInfo = new DeviceInfo(application.getApplicationContext());
+
+        this.pushToken = FirebaseInstanceId.getInstance().getToken();
 
         this.handler = new Handler(Looper.getMainLooper());
         this.completionHandler = new CoreCompletionHandler() {

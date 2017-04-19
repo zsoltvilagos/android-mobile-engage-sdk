@@ -23,6 +23,8 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.android.support:appcompat-v7:25.1.1'
+    compile 'com.google.firebase:firebase-core:10.2.1'
+    compile 'com.google.firebase:firebase-messaging:10.2.1'
     compile('com.emarsys:core-sdk:0.1.0') {
         changing=true
     }
@@ -40,7 +42,7 @@ configurations.all {
 
 
 group = 'com.emarsys'
-version = '0.1.0'
+version = '0.1.1'
 
 apply from: 'maven.gradle'
 apply from: 'bintray.gradle'
