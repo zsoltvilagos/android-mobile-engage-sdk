@@ -50,7 +50,11 @@ class MobileEngageInternal {
 
         this.deviceInfo = new DeviceInfo(application.getApplicationContext());
 
-        this.pushToken = FirebaseInstanceId.getInstance().getToken();
+        try {
+            this.pushToken = FirebaseInstanceId.getInstance().getToken();
+        } catch (Exception e) {
+            //no token for you
+        }
 
         this.handler = new Handler(Looper.getMainLooper());
         this.completionHandler = new CoreCompletionHandler() {
