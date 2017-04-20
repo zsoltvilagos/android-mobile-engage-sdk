@@ -9,7 +9,6 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationCompat;
 
-import com.emarsys.mobileengage.R;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
@@ -17,7 +16,6 @@ import java.util.Map;
 
 public class MobileEngageMessagingService extends FirebaseMessagingService {
 
-    public static final int NOTIFICATION_ICON = R.mipmap.ic_launcher;
     public static final String MESSAGE_FILTER = "ems-me";
 
     @Override
@@ -38,7 +36,6 @@ public class MobileEngageMessagingService extends FirebaseMessagingService {
     private Notification createNotification(RemoteMessage remoteMessage, Intent intent) {
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(this)
-                        .setSmallIcon(NOTIFICATION_ICON)
                         .setContentTitle(remoteMessage.getData().get("title"));
 
         PendingIntent resultPendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
