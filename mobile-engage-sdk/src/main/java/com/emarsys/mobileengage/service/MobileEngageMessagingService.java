@@ -40,11 +40,13 @@ public class MobileEngageMessagingService extends FirebaseMessagingService {
 
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(this)
+                        .setContentText("")
                         .setContentTitle(remoteMessage.getData().get("title"))
-                        .setSmallIcon(resourceId);
+                        .setSmallIcon(resourceId)
+                        .setAutoCancel(true);
 
         Intent intent = createIntent(remoteMessage);
-        PendingIntent resultPendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
+        PendingIntent resultPendingIntent = PendingIntent.getService(this, 0, intent, 0);
         mBuilder.setContentIntent(resultPendingIntent);
         return mBuilder.build();
     }
@@ -67,8 +69,7 @@ public class MobileEngageMessagingService extends FirebaseMessagingService {
 
     @NonNull
     private Intent createIntent(RemoteMessage remoteMessage) {
-        String packageName = getPackageName();
-        Intent intent = getPackageManager().getLaunchIntentForPackage(packageName);
+        Intent intent = new Intent(this, TrackMessageOpenService.class);
         Bundle bundle = new Bundle();
         for (Map.Entry<String, String> entry : remoteMessage.getData().entrySet()) {
             bundle.putString(entry.getKey(), entry.getValue());
