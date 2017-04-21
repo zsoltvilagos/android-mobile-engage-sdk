@@ -16,7 +16,7 @@ import java.util.Map;
 
 public class MobileEngageMessagingService extends FirebaseMessagingService {
 
-    public static final String MESSAGE_FILTER = "ems-me";
+    public static final String MESSAGE_FILTER = "ems-msg";
 
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
