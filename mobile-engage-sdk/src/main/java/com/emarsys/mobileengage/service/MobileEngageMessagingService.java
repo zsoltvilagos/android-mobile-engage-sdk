@@ -26,8 +26,7 @@ public class MobileEngageMessagingService extends FirebaseMessagingService {
 
         if (remoteMessage.getData().size() > 0 && remoteMessage.getData().containsKey(MESSAGE_FILTER)) {
 
-            Intent intent = createIntent(remoteMessage);
-            Notification notification = createNotification(remoteMessage, intent);
+            Notification notification = createNotification(remoteMessage);
 
             ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE))
                     .notify(42, notification);
@@ -39,10 +38,14 @@ public class MobileEngageMessagingService extends FirebaseMessagingService {
         final int DEFAULT_SMALL_NOTIFICATION_ICON = com.emarsys.mobileengage.R.drawable.default_small_notification_icon;
         int resourceId = getSmallIconResourceId(DEFAULT_SMALL_NOTIFICATION_ICON);
 
+    private Notification createNotification(RemoteMessage remoteMessage) {
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(this)
                         .setContentTitle(remoteMessage.getData().get("title"))
                         .setSmallIcon(resourceId);
+                        .setContentTitle(remoteMessage.getData().get("title"));
+
+        Intent intent = createIntent(remoteMessage);
         PendingIntent resultPendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
         mBuilder.setContentIntent(resultPendingIntent);
         return mBuilder.build();
