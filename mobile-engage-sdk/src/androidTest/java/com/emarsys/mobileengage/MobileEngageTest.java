@@ -20,8 +20,6 @@ import static org.mockito.Mockito.when;
 
 @RunWith(AndroidJUnit4.class)
 public class MobileEngageTest {
-    private static final String MESSAGE = "{\"google.sent_time\":1490799707291,\"onStart\":true,\"pw_msg\":\"1\",\"p\":\"<fI\",\"userdata\":{\"sid\":\"e6c_QAbjN4NMEio4\"},\"u\":\"{\\\"sid\\\":\\\"e6c_QAbjN4NMEio4\\\"}\",\"title\":\"aaaa\",\"google.message_id\":\"0:1490799707327870%2a5f08eef9fd7ecd\",\"foreground\":false}";
-
     private MobileEngageInternal mobileEngageInternal;
     private Application application;
     private MobileEngageConfig baseConfig;
@@ -103,13 +101,6 @@ public class MobileEngageTest {
         verify(mobileEngageInternal).trackMessageOpen(intent);
     }
 
-    @Test
-    public void testTrackMessageOpen_string_callsInternal() {
-        MobileEngage.instance = mobileEngageInternal;
-        MobileEngage.trackMessageOpen(MESSAGE);
-        verify(mobileEngageInternal).trackMessageOpen(MESSAGE);
-    }
-
     @Test(expected = IllegalArgumentException.class)
     public void testSetup_whenApplicationIsNull() {
         MobileEngage.setup(null, baseConfig);
@@ -133,10 +124,5 @@ public class MobileEngageTest {
     @Test(expected = IllegalArgumentException.class)
     public void testTrackMessageOpen_intent_whenIntentIsNull() {
         MobileEngage.trackMessageOpen((Intent) null);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testTrackMessageOpen_string_whenIntentIsNull() {
-        MobileEngage.trackMessageOpen((String) null);
     }
 }

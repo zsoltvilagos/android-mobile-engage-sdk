@@ -1,12 +1,12 @@
 package com.emarsys.mobileengage;
 
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.test.rule.ActivityTestRule;
 
 import com.emarsys.mobileengage.fake.FakeActivity;
 import com.emarsys.mobileengage.fake.FakeStatusListener;
 
-import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -21,9 +21,6 @@ import static junit.framework.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 public class MobileEngageIntegrationTest {
-
-    private static final String MESSAGE = "{\"google.sent_time\":1490799707291,\"onStart\":true,\"pw_msg\":\"1\",\"p\":\"<fI\",\"userdata\":{\"sid\":\"e6c_QAbjN4NMEio4\"},\"u\":\"{\\\"sid\\\":\\\"e6c_QAbjN4NMEio4\\\"}\",\"title\":\"aaaa\",\"google.message_id\":\"0:1490799707327870%2a5f08eef9fd7ecd\",\"foreground\":false}";
-
     private CountDownLatch latch;
     private FakeStatusListener listener;
 
@@ -81,17 +78,12 @@ public class MobileEngageIntegrationTest {
     @Test
     public void testTrackMessageOpen_intent() throws Exception {
         Intent intent = new Intent();
-        JSONObject json = new JSONObject()
-                .put("key1", "value1")
-                .put("u", "{\"sid\": \"dd8_zXfDdndBNEQi\"}");
-        intent.putExtra("pw_data_json_string", json.toString());
+        Bundle payload = new Bundle();
+        payload.putString("key1", "value1");
+        payload.putString("u", "{\"sid\": \"dd8_zXfDdndBNEQi\"}");
+        intent.putExtra("payload", payload);
 
         eventuallyAssertSuccess(MobileEngage.trackMessageOpen(intent));
-    }
-
-    @Test
-    public void testTrackMessageOpen_string() throws Exception {
-        eventuallyAssertSuccess(MobileEngage.trackMessageOpen(MESSAGE));
     }
 
     private void eventuallyAssertSuccess(String id) throws Exception {

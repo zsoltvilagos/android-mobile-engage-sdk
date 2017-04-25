@@ -3,6 +3,7 @@ package com.emarsys.mobileengage;
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
@@ -226,10 +227,10 @@ public class MobileEngageInternalTest {
     @Test
     public void testTrackMessageOpen_requestManagerCalledWithCorrectRequestModel() throws Exception {
         Intent intent = new Intent();
-        JSONObject json = new JSONObject()
-                .put("key1", "value1")
-                .put("u", "{\"sid\": \"+43c_lODSmXqCvdOz\"}");
-        intent.putExtra("pw_data_json_string", json.toString());
+        Bundle bundlePayload = new Bundle();
+        bundlePayload.putString("key1", "value1");
+        bundlePayload.putString("u", "{\"sid\": \"+43c_lODSmXqCvdOz\"}");
+        intent.putExtra("payload", bundlePayload);
 
         Map<String, Object> payload = createBasePayload();
         payload.put("sid", "+43c_lODSmXqCvdOz");
@@ -254,10 +255,10 @@ public class MobileEngageInternalTest {
     @Test
     public void testTrackMessageOpen_returnsRequestModelId() throws Exception {
         Intent intent = new Intent();
-        JSONObject json = new JSONObject()
-                .put("key1", "value1")
-                .put("u", "{\"sid\": \"+43c_lODSmXqCvdOz\"}");
-        intent.putExtra("pw_data_json_string", json.toString());
+        Bundle payload = new Bundle();
+        payload.putString("key1", "value1");
+        payload.putString("u", "{\"sid\": \"+43c_lODSmXqCvdOz\"}");
+        intent.putExtra("payload", payload);
 
         ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
 
@@ -275,18 +276,12 @@ public class MobileEngageInternalTest {
     }
 
     @Test
-    public void testGetMessageId_shouldReturnNullWithNullIntent() {
-        String result = mobileEngage.getMessageId(null);
-        assertNull(result);
-    }
-
-    @Test
     public void testGetMessageId_shoudReturnTheCorrectSIDValue() throws Exception {
         Intent intent = new Intent();
-        JSONObject json = new JSONObject()
-                .put("key1", "value1")
-                .put("u", "{\"sid\": \"+43c_lODSmXqCvdOz\"}");
-        intent.putExtra("pw_data_json_string", json.toString());
+        Bundle payload = new Bundle();
+        payload.putString("key1", "value1");
+        payload.putString("u", "{\"sid\": \"+43c_lODSmXqCvdOz\"}");
+        intent.putExtra("payload", payload);
         String result = mobileEngage.getMessageId(intent);
         assertEquals("+43c_lODSmXqCvdOz", result);
     }

@@ -3,13 +3,13 @@ package com.emarsys.mobileengage;
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.test.InstrumentationRegistry;
 
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.mobileengage.fake.FakeRequestManager;
 import com.emarsys.mobileengage.fake.FakeStatusListener;
 
-import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -33,7 +33,6 @@ public class MobileEngageInternalStatusListenerTest {
     private static String APPLICATION_SECRET = "pass";
     private static final int CONTACT_FIELD_ID = 3456;
     public static final String CONTACT_FIELD_VALUE = "value";
-    private static final String MESSAGE = "{\"google.sent_time\":1490799707291,\"onStart\":true,\"pw_msg\":\"1\",\"p\":\"<fI\",\"userdata\":{\"sid\":\"e6c_QAbjN4NMEio4\"},\"u\":\"{\\\"sid\\\":\\\"e6c_QAbjN4NMEio4\\\"}\",\"title\":\"aaaa\",\"google.message_id\":\"0:1490799707327870%2a5f08eef9fd7ecd\",\"foreground\":false}";
 
     private MobileEngageInternal mobileEngage;
     private MobileEngageStatusListener statusListener;
@@ -60,10 +59,10 @@ public class MobileEngageInternalStatusListenerTest {
         when(application.getApplicationContext()).thenReturn(context);
 
         intent = new Intent();
-        JSONObject json = new JSONObject()
-                .put("key1", "value1")
-                .put("u", "{\"sid\": \"+43c_lODSmXqCvdOz\"}");
-        intent.putExtra("pw_data_json_string", json.toString());
+        Bundle payload = new Bundle();
+        payload.putString("key1", "value1");
+        payload.putString("u", "{\"sid\": \"+43c_lODSmXqCvdOz\"}");
+        intent.putExtra("payload", payload);
 
         manager = mock(RequestManager.class);
         latch = new CountDownLatch(1);
@@ -109,11 +108,6 @@ public class MobileEngageInternalStatusListenerTest {
     }
 
     @Test
-    public void testTrackMessageOpen_string_statusListenerCalledWithSuccess() throws Exception {
-        eventuallyAssertSuccess(mobileEngage.trackMessageOpen(MESSAGE));
-    }
-
-    @Test
     public void testAppLogin_anonymous_statusListenerCalledWithFailure() throws Exception {
         mobileEngageWith(mainThreadStatusListener, failingManager);
         eventuallyAssertFailure(mobileEngage.appLogin());
@@ -144,41 +138,9 @@ public class MobileEngageInternalStatusListenerTest {
     }
 
     @Test
-    public void testTrackMessageOpen_string_statusListenerCalledWithFailure() throws Exception {
-        mobileEngageWith(mainThreadStatusListener, failingManager);
-        eventuallyAssertFailure(mobileEngage.trackMessageOpen(MESSAGE));
-    }
-
-    @Test
-    public void testTrackMessageOpen_intent_statusListenerCalledWithFailure_whenIntentIsNull() throws Exception {
-        mobileEngageWith(mainThreadStatusListener, manager);
-        eventuallyAssertFailure(mobileEngage.trackMessageOpen((Intent) null), IllegalArgumentException.class, "No messageId found!");
-
-    }
-
-    @Test
-    public void testTrackMessageOpen_string_statusListenerCalledWithFailure_whenStringIsNull() throws Exception {
-        mobileEngageWith(mainThreadStatusListener, manager);
-        eventuallyAssertFailure(mobileEngage.trackMessageOpen((String) null), IllegalArgumentException.class, "No messageId found!");
-
-    }
-
-    @Test
     public void testTrackMessageOpen_intent_whenIntentIsEmpty() throws Exception {
         mobileEngageWith(mainThreadStatusListener, manager);
         eventuallyAssertFailure(mobileEngage.trackMessageOpen(new Intent()), IllegalArgumentException.class, "No messageId found!");
-    }
-
-    @Test
-    public void testTrackMessageOpen_string_whenStringIsEmpty() throws Exception {
-        mobileEngageWith(mainThreadStatusListener, manager);
-        eventuallyAssertFailure(mobileEngage.trackMessageOpen(""), IllegalArgumentException.class, "No messageId found!");
-    }
-
-    @Test
-    public void testTrackMessageOpen_string_whenStringIsInvalid() throws Exception {
-        mobileEngageWith(mainThreadStatusListener, manager);
-        eventuallyAssertFailure(mobileEngage.trackMessageOpen("I feel so invalid today."), IllegalArgumentException.class, "No messageId found!");
     }
 
     @Test

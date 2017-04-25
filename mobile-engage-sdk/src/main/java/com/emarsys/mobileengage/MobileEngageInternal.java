@@ -185,30 +185,13 @@ class MobileEngageInternal {
         return handleMessageOpen(messageId);
     }
 
-    String trackMessageOpen(String message) {
-        String messageId = getMessageId(message);
-
-        return handleMessageOpen(messageId);
-    }
-
     String getMessageId(Intent intent) {
-        if (intent != null) {
-            Bundle bundle = intent.getExtras();
-            if (bundle != null) {
-                String customData = bundle.getString("pw_data_json_string");
-                return getMessageId(customData);
-
-            }
-        }
-        return null;
-    }
-
-    private String getMessageId(String message) {
         String sid = null;
-        if (message != null) {
+        Bundle payload = intent.getBundleExtra("payload");
+        if (payload != null) {
+            String customData = payload.getString("u");
             try {
-                String content = new JSONObject(message).getString("u");
-                sid = new JSONObject(content).getString("sid");
+                sid = new JSONObject(customData).getString("sid");
             } catch (JSONException e) {
             }
         }

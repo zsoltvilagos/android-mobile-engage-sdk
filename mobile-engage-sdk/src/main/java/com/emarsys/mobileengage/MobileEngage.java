@@ -57,9 +57,4 @@ public class MobileEngage {
         return instance.trackMessageOpen(intent);
     }
 
-    public static String trackMessageOpen(@NonNull String message) {
-        Assert.notNull(message, "Message must not be null!");
-        return instance.trackMessageOpen(message);
-    }
-
 }
