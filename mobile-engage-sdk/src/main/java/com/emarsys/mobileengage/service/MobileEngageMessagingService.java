@@ -18,7 +18,7 @@ public class MobileEngageMessagingService extends FirebaseMessagingService {
             Notification notification = MobileEngageMessagingServiceUtils.createNotification(remoteMessage.getData(), getApplicationContext());
 
             ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE))
-                    .notify(42, notification);
+                    .notify((int) System.currentTimeMillis(), notification);
         }
     }
 }
