@@ -1,3 +1,4 @@
+apply from: 'version.gradle'
 apply plugin: 'com.android.library'
 apply plugin: 'com.github.dcendents.android-maven'
 apply plugin: 'com.jfrog.bintray'
@@ -8,8 +9,8 @@ android {
     defaultConfig {
         minSdkVersion 14
         targetSdkVersion 25
-        versionCode 1
-        versionName "1.0"
+        versionCode gitVersionCode
+        versionName gitVersionName
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -19,6 +20,9 @@ android {
         }
     }
 }
+
+group = 'com.emarsys'
+version = gitVersionName
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
@@ -39,10 +43,6 @@ dependencies {
 configurations.all {
     resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
 }
-
-
-group = 'com.emarsys'
-version = '0.1.1'
 
 apply from: 'maven.gradle'
 apply from: 'bintray.gradle'

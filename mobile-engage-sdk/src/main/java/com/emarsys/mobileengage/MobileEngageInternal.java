@@ -25,7 +25,7 @@ import java.util.Map;
 
 class MobileEngageInternal {
     public static final String MOBILEENGAGE_SDK_VERSION_KEY = "X-MOBILEENGAGE-SDK-VERSION";
-    public static final String MOBILEENGAGE_SDK_VERSION = "1.0.0";
+    public static final String MOBILEENGAGE_SDK_VERSION = BuildConfig.VERSION_NAME;
     private static String ENDPOINT_BASE = "https://push.eservice.emarsys.net/api/mobileengage/v2/";
     private static String ENDPOINT_LOGIN = ENDPOINT_BASE + "users/login";
     private static String ENDPOINT_LOGOUT = ENDPOINT_BASE + "users/logout";
