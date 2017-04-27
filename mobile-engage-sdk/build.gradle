@@ -29,9 +29,7 @@ dependencies {
     compile 'com.android.support:appcompat-v7:25.1.1'
     compile 'com.google.firebase:firebase-core:10.2.1'
     compile 'com.google.firebase:firebase-messaging:10.2.1'
-    compile('com.emarsys:core-sdk:0.1.0') {
-        changing=true
-    }
+    compile('com.emarsys:core-sdk:+')
     testCompile 'junit:junit:4.12'
     testCompile 'org.mockito:mockito-core:2.6.3'
     androidTestCompile 'org.mockito:mockito-android:2.6.3'
