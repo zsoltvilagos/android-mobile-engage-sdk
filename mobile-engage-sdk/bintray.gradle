@@ -25,7 +25,6 @@ bintray {
     configurations = ['archives']
     pkg {
         repo = 'android'
-        userOrg = 'emarsys'
         name = 'mobile-engage-sdk'
         desc = 'Mobile Engage SDK'
         websiteUrl = 'https://github.com/emartech/android-mobile-engage-sdk'
