@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.emarsys.core.connection.ConnectionWatchDog;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.util.Assert;
 
@@ -21,7 +22,7 @@ public class MobileEngage {
     public static void setup(@NonNull Application application, @NonNull MobileEngageConfig config) {
         Assert.notNull(application, "Application must not be null!");
         Assert.notNull(config, "Config must not be null!");
-        setupWithRequestManager(application, config, new RequestManager());
+        setupWithRequestManager(application, config, new RequestManager(new ConnectionWatchDog(application.getApplicationContext())));
     }
 
     public static void setPushToken(String pushToken){

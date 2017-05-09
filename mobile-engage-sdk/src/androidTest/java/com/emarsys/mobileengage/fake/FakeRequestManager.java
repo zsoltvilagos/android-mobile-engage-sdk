@@ -1,6 +1,7 @@
 package com.emarsys.mobileengage.fake;
 
 import com.emarsys.core.CoreCompletionHandler;
+import com.emarsys.core.connection.ConnectionWatchDog;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.request.RequestModel;
 import com.emarsys.core.response.ResponseModel;
@@ -17,7 +18,8 @@ public class FakeRequestManager extends RequestManager {
     private ResponseType responseType;
     public CountDownLatch latch;
 
-    public FakeRequestManager(ResponseType responseType, CountDownLatch latch) {
+    public FakeRequestManager(ResponseType responseType, CountDownLatch latch, ConnectionWatchDog connectionWatchDog) {
+        super(connectionWatchDog);
         this.responseType = responseType;
         this.latch = latch;
     }
