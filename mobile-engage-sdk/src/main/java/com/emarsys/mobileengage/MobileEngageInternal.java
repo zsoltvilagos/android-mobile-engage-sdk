@@ -10,9 +10,12 @@ import android.support.annotation.Nullable;
 
 import com.emarsys.core.CoreCompletionHandler;
 import com.emarsys.core.DeviceInfo;
+import com.emarsys.core.connection.ConnectionWatchDog;
+import com.emarsys.core.queue.sqlite.SqliteQueue;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.request.RequestModel;
 import com.emarsys.core.response.ResponseModel;
+import com.emarsys.core.util.CoreJsonObject;
 import com.emarsys.core.util.HeaderUtils;
 import com.google.firebase.iid.FirebaseInstanceId;
 
@@ -30,34 +33,17 @@ class MobileEngageInternal {
     private static String ENDPOINT_LOGIN = ENDPOINT_BASE + "users/login";
     private static String ENDPOINT_LOGOUT = ENDPOINT_BASE + "users/logout";
 
-    private String pushToken;
-    private ApploginParameters apploginParameters;
-    private MobileEngageStatusListener statusListener;
-    private final MobileEngageConfig config;
-    private final DeviceInfo deviceInfo;
-    private final Application application;
-    private final RequestManager manager;
-    private final CoreCompletionHandler completionHandler;
-    private final Handler handler;
+    String pushToken;
+    ApploginParameters apploginParameters;
+    MobileEngageStatusListener statusListener;
+    MobileEngageConfig config;
+    DeviceInfo deviceInfo;
+    Application application;
+    RequestManager manager;
+    Handler handler;
 
-    MobileEngageInternal(final Application application, MobileEngageConfig config, RequestManager manager) {
-        this.application = application;
-        this.config = config;
-        this.statusListener = config.getStatusListener();
-
-        this.manager = manager;
-        initializeRequestManager(config.getApplicationCode(), config.getApplicationPassword());
-
-        this.deviceInfo = new DeviceInfo(application.getApplicationContext());
-
-        try {
-            this.pushToken = FirebaseInstanceId.getInstance().getToken();
-        } catch (Exception e) {
-            //no token for you
-        }
-
-        this.handler = new Handler(Looper.getMainLooper());
-        this.completionHandler = new CoreCompletionHandler() {
+    MobileEngageInternal(final Application application, MobileEngageConfig config) {
+        CoreCompletionHandler coreCompletionHandler = new CoreCompletionHandler() {
 
             @Override
             public void onSuccess(final String id, final ResponseModel responseModel) {
@@ -81,9 +67,39 @@ class MobileEngageInternal {
             }
 
         };
+
+        init(application,
+                config,
+                new RequestManager(
+                        new ConnectionWatchDog(application.getApplicationContext()),
+                        new SqliteQueue(application),
+                        coreCompletionHandler));
     }
 
-    private void initializeRequestManager(String id, String secret) {
+    MobileEngageInternal(final Application application, MobileEngageConfig config, RequestManager manager) {
+        init(application, config, manager);
+    }
+
+    private void init(final Application application, MobileEngageConfig config, RequestManager manager) {
+        this.application = application;
+        this.config = config;
+        this.statusListener = config.getStatusListener();
+
+        this.manager = manager;
+        initializeRequestManager(config.getApplicationCode(), config.getApplicationPassword());
+
+        this.deviceInfo = new DeviceInfo(application.getApplicationContext());
+
+        try {
+            this.pushToken = FirebaseInstanceId.getInstance().getToken();
+        } catch (Exception e) {
+            //no token for you
+        }
+
+        this.handler = new Handler(Looper.getMainLooper());
+    }
+
+    void initializeRequestManager(String id, String secret) {
         Map<String, String> headers = new HashMap<>();
         headers.put("Authorization", HeaderUtils.createBasicAuth(id, secret));
         headers.put("Content-Type", "application/json");
@@ -93,10 +109,6 @@ class MobileEngageInternal {
 
     MobileEngageStatusListener getStatusListener() {
         return statusListener;
-    }
-
-    CoreCompletionHandler getCompletionHandler() {
-        return completionHandler;
     }
 
     RequestManager getManager() {
@@ -131,7 +143,7 @@ class MobileEngageInternal {
                 .payload(payload)
                 .build();
 
-        manager.submit(model, completionHandler);
+        manager.submit(model);
         return model.getId();
     }
 
@@ -150,7 +162,7 @@ class MobileEngageInternal {
                 .payload(payload)
                 .build();
 
-        manager.submit(model, completionHandler);
+        manager.submit(model);
         return model.getId();
     }
 
@@ -161,7 +173,7 @@ class MobileEngageInternal {
                 .url(ENDPOINT_LOGOUT)
                 .payload(createBasePayload())
                 .build();
-        manager.submit(model, completionHandler);
+        manager.submit(model);
         return model.getId();
     }
 
@@ -169,13 +181,13 @@ class MobileEngageInternal {
                             @Nullable Map<String, String> eventAttributes) {
         Map<String, Object> payload = createBasePayload();
         if (eventAttributes != null && !eventAttributes.isEmpty()) {
-            payload.put("attributes", new JSONObject(eventAttributes));
+            payload.put("attributes", new CoreJsonObject(eventAttributes));
         }
         RequestModel model = new RequestModel.Builder()
                 .url(getEventUrl(eventName))
                 .payload(payload)
                 .build();
-        manager.submit(model, completionHandler);
+        manager.submit(model);
         return model.getId();
     }
 
@@ -206,7 +218,7 @@ class MobileEngageInternal {
                     .url(getEventUrl("message_open"))
                     .payload(payload)
                     .build();
-            manager.submit(model, completionHandler);
+            manager.submit(model);
             return model.getId();
         } else {
             final String uuid = RequestModel.nextId();

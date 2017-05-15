@@ -1,11 +1,18 @@
 package com.emarsys.mobileengage;
 
+import android.app.Application;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.test.rule.ActivityTestRule;
 
+import com.emarsys.core.CoreCompletionHandler;
+import com.emarsys.core.connection.ConnectionWatchDog;
+import com.emarsys.core.queue.sqlite.SqliteQueue;
+import com.emarsys.core.request.RequestManager;
+import com.emarsys.core.response.ResponseModel;
 import com.emarsys.mobileengage.fake.FakeActivity;
 import com.emarsys.mobileengage.fake.FakeStatusListener;
+import com.emarsys.mobileengage.fake.TestDbHelper;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -19,6 +26,7 @@ import java.util.concurrent.CountDownLatch;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.mockito.Mockito.mock;
 
 public class MobileEngageIntegrationTest {
     private CountDownLatch latch;
@@ -28,7 +36,8 @@ public class MobileEngageIntegrationTest {
     public Timeout globalTimeout = Timeout.seconds(30);
 
     @Rule
-    public ActivityTestRule<FakeActivity> mActivityRule = new ActivityTestRule(FakeActivity.class);
+    public ActivityTestRule<FakeActivity> activityRule = new ActivityTestRule(FakeActivity.class);
+    private Application context;
 
     @Before
     public void setup() {
@@ -38,7 +47,27 @@ public class MobileEngageIntegrationTest {
                 .credentials("14C19-A121F", "PaNkfOD90AVpYimMBuZopCpm8OWCrREu")
                 .statusListener(listener)
                 .build();
-        MobileEngage.setup(mActivityRule.getActivity().getApplication(), config);
+        context = activityRule.getActivity().getApplication();
+        MobileEngage.setup(context, config);
+        SqliteQueue queue = new SqliteQueue(context);
+        queue.setHelper(new TestDbHelper(context, this.getClass()));
+        MobileEngage.instance.manager = new RequestManager(new ConnectionWatchDog(context), queue, new CoreCompletionHandler() {
+            @Override
+            public void onSuccess(String id, ResponseModel responseModel) {
+                listener.onStatusLog(id, "");
+            }
+
+            @Override
+            public void onError(String id, ResponseModel responseModel) {
+                listener.onError(id, mock(Exception.class));
+            }
+
+            @Override
+            public void onError(String id, Exception cause) {
+                listener.onError(id, mock(Exception.class));
+            }
+        });
+        MobileEngage.instance.initializeRequestManager(config.getApplicationCode(), config.getApplicationPassword());
     }
 
     @Test

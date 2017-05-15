@@ -6,8 +6,11 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.test.InstrumentationRegistry;
 
+import com.emarsys.core.CoreCompletionHandler;
 import com.emarsys.core.connection.ConnectionWatchDog;
+import com.emarsys.core.queue.InMemoryQueue;
 import com.emarsys.core.request.RequestManager;
+import com.emarsys.core.response.ResponseModel;
 import com.emarsys.mobileengage.fake.FakeRequestManager;
 import com.emarsys.mobileengage.fake.FakeStatusListener;
 
@@ -67,9 +70,28 @@ public class MobileEngageInternalStatusListenerTest {
 
         manager = mock(RequestManager.class);
         latch = new CountDownLatch(1);
-        succeedingManager = new FakeRequestManager(SUCCESS, null, new ConnectionWatchDog(context));
-        failingManager = new FakeRequestManager(FAILURE, null, new ConnectionWatchDog(context));
+        CoreCompletionHandler completionHandler = new CoreCompletionHandler() {
+            @Override
+            public void onSuccess(String id, ResponseModel responseModel) {
+                mainThreadStatusListener.onStatusLog(id, responseModel.getMessage());
+            }
 
+            @Override
+            public void onError(String id, ResponseModel responseModel) {
+                Exception exception = new MobileEngageException(
+                        responseModel.getStatusCode(),
+                        responseModel.getMessage(),
+                        responseModel.getBody());
+                mainThreadStatusListener.onError(id, exception);
+            }
+
+            @Override
+            public void onError(String id, Exception cause) {
+                mainThreadStatusListener.onError(id, cause);
+            }
+        };
+        succeedingManager = new FakeRequestManager(SUCCESS, latch, new ConnectionWatchDog(context), new InMemoryQueue(), completionHandler);
+        failingManager = new FakeRequestManager(FAILURE, latch, new ConnectionWatchDog(context), new InMemoryQueue(), completionHandler);
         statusListener = mock(MobileEngageStatusListener.class);
         mainThreadStatusListener = new FakeStatusListener(latch);
         mobileEngageWith(mainThreadStatusListener, succeedingManager);

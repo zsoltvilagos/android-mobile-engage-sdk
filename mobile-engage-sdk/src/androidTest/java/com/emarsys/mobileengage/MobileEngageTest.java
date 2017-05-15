@@ -16,7 +16,6 @@ import java.util.Map;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @RunWith(AndroidJUnit4.class)
 public class MobileEngageTest {
@@ -32,8 +31,7 @@ public class MobileEngageTest {
         String appID = "56789876";
         String appSecret = "secret";
 
-        application = mock(Application.class);
-        when(application.getApplicationContext()).thenReturn(InstrumentationRegistry.getTargetContext());
+        application = (Application) InstrumentationRegistry.getTargetContext().getApplicationContext();
         mobileEngageInternal = mock(MobileEngageInternal.class);
         baseConfig = new MobileEngageConfig.Builder()
                 .credentials(appID, appSecret)

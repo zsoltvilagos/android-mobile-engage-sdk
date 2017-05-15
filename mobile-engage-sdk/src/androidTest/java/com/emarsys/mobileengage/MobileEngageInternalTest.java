@@ -7,12 +7,11 @@ import android.os.Bundle;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
-import com.emarsys.core.CoreCompletionHandler;
 import com.emarsys.core.DeviceInfo;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.request.RequestModel;
+import com.emarsys.core.util.CoreJsonObject;
 
-import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -82,7 +81,6 @@ public class MobileEngageInternalTest {
         new DeviceInfo(context);
         assertEquals(baseConfig.getStatusListener(), engage.getStatusListener());
         assertNotNull(engage.getManager());
-        assertNotNull(engage.getCompletionHandler());
     }
 
     @Test
@@ -104,7 +102,7 @@ public class MobileEngageInternalTest {
         mobileEngage.appLogin();
 
         verify(manager).setDefaultHeaders(defaultHeaders);
-        verify(manager).submit(captor.capture(), any(CoreCompletionHandler.class));
+        verify(manager).submit(captor.capture());
 
         RequestModel result = captor.getValue();
         assertRequestModels(expected, result);
@@ -116,7 +114,7 @@ public class MobileEngageInternalTest {
 
         String result = mobileEngage.appLogin();
 
-        verify(manager).submit(captor.capture(), any(CoreCompletionHandler.class));
+        verify(manager).submit(captor.capture());
 
         assertEquals(captor.getValue().getId(), result);
     }
@@ -139,7 +137,7 @@ public class MobileEngageInternalTest {
         mobileEngage.appLogin(contactField, contactFieldValue);
 
         verify(manager).setDefaultHeaders(defaultHeaders);
-        verify(manager).submit(captor.capture(), any(CoreCompletionHandler.class));
+        verify(manager).submit(captor.capture());
 
         RequestModel result = captor.getValue();
         assertRequestModels(expected, result);
@@ -151,7 +149,7 @@ public class MobileEngageInternalTest {
 
         String result = mobileEngage.appLogin(5, "value");
 
-        verify(manager).submit(captor.capture(), any(CoreCompletionHandler.class));
+        verify(manager).submit(captor.capture());
 
         assertEquals(captor.getValue().getId(), result);
     }
@@ -170,7 +168,7 @@ public class MobileEngageInternalTest {
         mobileEngage.appLogout();
 
         verify(manager).setDefaultHeaders(defaultHeaders);
-        verify(manager).submit(captor.capture(), any(CoreCompletionHandler.class));
+        verify(manager).submit(captor.capture());
 
         RequestModel result = captor.getValue();
         assertRequestModels(expected, result);
@@ -182,7 +180,7 @@ public class MobileEngageInternalTest {
 
         String result = mobileEngage.appLogout();
 
-        verify(manager).submit(captor.capture(), any(CoreCompletionHandler.class));
+        verify(manager).submit(captor.capture());
 
         assertEquals(captor.getValue().getId(), result);
     }
@@ -194,7 +192,7 @@ public class MobileEngageInternalTest {
         eventAttributes.put("tom", "jerry");
 
         Map<String, Object> payload = createBasePayload();
-        payload.put("attributes", new JSONObject(eventAttributes));
+        payload.put("attributes", new CoreJsonObject(eventAttributes));
 
         RequestModel expected = new RequestModel.Builder()
                 .url(ENDPOINT_BASE + "events/" + eventName)
@@ -207,7 +205,7 @@ public class MobileEngageInternalTest {
         mobileEngage.trackCustomEvent(eventName, eventAttributes);
 
         verify(manager).setDefaultHeaders(defaultHeaders);
-        verify(manager).submit(captor.capture(), any(CoreCompletionHandler.class));
+        verify(manager).submit(captor.capture());
 
         RequestModel result = captor.getValue();
         assertRequestModels_withPayloadAsString(expected, result);
@@ -219,7 +217,7 @@ public class MobileEngageInternalTest {
 
         String result = mobileEngage.trackCustomEvent("event", new HashMap<String, String>());
 
-        verify(manager).submit(captor.capture(), any(CoreCompletionHandler.class));
+        verify(manager).submit(captor.capture());
 
         assertEquals(captor.getValue().getId(), result);
     }
@@ -246,7 +244,7 @@ public class MobileEngageInternalTest {
         mobileEngage.trackMessageOpen(intent);
 
         verify(manager).setDefaultHeaders(defaultHeaders);
-        verify(manager).submit(captor.capture(), any(CoreCompletionHandler.class));
+        verify(manager).submit(captor.capture());
 
         RequestModel result = captor.getValue();
         assertRequestModels(expected, result);
@@ -264,7 +262,7 @@ public class MobileEngageInternalTest {
 
         String result = mobileEngage.trackMessageOpen(intent);
 
-        verify(manager).submit(captor.capture(), any(CoreCompletionHandler.class));
+        verify(manager).submit(captor.capture());
 
         assertEquals(captor.getValue().getId(), result);
     }
