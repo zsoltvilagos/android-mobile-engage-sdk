@@ -68,16 +68,17 @@ public class MobileEngageInternalTest {
 
         statusListener = mock(MobileEngageStatusListener.class);
         baseConfig = new MobileEngageConfig.Builder()
+                .application(application)
                 .credentials(APPLICATION_ID, APPLICATION_SECRET)
                 .statusListener(statusListener)
                 .build();
 
-        mobileEngage = new MobileEngageInternal(application, baseConfig, manager);
+        mobileEngage = new MobileEngageInternal(baseConfig, manager);
     }
 
     @Test
     public void testSetup_constructorInitializesFields() {
-        MobileEngageInternal engage = new MobileEngageInternal(application, baseConfig, manager);
+        MobileEngageInternal engage = new MobileEngageInternal(baseConfig, manager);
         new DeviceInfo(context);
         assertEquals(baseConfig.getStatusListener(), engage.getStatusListener());
         assertNotNull(engage.getManager());

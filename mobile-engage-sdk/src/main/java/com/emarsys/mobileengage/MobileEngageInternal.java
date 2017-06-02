@@ -42,7 +42,7 @@ class MobileEngageInternal {
     RequestManager manager;
     Handler handler;
 
-    MobileEngageInternal(final Application application, MobileEngageConfig config) {
+    MobileEngageInternal(MobileEngageConfig config) {
         CoreCompletionHandler coreCompletionHandler = new CoreCompletionHandler() {
 
             @Override
@@ -68,20 +68,19 @@ class MobileEngageInternal {
 
         };
 
-        init(application,
-                config,
+        init(config,
                 new RequestManager(
-                        new ConnectionWatchDog(application.getApplicationContext()),
-                        new SqliteQueue(application),
+                        new ConnectionWatchDog(config.getApplication()),
+                        new SqliteQueue(config.getApplication()),
                         coreCompletionHandler));
     }
 
-    MobileEngageInternal(final Application application, MobileEngageConfig config, RequestManager manager) {
-        init(application, config, manager);
+    MobileEngageInternal(MobileEngageConfig config, RequestManager manager) {
+        init(config, manager);
     }
 
-    private void init(final Application application, MobileEngageConfig config, RequestManager manager) {
-        this.application = application;
+    private void init(MobileEngageConfig config, RequestManager manager) {
+        this.application = config.getApplication();
         this.config = config;
         this.statusListener = config.getStatusListener();
 

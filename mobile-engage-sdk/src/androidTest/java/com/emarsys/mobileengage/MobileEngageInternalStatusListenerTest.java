@@ -99,10 +99,11 @@ public class MobileEngageInternalStatusListenerTest {
 
     private void mobileEngageWith(MobileEngageStatusListener statusListener, RequestManager requestManager) {
         baseConfig = new MobileEngageConfig.Builder()
+                .application(application)
                 .credentials(APPLICATION_ID, APPLICATION_SECRET)
                 .statusListener(statusListener)
                 .build();
-        mobileEngage = new MobileEngageInternal(application, baseConfig, requestManager);
+        mobileEngage = new MobileEngageInternal(baseConfig, requestManager);
     }
 
     @Test

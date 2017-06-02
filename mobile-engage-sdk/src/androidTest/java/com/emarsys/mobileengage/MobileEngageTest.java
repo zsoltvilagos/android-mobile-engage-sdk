@@ -34,6 +34,7 @@ public class MobileEngageTest {
         application = (Application) InstrumentationRegistry.getTargetContext().getApplicationContext();
         mobileEngageInternal = mock(MobileEngageInternal.class);
         baseConfig = new MobileEngageConfig.Builder()
+                .application(application)
                 .credentials(appID, appSecret)
                 .build();
     }
@@ -41,7 +42,7 @@ public class MobileEngageTest {
     @Test
     public void testSetup_initializesInstance() {
         MobileEngage.instance = null;
-        MobileEngage.setup(application, baseConfig);
+        MobileEngage.setup(baseConfig);
 
         assertNotNull(MobileEngage.instance);
     }
@@ -100,13 +101,8 @@ public class MobileEngageTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testSetup_whenApplicationIsNull() {
-        MobileEngage.setup(null, baseConfig);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
     public void testSetup_whenConfigIsNull() {
-        MobileEngage.setup(application, null);
+        MobileEngage.setup(null);
     }
 
     @Test(expected = IllegalArgumentException.class)

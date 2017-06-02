@@ -3,14 +3,13 @@ package com.emarsys.mobileengage;
 import android.app.Application;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.test.rule.ActivityTestRule;
+import android.support.test.InstrumentationRegistry;
 
 import com.emarsys.core.CoreCompletionHandler;
 import com.emarsys.core.connection.ConnectionWatchDog;
 import com.emarsys.core.queue.sqlite.SqliteQueue;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.response.ResponseModel;
-import com.emarsys.mobileengage.fake.FakeActivity;
 import com.emarsys.mobileengage.fake.FakeStatusListener;
 import com.emarsys.mobileengage.fake.TestDbHelper;
 
@@ -35,20 +34,19 @@ public class MobileEngageIntegrationTest {
     @Rule
     public Timeout globalTimeout = Timeout.seconds(30);
 
-    @Rule
-    public ActivityTestRule<FakeActivity> activityRule = new ActivityTestRule(FakeActivity.class);
     private Application context;
 
     @Before
     public void setup() {
         latch = new CountDownLatch(1);
         listener = new FakeStatusListener(latch, FakeStatusListener.Mode.MAIN_THREAD);
+        context = (Application) InstrumentationRegistry.getTargetContext().getApplicationContext();
         MobileEngageConfig config = new MobileEngageConfig.Builder()
+                .application(context)
                 .credentials("14C19-A121F", "PaNkfOD90AVpYimMBuZopCpm8OWCrREu")
                 .statusListener(listener)
                 .build();
-        context = activityRule.getActivity().getApplication();
-        MobileEngage.setup(context, config);
+        MobileEngage.setup(config);
         SqliteQueue queue = new SqliteQueue(context);
         queue.setHelper(new TestDbHelper(context, this.getClass()));
         MobileEngage.instance.manager = new RequestManager(new ConnectionWatchDog(context), queue, new CoreCompletionHandler() {
