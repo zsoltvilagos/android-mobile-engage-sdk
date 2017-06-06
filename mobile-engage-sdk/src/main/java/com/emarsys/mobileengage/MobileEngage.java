@@ -5,6 +5,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.emarsys.core.util.Assert;
+import com.emarsys.mobileengage.inbox.InboxInternal;
 import com.emarsys.mobileengage.inbox.InboxResultListener;
 import com.emarsys.mobileengage.inbox.Notification;
 
@@ -14,24 +15,27 @@ import java.util.Map;
 public class MobileEngage {
     private static final String TAG = "MobileEngage";
     static MobileEngageInternal instance;
+    static InboxInternal inboxInstance;
 
     public static class Inbox {
 
-        public static void fetchNotifications(InboxResultListener<List<Notification>> resultListener){
-
+        public static boolean fetchNotifications(@NonNull InboxResultListener<List<Notification>> resultListener) {
+            Assert.notNull(resultListener, "ResultListener must not be null!");
+            return inboxInstance.fetchNotifications(resultListener);
         }
     }
 
     public static void setup(@NonNull MobileEngageConfig config) {
         Assert.notNull(config, "Config must not be null!");
         instance = new MobileEngageInternal(config);
+        inboxInstance = new InboxInternal();
     }
 
-    public static void setPushToken(String pushToken){
+    public static void setPushToken(String pushToken) {
         instance.setPushToken(pushToken);
     }
 
-    public static void setStatusListener(MobileEngageStatusListener listener){
+    public static void setStatusListener(MobileEngageStatusListener listener) {
         instance.setStatusListener(listener);
     }
 
@@ -50,7 +54,7 @@ public class MobileEngage {
     }
 
     public static String trackCustomEvent(@NonNull String eventName,
-                                          @Nullable Map<String, String>  eventAttributes) {
+                                          @Nullable Map<String, String> eventAttributes) {
         Assert.notNull(eventName, "EventName must not be null!");
         return instance.trackCustomEvent(eventName, eventAttributes);
     }

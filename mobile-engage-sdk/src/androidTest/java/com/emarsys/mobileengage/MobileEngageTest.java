@@ -5,6 +5,9 @@ import android.content.Intent;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
+import com.emarsys.mobileengage.inbox.InboxInternal;
+import com.emarsys.mobileengage.inbox.InboxResultListener;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -20,6 +23,7 @@ import static org.mockito.Mockito.verify;
 @RunWith(AndroidJUnit4.class)
 public class MobileEngageTest {
     private MobileEngageInternal mobileEngageInternal;
+    private InboxInternal inboxInternal;
     private Application application;
     private MobileEngageConfig baseConfig;
 
@@ -33,6 +37,7 @@ public class MobileEngageTest {
 
         application = (Application) InstrumentationRegistry.getTargetContext().getApplicationContext();
         mobileEngageInternal = mock(MobileEngageInternal.class);
+        inboxInternal = mock(InboxInternal.class);
         baseConfig = new MobileEngageConfig.Builder()
                 .application(application)
                 .credentials(appID, appSecret)
@@ -40,11 +45,19 @@ public class MobileEngageTest {
     }
 
     @Test
-    public void testSetup_initializesInstance() {
+    public void testSetup_initializesMobileEngageInstance() {
         MobileEngage.instance = null;
         MobileEngage.setup(baseConfig);
 
         assertNotNull(MobileEngage.instance);
+    }
+
+    @Test
+    public void testSetup_initializesInboxInstance() {
+        MobileEngage.inboxInstance = null;
+        MobileEngage.setup(baseConfig);
+
+        assertNotNull(MobileEngage.inboxInstance);
     }
 
     @Test
@@ -118,5 +131,18 @@ public class MobileEngageTest {
     @Test(expected = IllegalArgumentException.class)
     public void testTrackMessageOpen_intent_whenIntentIsNull() {
         MobileEngage.trackMessageOpen((Intent) null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testFetchNotifications_whenListenerIsNull() {
+        MobileEngage.Inbox.fetchNotifications(null);
+    }
+
+    @Test
+    public void testFetchNotifications_callsInternal() throws Exception {
+        MobileEngage.inboxInstance = inboxInternal;
+        InboxResultListener inboxListenerMock = mock(InboxResultListener.class);
+        MobileEngage.Inbox.fetchNotifications(inboxListenerMock);
+        verify(inboxInternal).fetchNotifications(inboxListenerMock);
     }
 }
