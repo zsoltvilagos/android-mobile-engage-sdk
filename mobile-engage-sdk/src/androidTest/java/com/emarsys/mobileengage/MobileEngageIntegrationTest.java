@@ -11,7 +11,8 @@ import com.emarsys.core.queue.sqlite.SqliteQueue;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.response.ResponseModel;
 import com.emarsys.mobileengage.fake.FakeStatusListener;
-import com.emarsys.mobileengage.fake.TestDbHelper;
+import com.emarsys.mobileengage.testUtil.ConnectionTestUtils;
+import com.emarsys.mobileengage.testUtil.TestDbHelper;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -38,9 +39,12 @@ public class MobileEngageIntegrationTest {
 
     @Before
     public void setup() {
+        context = (Application) InstrumentationRegistry.getTargetContext().getApplicationContext();
+
+        ConnectionTestUtils.checkConnection(context);
+
         latch = new CountDownLatch(1);
         listener = new FakeStatusListener(latch, FakeStatusListener.Mode.MAIN_THREAD);
-        context = (Application) InstrumentationRegistry.getTargetContext().getApplicationContext();
         MobileEngageConfig config = new MobileEngageConfig.Builder()
                 .application(context)
                 .credentials("14C19-A121F", "PaNkfOD90AVpYimMBuZopCpm8OWCrREu")
