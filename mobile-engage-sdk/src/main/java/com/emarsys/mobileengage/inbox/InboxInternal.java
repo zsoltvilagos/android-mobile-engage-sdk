@@ -5,6 +5,8 @@ import android.os.Looper;
 
 import com.emarsys.core.util.Assert;
 
+import org.json.JSONObject;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
@@ -24,9 +26,9 @@ public class InboxInternal {
             @Override
             public void run() {
                 resultListener.onSuccess(Arrays.asList(
-                        new Notification("id1", "title1", Collections.<String, String>emptyMap(), Collections.<String, String>emptyMap(), 100, new Date(1000)),
-                        new Notification("id2", "title2", Collections.<String, String>emptyMap(), Collections.<String, String>emptyMap(), 200, new Date(2000)),
-                        new Notification("id3", "title3", Collections.<String, String>emptyMap(), Collections.<String, String>emptyMap(), 300, new Date(3000))
+                        new Notification("id1", "title1", Collections.<String, String>emptyMap(), new JSONObject(), 100, new Date(1000)),
+                        new Notification("id2", "title2", Collections.<String, String>emptyMap(), new JSONObject(), 200, new Date(2000)),
+                        new Notification("id3", "title3", Collections.<String, String>emptyMap(), new JSONObject(), 300, new Date(3000))
 
                 ));
             }

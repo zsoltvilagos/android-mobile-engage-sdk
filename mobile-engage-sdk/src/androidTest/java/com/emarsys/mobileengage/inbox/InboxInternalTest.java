@@ -4,6 +4,7 @@ import com.emarsys.mobileengage.fake.FakeInboxResultListener;
 
 import junit.framework.Assert;
 
+import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -31,9 +32,9 @@ public class InboxInternalTest {
     public void init() {
         latch = new CountDownLatch(1);
         notificationList = Arrays.asList(
-                new Notification("id1", "title1", Collections.<String, String>emptyMap(), Collections.<String, String>emptyMap(), 100, new Date(1000)),
-                new Notification("id2", "title2", Collections.<String, String>emptyMap(), Collections.<String, String>emptyMap(), 200, new Date(2000)),
-                new Notification("id3", "title3", Collections.<String, String>emptyMap(), Collections.<String, String>emptyMap(), 300, new Date(3000))
+                new Notification("id1", "title1", Collections.<String, String>emptyMap(), new JSONObject(), 100, new Date(1000)),
+                new Notification("id2", "title2", Collections.<String, String>emptyMap(), new JSONObject(), 200, new Date(2000)),
+                new Notification("id3", "title3", Collections.<String, String>emptyMap(), new JSONObject(), 300, new Date(3000))
 
         );
         inbox = new InboxInternal();

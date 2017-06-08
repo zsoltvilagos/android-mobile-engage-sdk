@@ -2,6 +2,8 @@ package com.emarsys.mobileengage.inbox;
 
 import android.support.annotation.NonNull;
 
+import org.json.JSONObject;
+
 import java.util.Date;
 import java.util.Map;
 
@@ -9,11 +11,11 @@ public class Notification {
     private final String id;
     private final String title;
     private final Map<String, String> customData;
-    private final Map<String, String> rootParams;
+    private final JSONObject rootParams;
     private final int expirationTime;
     private final Date receivedAt;
 
-    public Notification(String id, String title, Map<String, String> customData, Map<String, String> rootParams, int expirationTime, Date receivedAt) {
+    public Notification(String id, String title, Map<String, String> customData, JSONObject rootParams, int expirationTime, Date receivedAt) {
         this.id = id;
         this.title = title;
         this.customData = customData;
@@ -38,7 +40,7 @@ public class Notification {
     }
 
     @NonNull
-    public Map<String, String> getRootParams() {
+    public JSONObject getRootParams() {
         return rootParams;
     }
 
@@ -64,10 +66,9 @@ public class Notification {
         if (title != null ? !title.equals(that.title) : that.title != null) return false;
         if (customData != null ? !customData.equals(that.customData) : that.customData != null)
             return false;
-        if (rootParams != null ? !rootParams.equals(that.rootParams) : that.rootParams != null)
+        if (rootParams != null ? !rootParams.toString().equals(that.rootParams.toString()) : that.rootParams != null)
             return false;
         return receivedAt != null ? receivedAt.equals(that.receivedAt) : that.receivedAt == null;
-
     }
 
     @Override
