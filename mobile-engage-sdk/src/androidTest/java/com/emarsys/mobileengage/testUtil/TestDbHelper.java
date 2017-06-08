@@ -1,4 +1,4 @@
-package com.emarsys.mobileengage.fake;
+package com.emarsys.mobileengage.testUtil;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
