@@ -1,6 +1,7 @@
 package com.emarsys.mobileengage.inbox;
 
-import com.emarsys.mobileengage.inbox.Notification;
+import com.emarsys.mobileengage.inbox.model.Notification;
+import com.emarsys.mobileengage.inbox.model.NotificationInboxStatus;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -15,6 +16,38 @@ import java.util.Map;
 
 public class InboxParseUtils {
     private InboxParseUtils() {
+    }
+
+    public static NotificationInboxStatus parseNotificationInboxStatus(String jsonString) {
+        NotificationInboxStatus result = new NotificationInboxStatus();
+        if (jsonString != null) {
+            try {
+                JSONObject json = new JSONObject(jsonString);
+
+                List<Notification> notifications = null;
+                if (json.has("notifications")) {
+                    notifications = parseNotificationList(json.getString("notifications"));
+                }
+
+                int badgeCount = parseBadgeCount(jsonString);
+
+                result = new NotificationInboxStatus(notifications, badgeCount);
+            } catch (JSONException e) {
+            }
+        }
+        return result;
+    }
+
+    public static int parseBadgeCount(String jsonString) {
+        int result = 0;
+        if (jsonString != null) {
+            try {
+                JSONObject json = new JSONObject(jsonString);
+                result = json.getInt("badge_count");
+            } catch (JSONException e) {
+            }
+        }
+        return result;
     }
 
     public static List<Notification> parseNotificationList(String jsonString) {
@@ -42,10 +75,10 @@ public class InboxParseUtils {
                 JSONObject json = new JSONObject(jsonString);
                 String id = json.getString("id");
                 String title = json.getString("title");
-                Map<String, String> customData = convertFlatJsonObject(new JSONObject(json.getString("customData")));
-                JSONObject rootParams = new JSONObject(json.getString("rootParams"));
-                int expirationTime = json.getInt("expirationTime");
-                Date receivedAt = new Date(json.getLong("receivedAt"));
+                Map<String, String> customData = convertFlatJsonObject(new JSONObject(json.getString("custom_data")));
+                JSONObject rootParams = new JSONObject(json.getString("root_params"));
+                int expirationTime = json.getInt("expiration_time");
+                Date receivedAt = new Date(json.getLong("received_at"));
                 result = new Notification(id, title, customData, rootParams, expirationTime, receivedAt);
             } catch (JSONException e) {
             }

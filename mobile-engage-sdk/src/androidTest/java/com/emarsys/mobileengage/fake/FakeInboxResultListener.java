@@ -3,20 +3,19 @@ package com.emarsys.mobileengage.fake;
 import android.os.Looper;
 
 import com.emarsys.mobileengage.inbox.InboxResultListener;
-import com.emarsys.mobileengage.inbox.Notification;
+import com.emarsys.mobileengage.inbox.model.NotificationInboxStatus;
 
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 
-public class FakeInboxResultListener implements InboxResultListener<List<Notification>> {
+public class FakeInboxResultListener implements InboxResultListener<NotificationInboxStatus> {
 
     public enum Mode {
         MAIN_THREAD, ALL_THREAD
     }
 
     public int successCount;
-    public List<Notification> resultList;
+    public NotificationInboxStatus resultStatus;
     public Exception errorCause;
     public int errorCount;
     public CountDownLatch latch;
@@ -32,7 +31,7 @@ public class FakeInboxResultListener implements InboxResultListener<List<Notific
     }
 
     @Override
-    public void onSuccess(List<Notification> result) {
+    public void onSuccess(NotificationInboxStatus result) {
         if (mode == Mode.MAIN_THREAD && onMainThread()) {
             handleSuccess(result);
         } else if (mode == Mode.ALL_THREAD) {
@@ -49,17 +48,17 @@ public class FakeInboxResultListener implements InboxResultListener<List<Notific
         }
     }
 
-    private void handleError(Exception cause) {
-        errorCount++;
-        errorCause = cause;
+    private void handleSuccess(NotificationInboxStatus result) {
+        resultStatus = result;
+        successCount++;
         if (latch != null) {
             latch.countDown();
         }
     }
 
-    private void handleSuccess(List<Notification> result) {
-        resultList = result;
-        successCount++;
+    private void handleError(Exception cause) {
+        errorCount++;
+        errorCause = cause;
         if (latch != null) {
             latch.countDown();
         }

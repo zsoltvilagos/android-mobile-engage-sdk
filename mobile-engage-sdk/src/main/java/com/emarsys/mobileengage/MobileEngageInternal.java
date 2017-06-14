@@ -26,7 +26,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-class MobileEngageInternal {
+public class MobileEngageInternal {
     public static final String MOBILEENGAGE_SDK_VERSION_KEY = "X-MOBILEENGAGE-SDK-VERSION";
     public static final String MOBILEENGAGE_SDK_VERSION = BuildConfig.VERSION_NAME;
     private static String ENDPOINT_BASE = "https://push.eservice.emarsys.net/api/mobileengage/v2/";
@@ -34,14 +34,15 @@ class MobileEngageInternal {
     private static String ENDPOINT_LOGOUT = ENDPOINT_BASE + "users/logout";
 
     String pushToken;
-    ApploginParameters apploginParameters;
+    AppLoginParameters appLoginParameters;
+
     MobileEngageStatusListener statusListener;
+
     MobileEngageConfig config;
     DeviceInfo deviceInfo;
     Application application;
     RequestManager manager;
     Handler handler;
-
     MobileEngageInternal(MobileEngageConfig config) {
         CoreCompletionHandler coreCompletionHandler = new CoreCompletionHandler() {
 
@@ -114,11 +115,15 @@ class MobileEngageInternal {
         return manager;
     }
 
+    public AppLoginParameters getAppLoginParameters() {
+        return appLoginParameters;
+    }
+
     void setPushToken(String pushToken) {
         this.pushToken = pushToken;
-        if (apploginParameters != null) {
-            if (apploginParameters.hasCredentials()) {
-                appLogin(apploginParameters.getContactFieldId(), apploginParameters.getContactFieldValue());
+        if (appLoginParameters != null) {
+            if (appLoginParameters.hasCredentials()) {
+                appLogin(appLoginParameters.getContactFieldId(), appLoginParameters.getContactFieldValue());
             } else {
                 appLogin();
             }
@@ -134,7 +139,7 @@ class MobileEngageInternal {
     }
 
     String appLogin() {
-        this.apploginParameters = new ApploginParameters();
+        this.appLoginParameters = new AppLoginParameters();
 
         Map<String, Object> payload = injectLoginPayload(createBasePayload());
         RequestModel model = new RequestModel.Builder()
@@ -148,7 +153,7 @@ class MobileEngageInternal {
 
     String appLogin(int contactFieldId,
                     @NonNull String contactFieldValue) {
-        this.apploginParameters = new ApploginParameters(contactFieldId, contactFieldValue);
+        this.appLoginParameters = new AppLoginParameters(contactFieldId, contactFieldValue);
 
         Map<String, Object> additionalPayload = new HashMap<>();
         additionalPayload.put("contact_field_id", contactFieldId);
@@ -166,7 +171,7 @@ class MobileEngageInternal {
     }
 
     String appLogout() {
-        this.apploginParameters = null;
+        this.appLoginParameters = null;
 
         RequestModel model = new RequestModel.Builder()
                 .url(ENDPOINT_LOGOUT)

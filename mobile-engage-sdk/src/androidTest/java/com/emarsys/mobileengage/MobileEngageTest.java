@@ -42,6 +42,8 @@ public class MobileEngageTest {
                 .application(application)
                 .credentials(appID, appSecret)
                 .build();
+        MobileEngage.inboxInstance = inboxInternal;
+        MobileEngage.instance = mobileEngageInternal;
     }
 
     @Test
@@ -63,7 +65,6 @@ public class MobileEngageTest {
     @Test
     public void testSetPushToken_callsInternal() {
         String pushtoken = "pushtoken";
-        MobileEngage.instance = mobileEngageInternal;
         MobileEngage.setPushToken(pushtoken);
         verify(mobileEngageInternal).setPushToken(pushtoken);
     }
@@ -71,35 +72,48 @@ public class MobileEngageTest {
     @Test
     public void testSetStatusListener_callsInternal() {
         MobileEngageStatusListener listener = mock(MobileEngageStatusListener.class);
-        MobileEngage.instance = mobileEngageInternal;
         MobileEngage.setStatusListener(listener);
         verify(mobileEngageInternal).setStatusListener(listener);
     }
 
     @Test
-    public void testAppLogin_anonymous_callsInternal() {
-        MobileEngage.instance = mobileEngageInternal;
+    public void testAppLogin_anonymous_callsInternalMobileEngage() {
         MobileEngage.appLogin();
         verify(mobileEngageInternal).appLogin();
     }
 
     @Test
-    public void testAppLogin_withUser_callsInternal() {
-        MobileEngage.instance = mobileEngageInternal;
+    public void testAppLogin_anonymous_callsInternalInbox() {
+        MobileEngage.appLogin();
+        verify(inboxInternal).setAppLoginParameters(new AppLoginParameters());
+    }
+
+    @Test
+    public void testAppLogin_withUser_callsInternalMobileEngage() {
         MobileEngage.appLogin(4, "CONTACT_FIELD_VALUE");
         verify(mobileEngageInternal).appLogin(4, "CONTACT_FIELD_VALUE");
     }
 
     @Test
-    public void testAppLogout_callsInternal() {
-        MobileEngage.instance = mobileEngageInternal;
+    public void testAppLogin_withUser_callsInternalInbox() {
+        MobileEngage.appLogin(4, "CONTACT_FIELD_VALUE");
+        verify(inboxInternal).setAppLoginParameters(new AppLoginParameters(4, "CONTACT_FIELD_VALUE"));
+    }
+
+    @Test
+    public void testAppLogout_callsInternalMobileEngage() {
         MobileEngage.appLogout();
         verify(mobileEngageInternal).appLogout();
     }
 
     @Test
+    public void testAppLogout_callsInternalInbox() {
+        MobileEngage.appLogout();
+        verify(inboxInternal).setAppLoginParameters(null);
+    }
+
+    @Test
     public void testTrackCustomEvent_callsInternal() throws Exception {
-        MobileEngage.instance = mobileEngageInternal;
         Map<String, String> attributes = mock(Map.class);
         MobileEngage.trackCustomEvent("event", attributes);
         verify(mobileEngageInternal).trackCustomEvent("event", attributes);
@@ -107,7 +121,6 @@ public class MobileEngageTest {
 
     @Test
     public void testTrackMessageOpen_intent_callsInternal() {
-        MobileEngage.instance = mobileEngageInternal;
         Intent intent = mock(Intent.class);
         MobileEngage.trackMessageOpen(intent);
         verify(mobileEngageInternal).trackMessageOpen(intent);
@@ -140,7 +153,6 @@ public class MobileEngageTest {
 
     @Test
     public void testFetchNotifications_callsInternal() throws Exception {
-        MobileEngage.inboxInstance = inboxInternal;
         InboxResultListener inboxListenerMock = mock(InboxResultListener.class);
         MobileEngage.Inbox.fetchNotifications(inboxListenerMock);
         verify(inboxInternal).fetchNotifications(inboxListenerMock);

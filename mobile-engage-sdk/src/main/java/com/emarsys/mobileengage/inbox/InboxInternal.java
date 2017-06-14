@@ -3,37 +3,102 @@ package com.emarsys.mobileengage.inbox;
 import android.os.Handler;
 import android.os.Looper;
 
+import com.emarsys.core.CoreCompletionHandler;
+import com.emarsys.core.DeviceInfo;
+import com.emarsys.core.request.RequestMethod;
+import com.emarsys.core.request.RequestModel;
+import com.emarsys.core.request.RestClient;
+import com.emarsys.core.response.ResponseModel;
 import com.emarsys.core.util.Assert;
+import com.emarsys.core.util.HeaderUtils;
+import com.emarsys.mobileengage.AppLoginParameters;
+import com.emarsys.mobileengage.MobileEngageConfig;
+import com.emarsys.mobileengage.MobileEngageException;
+import com.emarsys.mobileengage.inbox.model.NotificationInboxStatus;
 
-import org.json.JSONObject;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 public class InboxInternal {
 
-    private final Handler handler;
+    private static String ENDPOINT_BASE = "https://me-inbox.eservice.emarsys.net/api/";
+    private static String ENDPOINT_FETCH = ENDPOINT_BASE + "notifications";
 
-    public InboxInternal() {
+    Handler handler;
+    RestClient client;
+    MobileEngageConfig config;
+    AppLoginParameters appLoginParameters;
+
+    public InboxInternal(MobileEngageConfig config) {
+        Assert.notNull(config, "Config must not be null!");
+        this.config = config;
+        this.client = new RestClient();
         this.handler = new Handler(Looper.getMainLooper());
     }
 
-    public boolean fetchNotifications(final InboxResultListener<List<Notification>> resultListener) {
+    public void fetchNotifications(final InboxResultListener<NotificationInboxStatus> resultListener) {
         Assert.notNull(resultListener, "ResultListener should not be null!");
-        handler.postDelayed(new Runnable() {
+
+        if (appLoginParameters != null && appLoginParameters.hasCredentials()) {
+            handleFetchRequest(resultListener);
+        } else {
+            handleMissingApploginParameters(resultListener);
+        }
+    }
+
+    private void handleFetchRequest(final InboxResultListener<NotificationInboxStatus> resultListener) {
+        RequestModel model = new RequestModel.Builder()
+                .url(ENDPOINT_FETCH)
+                .headers(createBaseHeaders(config))
+                .method(RequestMethod.GET)
+                .build();
+
+        client.execute(model, new CoreCompletionHandler() {
+            @Override
+            public void onSuccess(String id, ResponseModel responseModel) {
+                resultListener.onSuccess(InboxParseUtils.parseNotificationInboxStatus(responseModel.getBody()));
+            }
+
+            @Override
+            public void onError(String id, ResponseModel responseModel) {
+                resultListener.onError(new MobileEngageException(
+                        responseModel.getStatusCode(),
+                        responseModel.getMessage(),
+                        responseModel.getBody())
+                );
+            }
+
+            @Override
+            public void onError(String id, Exception cause) {
+                resultListener.onError(cause);
+            }
+        });
+    }
+
+    private void handleMissingApploginParameters(final InboxResultListener<NotificationInboxStatus> resultListener) {
+        handler.post(new Runnable() {
             @Override
             public void run() {
-                resultListener.onSuccess(Arrays.asList(
-                        new Notification("id1", "title1", Collections.<String, String>emptyMap(), new JSONObject(), 100, new Date(1000)),
-                        new Notification("id2", "title2", Collections.<String, String>emptyMap(), new JSONObject(), 200, new Date(2000)),
-                        new Notification("id3", "title3", Collections.<String, String>emptyMap(), new JSONObject(), 300, new Date(3000))
-
-                ));
+                resultListener.onError(new NotificationInboxException("AppLogin must be called before calling fetchNotifications!"));
             }
-        }, 100);
-        return false;
+        });
+    }
+
+
+    private Map<String, String> createBaseHeaders(MobileEngageConfig config) {
+        Map<String, String> result = new HashMap<>();
+
+        result.put("Authorization", HeaderUtils.createBasicAuth(config.getApplicationCode(), config.getApplicationPassword()));
+        result.put("x-ems-me-hardware-id", new DeviceInfo(config.getApplication()).getHwid());
+        result.put("x-ems-me-application-code", config.getApplicationCode());
+        result.put("x-ems-me-contactfield-id", String.valueOf(appLoginParameters.getContactFieldId()));
+        result.put("x-ems-me-contactfield-value", appLoginParameters.getContactFieldValue());
+
+        return result;
+    }
+
+    public void setAppLoginParameters(AppLoginParameters appLoginParameters) {
+        this.appLoginParameters = appLoginParameters;
     }
 
 }

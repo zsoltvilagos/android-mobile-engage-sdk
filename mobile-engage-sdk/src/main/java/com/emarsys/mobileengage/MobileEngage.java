@@ -7,9 +7,8 @@ import android.support.annotation.Nullable;
 import com.emarsys.core.util.Assert;
 import com.emarsys.mobileengage.inbox.InboxInternal;
 import com.emarsys.mobileengage.inbox.InboxResultListener;
-import com.emarsys.mobileengage.inbox.Notification;
+import com.emarsys.mobileengage.inbox.model.NotificationInboxStatus;
 
-import java.util.List;
 import java.util.Map;
 
 public class MobileEngage {
@@ -19,16 +18,16 @@ public class MobileEngage {
 
     public static class Inbox {
 
-        public static boolean fetchNotifications(@NonNull InboxResultListener<List<Notification>> resultListener) {
+        public static void fetchNotifications(@NonNull InboxResultListener<NotificationInboxStatus> resultListener) {
             Assert.notNull(resultListener, "ResultListener must not be null!");
-            return inboxInstance.fetchNotifications(resultListener);
+            inboxInstance.fetchNotifications(resultListener);
         }
     }
 
     public static void setup(@NonNull MobileEngageConfig config) {
         Assert.notNull(config, "Config must not be null!");
         instance = new MobileEngageInternal(config);
-        inboxInstance = new InboxInternal();
+        inboxInstance = new InboxInternal(config);
     }
 
     public static void setPushToken(String pushToken) {
@@ -40,16 +39,19 @@ public class MobileEngage {
     }
 
     public static String appLogin() {
+        inboxInstance.setAppLoginParameters(new AppLoginParameters());
         return instance.appLogin();
     }
 
     public static String appLogin(int contactField,
                                   @NonNull String contactFieldValue) {
         Assert.notNull(contactFieldValue, "ContactFieldValue must not be null!");
+        inboxInstance.setAppLoginParameters(new AppLoginParameters(contactField, contactFieldValue));
         return instance.appLogin(contactField, contactFieldValue);
     }
 
     public static String appLogout() {
+        inboxInstance.setAppLoginParameters(null);
         return instance.appLogout();
     }
 
