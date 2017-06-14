@@ -92,8 +92,8 @@ public class InboxInternalTest {
         headers.put("Authorization", HeaderUtils.createBasicAuth(config.getApplicationCode(), config.getApplicationPassword()));
         headers.put("x-ems-me-hardware-id", deviceInfo.getHwid());
         headers.put("x-ems-me-application-code", config.getApplicationCode());
-        headers.put("x-ems-me-contactfield-id", String.valueOf(appLoginParameters_withCredentials.getContactFieldId()));
-        headers.put("x-ems-me-contactfield-value", appLoginParameters_withCredentials.getContactFieldValue());
+        headers.put("x-ems-me-contact-field-id", String.valueOf(appLoginParameters_withCredentials.getContactFieldId()));
+        headers.put("x-ems-me-contact-field-value", appLoginParameters_withCredentials.getContactFieldValue());
 
         RequestModel expected = new RequestModel.Builder()
                 .url("https://me-inbox.eservice.emarsys.net/api/notifications")

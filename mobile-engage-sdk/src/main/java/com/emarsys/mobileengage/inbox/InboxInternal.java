@@ -84,15 +84,14 @@ public class InboxInternal {
         });
     }
 
-
     private Map<String, String> createBaseHeaders(MobileEngageConfig config) {
         Map<String, String> result = new HashMap<>();
 
         result.put("Authorization", HeaderUtils.createBasicAuth(config.getApplicationCode(), config.getApplicationPassword()));
         result.put("x-ems-me-hardware-id", new DeviceInfo(config.getApplication()).getHwid());
         result.put("x-ems-me-application-code", config.getApplicationCode());
-        result.put("x-ems-me-contactfield-id", String.valueOf(appLoginParameters.getContactFieldId()));
-        result.put("x-ems-me-contactfield-value", appLoginParameters.getContactFieldValue());
+        result.put("x-ems-me-contact-field-id", String.valueOf(appLoginParameters.getContactFieldId()));
+        result.put("x-ems-me-contact-field-value", appLoginParameters.getContactFieldValue());
 
         return result;
     }
