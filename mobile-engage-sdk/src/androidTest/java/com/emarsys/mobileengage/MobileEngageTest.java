@@ -7,6 +7,7 @@ import android.support.test.runner.AndroidJUnit4;
 
 import com.emarsys.mobileengage.inbox.InboxInternal;
 import com.emarsys.mobileengage.inbox.InboxResultListener;
+import com.emarsys.mobileengage.inbox.ResetBadgeCountResultListener;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -152,9 +153,22 @@ public class MobileEngageTest {
     }
 
     @Test
-    public void testFetchNotifications_callsInternal() throws Exception {
+    public void testFetchNotifications_callsInternal() {
         InboxResultListener inboxListenerMock = mock(InboxResultListener.class);
         MobileEngage.Inbox.fetchNotifications(inboxListenerMock);
         verify(inboxInternal).fetchNotifications(inboxListenerMock);
+    }
+
+    @Test
+    public void testResetBadgeCount_callsInternal() {
+        ResetBadgeCountResultListener listener = mock(ResetBadgeCountResultListener.class);
+        MobileEngage.Inbox.resetBadgeCount(listener);
+        verify(inboxInternal).resetBadgeCount(listener);
+    }
+
+    @Test
+    public void testResetBadgeCount_zeroArgs_callsInternal_withNullListener() {
+        MobileEngage.Inbox.resetBadgeCount();
+        verify(inboxInternal).resetBadgeCount(null);
     }
 }

@@ -9,6 +9,7 @@ import com.emarsys.core.queue.sqlite.SqliteQueue;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.response.ResponseModel;
 import com.emarsys.mobileengage.fake.FakeInboxResultListener;
+import com.emarsys.mobileengage.fake.FakeResetBadgeCountResultListener;
 import com.emarsys.mobileengage.fake.FakeStatusListener;
 import com.emarsys.mobileengage.testUtil.ConnectionTestUtils;
 import com.emarsys.mobileengage.testUtil.TestDbHelper;
@@ -29,8 +30,10 @@ public class NotificationInboxIntegrationTest {
 
     private CountDownLatch latch;
     private CountDownLatch inboxLatch;
+    private CountDownLatch resetLatch;
     private FakeStatusListener listener;
     private FakeInboxResultListener inboxListener;
+    private FakeResetBadgeCountResultListener resetListener;
 
     @Rule
     public Timeout globalTimeout = Timeout.seconds(30);
@@ -72,11 +75,13 @@ public class NotificationInboxIntegrationTest {
         MobileEngage.instance.initializeRequestManager(config.getApplicationCode(), config.getApplicationPassword());
 
         inboxLatch = new CountDownLatch(1);
+        resetLatch = new CountDownLatch(1);
         inboxListener = new FakeInboxResultListener(inboxLatch, FakeInboxResultListener.Mode.MAIN_THREAD);
+        resetListener = new FakeResetBadgeCountResultListener(resetLatch);
     }
 
     @Test
-    public void fetchNotifications() throws Exception {
+    public void fetchNotifications() throws InterruptedException {
         MobileEngage.appLogin(3, "test@test.com");
         latch.await();
 
@@ -87,5 +92,18 @@ public class NotificationInboxIntegrationTest {
         assertEquals(0, inboxListener.errorCount);
         assertNull(inboxListener.errorCause);
         assertNotNull(inboxListener.resultStatus);
+    }
+
+    @Test
+    public void resetBadgeCount() throws InterruptedException {
+        MobileEngage.appLogin(3, "test@test.com");
+        latch.await();
+
+        MobileEngage.Inbox.resetBadgeCount(resetListener);
+        resetLatch.await();
+
+        assertEquals(1, resetListener.successCount);
+        assertEquals(0, resetListener.errorCount);
+        assertNull(resetListener.errorCause);
     }
 }

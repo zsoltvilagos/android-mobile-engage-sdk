@@ -7,6 +7,7 @@ import android.support.annotation.Nullable;
 import com.emarsys.core.util.Assert;
 import com.emarsys.mobileengage.inbox.InboxInternal;
 import com.emarsys.mobileengage.inbox.InboxResultListener;
+import com.emarsys.mobileengage.inbox.ResetBadgeCountResultListener;
 import com.emarsys.mobileengage.inbox.model.NotificationInboxStatus;
 
 import java.util.Map;
@@ -21,6 +22,14 @@ public class MobileEngage {
         public static void fetchNotifications(@NonNull InboxResultListener<NotificationInboxStatus> resultListener) {
             Assert.notNull(resultListener, "ResultListener must not be null!");
             inboxInstance.fetchNotifications(resultListener);
+        }
+
+        public static void resetBadgeCount() {
+            resetBadgeCount(null);
+        }
+
+        public static void resetBadgeCount(@Nullable ResetBadgeCountResultListener resultListener) {
+            inboxInstance.resetBadgeCount(resultListener);
         }
     }
 

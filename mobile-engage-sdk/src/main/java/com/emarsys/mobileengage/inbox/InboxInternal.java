@@ -42,7 +42,12 @@ public class InboxInternal {
         if (appLoginParameters != null && appLoginParameters.hasCredentials()) {
             handleFetchRequest(resultListener);
         } else {
-            handleMissingApploginParameters(resultListener);
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    resultListener.onError(new NotificationInboxException("AppLogin must be called before calling fetchNotifications!"));
+                }
+            });
         }
     }
 
@@ -61,11 +66,7 @@ public class InboxInternal {
 
             @Override
             public void onError(String id, ResponseModel responseModel) {
-                resultListener.onError(new MobileEngageException(
-                        responseModel.getStatusCode(),
-                        responseModel.getMessage(),
-                        responseModel.getBody())
-                );
+                resultListener.onError(new MobileEngageException(responseModel));
             }
 
             @Override
@@ -75,11 +76,48 @@ public class InboxInternal {
         });
     }
 
-    private void handleMissingApploginParameters(final InboxResultListener<NotificationInboxStatus> resultListener) {
-        handler.post(new Runnable() {
+    public void resetBadgeCount(final ResetBadgeCountResultListener listener) {
+        if (appLoginParameters != null && appLoginParameters.hasCredentials()) {
+            handleResetRequest(listener);
+        } else {
+            if (listener != null) {
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        listener.onError(new NotificationInboxException("AppLogin must be called before calling fetchNotifications!"));
+                    }
+                });
+            }
+        }
+    }
+
+    private void handleResetRequest(final ResetBadgeCountResultListener listener) {
+        RequestModel model = new RequestModel.Builder()
+                .url("https://me-inbox.eservice.emarsys.net/api/reset-badge-count")
+                .headers(createBaseHeaders(config))
+                .method(RequestMethod.POST)
+                .build();
+
+        client.execute(model, new CoreCompletionHandler() {
             @Override
-            public void run() {
-                resultListener.onError(new NotificationInboxException("AppLogin must be called before calling fetchNotifications!"));
+            public void onSuccess(String id, ResponseModel responseModel) {
+                if (listener != null) {
+                    listener.onSuccess();
+                }
+            }
+
+            @Override
+            public void onError(String id, ResponseModel responseModel) {
+                if (listener != null) {
+                    listener.onError(new MobileEngageException(responseModel));
+                }
+            }
+
+            @Override
+            public void onError(String id, Exception cause) {
+                if (listener != null) {
+                    listener.onError(cause);
+                }
             }
         });
     }

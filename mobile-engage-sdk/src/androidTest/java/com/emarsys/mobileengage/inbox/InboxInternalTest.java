@@ -14,6 +14,7 @@ import com.emarsys.mobileengage.AppLoginParameters;
 import com.emarsys.mobileengage.MobileEngageConfig;
 import com.emarsys.mobileengage.MobileEngageException;
 import com.emarsys.mobileengage.fake.FakeInboxResultListener;
+import com.emarsys.mobileengage.fake.FakeResetBadgeCountResultListener;
 import com.emarsys.mobileengage.fake.FakeRestClient;
 import com.emarsys.mobileengage.inbox.model.Notification;
 import com.emarsys.mobileengage.inbox.model.NotificationInboxStatus;
@@ -50,6 +51,7 @@ public class InboxInternalTest {
     private InboxInternal inbox;
     private CountDownLatch latch;
     private InboxResultListener<NotificationInboxStatus> resultListenerMock;
+    private ResetBadgeCountResultListener resetListenerMock;
     private MobileEngageConfig config;
 
     private AppLoginParameters appLoginParameters_withCredentials;
@@ -69,6 +71,7 @@ public class InboxInternalTest {
         inbox = new InboxInternal(config);
 
         resultListenerMock = mock(InboxResultListener.class);
+        resetListenerMock = mock(ResetBadgeCountResultListener.class);
         appLoginParameters_withCredentials = new AppLoginParameters(30, "value");
         appLoginParameters_noCredentials = new AppLoginParameters();
         appLoginParameters_missing = null;
@@ -86,20 +89,7 @@ public class InboxInternalTest {
 
     @Test
     public void testFetchNotifications_shouldMakeRequest_viaRestClient() {
-        DeviceInfo deviceInfo = new DeviceInfo(InstrumentationRegistry.getContext());
-
-        Map<String, String> headers = new HashMap<>();
-        headers.put("Authorization", HeaderUtils.createBasicAuth(config.getApplicationCode(), config.getApplicationPassword()));
-        headers.put("x-ems-me-hardware-id", deviceInfo.getHwid());
-        headers.put("x-ems-me-application-code", config.getApplicationCode());
-        headers.put("x-ems-me-contact-field-id", String.valueOf(appLoginParameters_withCredentials.getContactFieldId()));
-        headers.put("x-ems-me-contact-field-value", appLoginParameters_withCredentials.getContactFieldValue());
-
-        RequestModel expected = new RequestModel.Builder()
-                .url("https://me-inbox.eservice.emarsys.net/api/notifications")
-                .headers(headers)
-                .method(RequestMethod.GET)
-                .build();
+        RequestModel expected = createRequestModel("https://me-inbox.eservice.emarsys.net/api/notifications", RequestMethod.GET);
 
         RestClient mockRestClient = mock(RestClient.class);
         inbox.client = mockRestClient;
@@ -264,6 +254,259 @@ public class InboxInternalTest {
         latch.await();
 
         Assert.assertEquals(1, listener.errorCount);
+    }
+
+    @Test
+    public void testResetBadgeCount_shouldMakeRequest_viaRestClient() {
+        RequestModel expected = createRequestModel("https://me-inbox.eservice.emarsys.net/api/reset-badge-count", RequestMethod.POST);
+
+        RestClient mockRestClient = mock(RestClient.class);
+        inbox.client = mockRestClient;
+
+        inbox.setAppLoginParameters(appLoginParameters_withCredentials);
+        inbox.resetBadgeCount(resetListenerMock);
+
+        ArgumentCaptor<RequestModel> requestCaptor = ArgumentCaptor.forClass(RequestModel.class);
+        verify(mockRestClient).execute(requestCaptor.capture(), any(CoreCompletionHandler.class));
+
+        RequestModel requestModel = requestCaptor.getValue();
+        Assert.assertNotNull(requestModel.getId());
+        Assert.assertNotNull(requestModel.getTimestamp());
+        Assert.assertEquals(expected.getUrl(), requestModel.getUrl());
+        Assert.assertEquals(expected.getHeaders(), requestModel.getHeaders());
+        Assert.assertEquals(expected.getMethod(), requestModel.getMethod());
+    }
+
+    @Test
+    public void testResetBadgeCount_listener_success() throws InterruptedException {
+        inbox.setAppLoginParameters(appLoginParameters_withCredentials);
+
+        inbox.client = new FakeRestClient(createSuccessResponse(), FakeRestClient.Mode.SUCCESS);
+
+        FakeResetBadgeCountResultListener listener = new FakeResetBadgeCountResultListener(latch);
+        inbox.resetBadgeCount(listener);
+
+        latch.await();
+
+        Assert.assertEquals(1, listener.successCount);
+    }
+
+    @Test
+    public void testResetBadgeCount_listener_success_shouldBeCalledOnMainThread() throws InterruptedException {
+        inbox.setAppLoginParameters(appLoginParameters_withCredentials);
+
+        inbox.client = new FakeRestClient(createSuccessResponse(), FakeRestClient.Mode.SUCCESS);
+
+        FakeResetBadgeCountResultListener listener = new FakeResetBadgeCountResultListener(latch, FakeResetBadgeCountResultListener.Mode.MAIN_THREAD);
+        inbox.resetBadgeCount(listener);
+
+        latch.await();
+
+        Assert.assertEquals(1, listener.successCount);
+    }
+
+    @Test
+    public void testResetBadgeCount_listener_failureWithException() throws InterruptedException {
+        inbox.setAppLoginParameters(appLoginParameters_withCredentials);
+
+        Exception expectedException = new Exception("FakeRestClientException");
+        inbox.client = new FakeRestClient(expectedException);
+
+        FakeResetBadgeCountResultListener listener = new FakeResetBadgeCountResultListener(latch);
+        inbox.resetBadgeCount(listener);
+
+        latch.await();
+
+        Assert.assertEquals(expectedException, listener.errorCause);
+        Assert.assertEquals(1, listener.errorCount);
+    }
+
+    @Test
+    public void testResetBadgeCount_listener_failureWithException_shouldBeCalledOnMainThread() throws InterruptedException {
+        inbox.setAppLoginParameters(appLoginParameters_withCredentials);
+
+        inbox.client = new FakeRestClient(new Exception());
+
+        FakeResetBadgeCountResultListener listener = new FakeResetBadgeCountResultListener(latch, FakeResetBadgeCountResultListener.Mode.MAIN_THREAD);
+        inbox.resetBadgeCount(listener);
+
+        latch.await();
+
+        Assert.assertEquals(1, listener.errorCount);
+    }
+
+    @Test
+    public void testResetBadgeCount_listener_failureWithResponseModel() throws InterruptedException {
+        inbox.setAppLoginParameters(appLoginParameters_withCredentials);
+
+        ResponseModel responseModel = new ResponseModel.Builder().statusCode(400).message("Bad request").build();
+        inbox.client = new FakeRestClient(responseModel, FakeRestClient.Mode.ERROR_RESPONSE_MODEL);
+
+        FakeResetBadgeCountResultListener listener = new FakeResetBadgeCountResultListener(latch);
+        inbox.resetBadgeCount(listener);
+
+        latch.await();
+
+        MobileEngageException expectedException = new MobileEngageException(
+                responseModel.getStatusCode(),
+                responseModel.getMessage(),
+                responseModel.getBody());
+
+        MobileEngageException resultException = (MobileEngageException) listener.errorCause;
+        Assert.assertEquals(expectedException.getStatusCode(), resultException.getStatusCode());
+        Assert.assertEquals(expectedException.getMessage(), resultException.getMessage());
+        Assert.assertEquals(expectedException.getBody(), resultException.getBody());
+        Assert.assertEquals(1, listener.errorCount);
+    }
+
+    @Test
+    public void testResetBadgeCount_listener_failureWithResponseModel_shouldBeCalledOnMainThread() throws InterruptedException {
+        inbox.setAppLoginParameters(appLoginParameters_withCredentials);
+
+        ResponseModel responseModel = new ResponseModel.Builder().statusCode(400).message("Bad request").build();
+        inbox.client = new FakeRestClient(responseModel, FakeRestClient.Mode.ERROR_RESPONSE_MODEL);
+
+        FakeResetBadgeCountResultListener listener = new FakeResetBadgeCountResultListener(latch, FakeResetBadgeCountResultListener.Mode.MAIN_THREAD);
+        inbox.resetBadgeCount(listener);
+
+        latch.await();
+
+        Assert.assertEquals(1, listener.errorCount);
+    }
+
+    @Test
+    public void testResetBadgeCount_listener_failureWithParametersNotSet() throws InterruptedException {
+        inbox.setAppLoginParameters(appLoginParameters_missing);
+
+        FakeResetBadgeCountResultListener listener = new FakeResetBadgeCountResultListener(latch);
+        inbox.resetBadgeCount(listener);
+
+        latch.await();
+
+        Assert.assertEquals(NotificationInboxException.class, listener.errorCause.getClass());
+        Assert.assertEquals(1, listener.errorCount);
+    }
+
+    @Test
+    public void testResetBadgeCount_listener_failureWithParametersNotSet_shouldBeCalledOnMainThread() throws InterruptedException {
+        inbox.setAppLoginParameters(appLoginParameters_missing);
+
+        FakeResetBadgeCountResultListener listener = new FakeResetBadgeCountResultListener(latch, FakeResetBadgeCountResultListener.Mode.MAIN_THREAD);
+        inbox.resetBadgeCount(listener);
+
+        latch.await();
+
+        Assert.assertEquals(1, listener.errorCount);
+    }
+
+    @Test
+    public void testResetBadgeCount_listener_failureWithParametersSet_butLacksCredentials() throws InterruptedException {
+        inbox.setAppLoginParameters(appLoginParameters_noCredentials);
+
+        FakeResetBadgeCountResultListener listener = new FakeResetBadgeCountResultListener(latch);
+        inbox.resetBadgeCount(listener);
+
+        latch.await();
+
+        Assert.assertEquals(NotificationInboxException.class, listener.errorCause.getClass());
+        Assert.assertEquals(1, listener.errorCount);
+    }
+
+    @Test
+    public void testResetBadgeCount_listener_failureWithParametersSet_butLacksCredentials_shouldBeCalledOnMainThread() throws InterruptedException {
+        inbox.setAppLoginParameters(appLoginParameters_noCredentials);
+
+        FakeResetBadgeCountResultListener listener = new FakeResetBadgeCountResultListener(latch, FakeResetBadgeCountResultListener.Mode.MAIN_THREAD);
+        inbox.resetBadgeCount(listener);
+
+        latch.await();
+
+        Assert.assertEquals(1, listener.errorCount);
+    }
+
+    @Test
+    public void testResetBadgeCount_shouldNotFail_withNullListener_success() {
+        inbox.setAppLoginParameters(appLoginParameters_withCredentials);
+
+        inbox.client = new FakeRestClient(createSuccessResponse(), FakeRestClient.Mode.SUCCESS);
+
+        try {
+            inbox.resetBadgeCount(null);
+            Thread.sleep(150);
+        } catch (Exception e) {
+            Assert.fail("Should not throw exception!");
+        }
+    }
+
+    @Test
+    public void testResetBadgeCount_shouldNotFail_withNullListener_failureWithException() {
+        inbox.setAppLoginParameters(appLoginParameters_withCredentials);
+
+        Exception expectedException = new Exception("FakeRestClientException");
+        inbox.client = new FakeRestClient(expectedException);
+
+        try {
+            inbox.resetBadgeCount(null);
+            Thread.sleep(150);
+        } catch (Exception e) {
+            Assert.fail("Should not throw exception!");
+        }
+    }
+
+    @Test
+    public void testResetBadgeCount_shouldNotFail_withNullListener_failureWithResponseModel() {
+        inbox.setAppLoginParameters(appLoginParameters_withCredentials);
+
+        ResponseModel responseModel = new ResponseModel.Builder().statusCode(400).message("Bad request").build();
+        inbox.client = new FakeRestClient(responseModel, FakeRestClient.Mode.ERROR_RESPONSE_MODEL);
+
+        try {
+            inbox.resetBadgeCount(null);
+            Thread.sleep(150);
+        } catch (Exception e) {
+            Assert.fail("Should not throw exception!");
+        }
+    }
+
+    @Test
+    public void testResetBadgeCount_shouldNotFail_withNullListener_failureWithParametersNotSet() {
+        inbox.setAppLoginParameters(appLoginParameters_missing);
+
+        try {
+            inbox.resetBadgeCount(null);
+            Thread.sleep(150);
+        } catch (Exception e) {
+            Assert.fail("Should not throw exception!");
+        }
+    }
+
+    @Test
+    public void testResetBadgeCount_shouldNotFail_withNullListener_failureWithParametersSet_butLacksCredentials() {
+        inbox.setAppLoginParameters(appLoginParameters_noCredentials);
+
+        try {
+            inbox.resetBadgeCount(null);
+            Thread.sleep(150);
+        } catch (Exception e) {
+            Assert.fail("Should not throw exception!");
+        }
+    }
+
+    private RequestModel createRequestModel(String path, RequestMethod method) {
+        DeviceInfo deviceInfo = new DeviceInfo(InstrumentationRegistry.getContext());
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Authorization", HeaderUtils.createBasicAuth(config.getApplicationCode(), config.getApplicationPassword()));
+        headers.put("x-ems-me-hardware-id", deviceInfo.getHwid());
+        headers.put("x-ems-me-application-code", config.getApplicationCode());
+        headers.put("x-ems-me-contact-field-id", String.valueOf(appLoginParameters_withCredentials.getContactFieldId()));
+        headers.put("x-ems-me-contact-field-value", appLoginParameters_withCredentials.getContactFieldValue());
+
+        return new RequestModel.Builder()
+                .url(path)
+                .headers(headers)
+                .method(method)
+                .build();
     }
 
     private List<Notification> createNotificationList() throws JSONException {
