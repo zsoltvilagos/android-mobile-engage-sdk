@@ -8,13 +8,18 @@ import android.support.test.runner.AndroidJUnit4;
 import com.emarsys.mobileengage.inbox.InboxInternal;
 import com.emarsys.mobileengage.inbox.InboxResultListener;
 import com.emarsys.mobileengage.inbox.ResetBadgeCountResultListener;
+import com.emarsys.mobileengage.inbox.model.Notification;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 
+import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.Assert.assertNotNull;
@@ -125,6 +130,13 @@ public class MobileEngageTest {
         Intent intent = mock(Intent.class);
         MobileEngage.trackMessageOpen(intent);
         verify(mobileEngageInternal).trackMessageOpen(intent);
+    }
+
+    @Test
+    public void testTrackMessageOpen_message_callsInternal() throws JSONException {
+        Notification message = new Notification("id", "title", new HashMap<String, String>(), new JSONObject(), 7200, new Date());
+        MobileEngage.trackMessageOpen(message);
+        verify(mobileEngageInternal).trackMessageOpen(message);
     }
 
     @Test(expected = IllegalArgumentException.class)

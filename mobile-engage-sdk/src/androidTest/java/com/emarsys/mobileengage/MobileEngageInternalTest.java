@@ -11,7 +11,9 @@ import com.emarsys.core.DeviceInfo;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.request.RequestModel;
 import com.emarsys.core.util.CoreJsonObject;
+import com.emarsys.mobileengage.inbox.model.Notification;
 
+import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -19,6 +21,7 @@ import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -249,6 +252,43 @@ public class MobileEngageInternalTest {
 
         RequestModel result = captor.getValue();
         assertRequestModels(expected, result);
+    }
+
+    @Test
+    public void testTrackMessageOpen_message_requestManagerCalledWithCorrectRequestModel() throws Exception {
+        Notification message = new Notification("id1", "title", new HashMap<String, String>(), new JSONObject(), 7200, new Date());
+        Map<String, Object> payload = createBasePayload();
+        payload.put("sid", "id1");
+        payload.put("source", "inbox");
+
+        RequestModel expected = new RequestModel.Builder()
+                .url(ENDPOINT_BASE + "events/message_open")
+                .payload(payload)
+                .headers(defaultHeaders)
+                .build();
+
+        ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
+
+        mobileEngage.trackMessageOpen(message);
+
+        verify(manager).setDefaultHeaders(defaultHeaders);
+        verify(manager).submit(captor.capture());
+
+        RequestModel result = captor.getValue();
+        assertRequestModels(expected, result);
+    }
+
+    @Test
+    public void trackMessageOpen_message_returnsWithRequestId() {
+        Notification message = new Notification("id1", "title", new HashMap<String, String>(), new JSONObject(), 7200, new Date());
+        ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
+
+        String result = mobileEngage.trackMessageOpen(message);
+
+        verify(manager).setDefaultHeaders(defaultHeaders);
+        verify(manager).submit(captor.capture());
+
+        assertEquals(captor.getValue().getId(), result);
     }
 
     @Test

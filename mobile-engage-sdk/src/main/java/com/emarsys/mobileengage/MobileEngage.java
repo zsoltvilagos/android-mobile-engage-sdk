@@ -8,6 +8,7 @@ import com.emarsys.core.util.Assert;
 import com.emarsys.mobileengage.inbox.InboxInternal;
 import com.emarsys.mobileengage.inbox.InboxResultListener;
 import com.emarsys.mobileengage.inbox.ResetBadgeCountResultListener;
+import com.emarsys.mobileengage.inbox.model.Notification;
 import com.emarsys.mobileengage.inbox.model.NotificationInboxStatus;
 
 import java.util.Map;
@@ -73,6 +74,10 @@ public class MobileEngage {
     public static String trackMessageOpen(@NonNull Intent intent) {
         Assert.notNull(intent, "Intent must not be null!");
         return instance.trackMessageOpen(intent);
+    }
+
+    public static String trackMessageOpen(Notification message) {
+        return instance.trackMessageOpen(message);
     }
 
 }

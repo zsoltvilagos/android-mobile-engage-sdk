@@ -17,6 +17,7 @@ import com.emarsys.core.request.RequestModel;
 import com.emarsys.core.response.ResponseModel;
 import com.emarsys.core.util.CoreJsonObject;
 import com.emarsys.core.util.HeaderUtils;
+import com.emarsys.mobileengage.inbox.model.Notification;
 import com.google.firebase.iid.FirebaseInstanceId;
 
 import org.json.JSONException;
@@ -199,6 +200,21 @@ public class MobileEngageInternal {
         String messageId = getMessageId(intent);
 
         return handleMessageOpen(messageId);
+    }
+
+    String trackMessageOpen(Notification message) {
+        this.appLoginParameters = new AppLoginParameters();
+
+        Map<String, Object> payload = createBasePayload();
+        payload.put("source", "inbox");
+        payload.put("sid", message.getId());
+        RequestModel model = new RequestModel.Builder()
+                .url(getEventUrl("message_open"))
+                .payload(payload)
+                .build();
+
+        manager.submit(model);
+        return model.getId();
     }
 
     String getMessageId(Intent intent) {
