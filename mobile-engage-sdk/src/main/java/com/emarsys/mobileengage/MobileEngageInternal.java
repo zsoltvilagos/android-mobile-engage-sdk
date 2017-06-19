@@ -203,11 +203,9 @@ public class MobileEngageInternal {
     }
 
     String trackMessageOpen(Notification message) {
-        this.appLoginParameters = new AppLoginParameters();
-
         Map<String, Object> payload = createBasePayload();
         payload.put("source", "inbox");
-        payload.put("sid", message.getId());
+        payload.put("sid", message.getSid());
         RequestModel model = new RequestModel.Builder()
                 .url(getEventUrl("message_open"))
                 .payload(payload)

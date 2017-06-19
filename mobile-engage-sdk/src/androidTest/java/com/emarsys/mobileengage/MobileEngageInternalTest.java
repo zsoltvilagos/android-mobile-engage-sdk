@@ -256,9 +256,9 @@ public class MobileEngageInternalTest {
 
     @Test
     public void testTrackMessageOpen_message_requestManagerCalledWithCorrectRequestModel() throws Exception {
-        Notification message = new Notification("id1", "title", new HashMap<String, String>(), new JSONObject(), 7200, new Date());
+        Notification message = new Notification("id1", "sid1", "title", new HashMap<String, String>(), new JSONObject(), 7200, new Date());
         Map<String, Object> payload = createBasePayload();
-        payload.put("sid", "id1");
+        payload.put("sid", "sid1");
         payload.put("source", "inbox");
 
         RequestModel expected = new RequestModel.Builder()
@@ -280,7 +280,7 @@ public class MobileEngageInternalTest {
 
     @Test
     public void trackMessageOpen_message_returnsWithRequestId() {
-        Notification message = new Notification("id1", "title", new HashMap<String, String>(), new JSONObject(), 7200, new Date());
+        Notification message = new Notification("id1", "sid1", "title", new HashMap<String, String>(), new JSONObject(), 7200, new Date());
         ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
 
         String result = mobileEngage.trackMessageOpen(message);

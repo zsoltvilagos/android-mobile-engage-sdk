@@ -20,6 +20,7 @@ public class InboxParseUtilsTest {
 
     public static final String NOTIFICATION_STRING_1 = "{" +
             "\"id\":\"id1\", " +
+            "\"sid\":\"sid1\", " +
             "\"title\":\"title1\", " +
             "\"custom_data\": {" +
             "\"data1\":\"dataValue1\"," +
@@ -34,6 +35,7 @@ public class InboxParseUtilsTest {
             "}";
     public static final String NOTIFICATION_STRING_2 = "{" +
             "\"id\":\"id2\", " +
+            "\"sid\":\"sid2\", " +
             "\"title\":\"title2\", " +
             "\"custom_data\": {" +
             "\"data3\":\"dataValue3\"," +
@@ -48,6 +50,7 @@ public class InboxParseUtilsTest {
             "}";
     public static final String NOTIFICATION_STRING_3 = "{" +
             "\"id\":\"id3\", " +
+            "\"sid\":\"sid3\", " +
             "\"title\":\"title3\", " +
             "\"custom_data\": {" +
             "\"data5\":\"dataValue5\"," +
@@ -94,9 +97,9 @@ public class InboxParseUtilsTest {
         rootParams3.put("param5", "paramValue5");
         rootParams3.put("param6", "paramValue6");
 
-        notification1 = new Notification("id1", "title1", customData1, rootParams1, 300, new Date(10000000));
-        notification2 = new Notification("id2", "title2", customData2, rootParams2, 200, new Date(30000000));
-        notification3 = new Notification("id3", "title3", customData3, rootParams3, 100, new Date(25000000));
+        notification1 = new Notification("id1", "sid1", "title1", customData1, rootParams1, 300, new Date(10000000));
+        notification2 = new Notification("id2", "sid2", "title2", customData2, rootParams2, 200, new Date(30000000));
+        notification3 = new Notification("id3", "sid3", "title3", customData3, rootParams3, 100, new Date(25000000));
 
         notifications = Arrays.asList(notification1, notification2, notification3);
     }
@@ -211,7 +214,7 @@ public class InboxParseUtilsTest {
         rootParams.put("param1", "paramValue1");
         rootParams.put("param2", "paramValue2");
 
-        expected.add(new Notification("id1", "title1", customData, rootParams, 300, new Date(10000000)));
+        expected.add(notification1);
 
         String incorrect1 = "{" +
                 "\"key\":\"value\"" +
@@ -245,21 +248,6 @@ public class InboxParseUtilsTest {
 
     @Test
     public void parseNotification_withCorrectString_returnsNotification() throws JSONException {
-        String json = "{" +
-                "\"id\":\"notificationId\", " +
-                "\"title\":\"notification title\", " +
-                "\"custom_data\": {" +
-                "\"data1\":\"dataValue1\"," +
-                "\"data2\":\"dataValue2\"" +
-                "}," +
-                "\"root_params\": {" +
-                "\"param1\":\"paramValue1\"," +
-                "\"param2\":\"paramValue2\"" +
-                "}," +
-                "\"expiration_time\": 300, " +
-                "\"received_at\":87647000" +
-                "}";
-
         Map<String, String> customData = new HashMap<>();
         customData.put("data1", "dataValue1");
         customData.put("data2", "dataValue2");
@@ -268,10 +256,10 @@ public class InboxParseUtilsTest {
         rootParams.put("param1", "paramValue1");
         rootParams.put("param2", "paramValue2");
 
-        Notification expected = new Notification("notificationId", "notification title", customData, rootParams, 300, new Date(87647000));
+        Notification expected = notification1;
 
 
-        Notification result = InboxParseUtils.parseNotification(json);
+        Notification result = InboxParseUtils.parseNotification(NOTIFICATION_STRING_1);
         Assert.assertEquals(expected, result);
     }
 

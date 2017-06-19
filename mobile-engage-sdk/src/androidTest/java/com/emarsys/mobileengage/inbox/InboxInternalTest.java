@@ -536,9 +536,9 @@ public class InboxInternalTest {
         rootParams3.put("param6", "paramValue6");
 
         return Arrays.asList(
-                new Notification("id1", "title1", customData1, rootParams1, 300, new Date(10000000)),
-                new Notification("id2", "title2", customData2, rootParams2, 200, new Date(30000000)),
-                new Notification("id3", "title3", customData3, rootParams3, 100, new Date(25000000))
+                new Notification("id1", "sid1", "title1", customData1, rootParams1, 300, new Date(10000000)),
+                new Notification("id2", "sid2", "title2", customData2, rootParams2, 200, new Date(30000000)),
+                new Notification("id3", "sid3", "title3", customData3, rootParams3, 100, new Date(25000000))
 
         );
     }
@@ -546,6 +546,7 @@ public class InboxInternalTest {
     private ResponseModel createSuccessResponse() {
         String notificationString1 = "{" +
                 "\"id\":\"id1\", " +
+                "\"sid\":\"sid1\", " +
                 "\"title\":\"title1\", " +
                 "\"custom_data\": {" +
                 "\"data1\":\"dataValue1\"," +
@@ -561,6 +562,7 @@ public class InboxInternalTest {
 
         String notificationString2 = "{" +
                 "\"id\":\"id2\", " +
+                "\"sid\":\"sid2\", " +
                 "\"title\":\"title2\", " +
                 "\"custom_data\": {" +
                 "\"data3\":\"dataValue3\"," +
@@ -576,6 +578,7 @@ public class InboxInternalTest {
 
         String notificationString3 = "{" +
                 "\"id\":\"id3\", " +
+                "\"sid\":\"sid3\", " +
                 "\"title\":\"title3\", " +
                 "\"custom_data\": {" +
                 "\"data5\":\"dataValue5\"," +

@@ -11,14 +11,17 @@ import com.emarsys.core.queue.sqlite.SqliteQueue;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.response.ResponseModel;
 import com.emarsys.mobileengage.fake.FakeStatusListener;
+import com.emarsys.mobileengage.inbox.model.Notification;
 import com.emarsys.mobileengage.testUtil.ConnectionTestUtils;
 import com.emarsys.mobileengage.testUtil.TestDbHelper;
 
+import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.Timeout;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -115,6 +118,20 @@ public class MobileEngageIntegrationTest {
         intent.putExtra("payload", payload);
 
         eventuallyAssertSuccess(MobileEngage.trackMessageOpen(intent));
+    }
+
+    @Test
+    public void testTrackMessageOpen_notification() throws Exception {
+        Notification notification = new Notification(
+                "id",
+                "sid",
+                "title",
+                new HashMap<String, String>(),
+                new JSONObject(),
+                2000,
+                new Date());
+
+        eventuallyAssertSuccess(MobileEngage.trackMessageOpen(notification));
     }
 
     private void eventuallyAssertSuccess(String id) throws Exception {

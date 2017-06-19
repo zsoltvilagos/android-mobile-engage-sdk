@@ -74,12 +74,13 @@ public class InboxParseUtils {
             try {
                 JSONObject json = new JSONObject(jsonString);
                 String id = json.getString("id");
+                String sid = json.getString("sid");
                 String title = json.getString("title");
                 Map<String, String> customData = convertFlatJsonObject(new JSONObject(json.getString("custom_data")));
                 JSONObject rootParams = new JSONObject(json.getString("root_params"));
                 int expirationTime = json.getInt("expiration_time");
                 Date receivedAt = new Date(json.getLong("received_at"));
-                result = new Notification(id, title, customData, rootParams, expirationTime, receivedAt);
+                result = new Notification(id, sid, title, customData, rootParams, expirationTime, receivedAt);
             } catch (JSONException e) {
             }
         }
