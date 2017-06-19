@@ -124,7 +124,7 @@ public class MobileEngageIntegrationTest {
     public void testTrackMessageOpen_notification() throws Exception {
         Notification notification = new Notification(
                 "id",
-                "sid",
+                "161e_D/1UiO/jCmE4",
                 "title",
                 new HashMap<String, String>(),
                 new JSONObject(),
