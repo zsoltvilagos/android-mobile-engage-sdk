@@ -4,7 +4,6 @@ import android.support.annotation.NonNull;
 
 import org.json.JSONObject;
 
-import java.util.Date;
 import java.util.Map;
 
 public class Notification {
@@ -14,9 +13,9 @@ public class Notification {
     private final Map<String, String> customData;
     private final JSONObject rootParams;
     private final int expirationTime;
-    private final Date receivedAt;
+    private final long receivedAt;
 
-    public Notification(String id, String sid, String title, Map<String, String> customData, JSONObject rootParams, int expirationTime, Date receivedAt) {
+    public Notification(String id, String sid, String title, Map<String, String> customData, JSONObject rootParams, int expirationTime, long receivedAt) {
         this.id = id;
         this.sid = sid;
         this.title = title;
@@ -57,7 +56,7 @@ public class Notification {
     }
 
     @NonNull
-    public Date getReceivedAt() {
+    public long getReceivedAt() {
         return receivedAt;
     }
 
@@ -76,7 +75,7 @@ public class Notification {
             return false;
         if (rootParams != null ? !rootParams.toString().equals(that.rootParams.toString()) : that.rootParams != null)
             return false;
-        return receivedAt != null ? receivedAt.equals(that.receivedAt) : that.receivedAt == null;
+        return receivedAt == that.receivedAt;
     }
 
     @Override
@@ -87,7 +86,7 @@ public class Notification {
         result = 31 * result + (customData != null ? customData.hashCode() : 0);
         result = 31 * result + (rootParams != null ? rootParams.hashCode() : 0);
         result = 31 * result + expirationTime;
-        result = 31 * result + (receivedAt != null ? receivedAt.hashCode() : 0);
+        result = 31 * result + (int) (receivedAt ^ (receivedAt >>> 32));
         return result;
     }
 }

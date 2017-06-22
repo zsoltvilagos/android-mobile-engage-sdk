@@ -129,7 +129,7 @@ public class MobileEngageIntegrationTest {
                 new HashMap<String, String>(),
                 new JSONObject(),
                 2000,
-                new Date());
+                new Date().getTime());
 
         eventuallyAssertSuccess(MobileEngage.trackMessageOpen(notification));
     }

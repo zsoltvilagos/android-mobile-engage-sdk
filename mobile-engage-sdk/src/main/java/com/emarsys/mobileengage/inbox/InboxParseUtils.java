@@ -8,7 +8,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -79,7 +78,7 @@ public class InboxParseUtils {
                 Map<String, String> customData = convertFlatJsonObject(new JSONObject(json.getString("custom_data")));
                 JSONObject rootParams = new JSONObject(json.getString("root_params"));
                 int expirationTime = json.getInt("expiration_time");
-                Date receivedAt = new Date(json.getLong("received_at"));
+                long receivedAt = json.getLong("received_at");
                 result = new Notification(id, sid, title, customData, rootParams, expirationTime, receivedAt);
             } catch (JSONException e) {
             }

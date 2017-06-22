@@ -30,7 +30,6 @@ import org.junit.rules.Timeout;
 import org.mockito.ArgumentCaptor;
 
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -536,9 +535,9 @@ public class InboxInternalTest {
         rootParams3.put("param6", "paramValue6");
 
         return Arrays.asList(
-                new Notification("id1", "sid1", "title1", customData1, rootParams1, 300, new Date(10000000)),
-                new Notification("id2", "sid2", "title2", customData2, rootParams2, 200, new Date(30000000)),
-                new Notification("id3", "sid3", "title3", customData3, rootParams3, 100, new Date(25000000))
+                new Notification("id1", "sid1", "title1", customData1, rootParams1, 300, 10000000),
+                new Notification("id2", "sid2", "title2", customData2, rootParams2, 200, 30000000),
+                new Notification("id3", "sid3", "title3", customData3, rootParams3, 100, 25000000)
 
         );
     }

@@ -134,7 +134,7 @@ public class MobileEngageTest {
 
     @Test
     public void testTrackMessageOpen_message_callsInternal() throws JSONException {
-        Notification message = new Notification("id", "sid", "title", new HashMap<String, String>(), new JSONObject(), 7200, new Date());
+        Notification message = new Notification("id", "sid", "title", new HashMap<String, String>(), new JSONObject(), 7200, new Date().getTime());
         MobileEngage.trackMessageOpen(message);
         verify(mobileEngageInternal).trackMessageOpen(message);
     }
