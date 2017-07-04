@@ -9,7 +9,7 @@ public class ConnectionTestUtils {
         ConnectivityManager manager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo info = manager.getActiveNetworkInfo();
         if (info == null || !info.isConnected()) {
-            throw new RuntimeException("Device is not connected!");
+            throw new RuntimeException("Device is not connected to the Internet!");
         }
     }
 }
