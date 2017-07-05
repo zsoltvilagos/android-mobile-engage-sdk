@@ -23,6 +23,7 @@ import com.google.firebase.iid.FirebaseInstanceId;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.lang.ref.WeakReference;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,7 +38,7 @@ public class MobileEngageInternal {
     String pushToken;
     AppLoginParameters appLoginParameters;
 
-    MobileEngageStatusListener statusListener;
+    WeakReference<MobileEngageStatusListener> weakStatusListener;
 
     MobileEngageConfig config;
     DeviceInfo deviceInfo;
@@ -49,8 +50,8 @@ public class MobileEngageInternal {
 
             @Override
             public void onSuccess(final String id, final ResponseModel responseModel) {
-                if (statusListener != null) {
-                    statusListener.onStatusLog(id, responseModel.getMessage());
+                if (weakStatusListener.get() != null) {
+                    weakStatusListener.get().onStatusLog(id, responseModel.getMessage());
                 }
             }
 
@@ -84,7 +85,7 @@ public class MobileEngageInternal {
     private void init(MobileEngageConfig config, RequestManager manager) {
         this.application = config.getApplication();
         this.config = config;
-        this.statusListener = config.getStatusListener();
+        this.weakStatusListener = new WeakReference<>(config.getStatusListener());
 
         this.manager = manager;
         initializeRequestManager(config.getApplicationCode(), config.getApplicationPassword());
@@ -109,7 +110,7 @@ public class MobileEngageInternal {
     }
 
     MobileEngageStatusListener getStatusListener() {
-        return statusListener;
+        return weakStatusListener.get();
     }
 
     RequestManager getManager() {
@@ -132,7 +133,7 @@ public class MobileEngageInternal {
     }
 
     void setStatusListener(MobileEngageStatusListener listener) {
-        this.statusListener = listener;
+        this.weakStatusListener = new WeakReference<>(listener);
     }
 
     String getPushToken() {
@@ -288,8 +289,8 @@ public class MobileEngageInternal {
     }
 
     private void handleOnError(String id, Exception cause) {
-        if (statusListener != null) {
-            statusListener.onError(id, cause);
+        if (weakStatusListener.get() != null) {
+            weakStatusListener.get().onError(id, cause);
         }
     }
 }
