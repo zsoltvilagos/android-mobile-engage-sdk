@@ -1,6 +1,6 @@
 @Library(['android-pipeline', 'general-pipeline']) _
 
-node {
+node('android') {
     withSlack channel: 'jenkins', {
         stage("init") {
             deleteDir()
