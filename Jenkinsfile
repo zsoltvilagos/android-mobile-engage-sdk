@@ -32,7 +32,7 @@ node('android') {
 
             stage("instrumentation-test") {
                 retry(2) {
-                    instrumentationTest withScreenOn: false, withLock: env.ANDROID_DEVICE_FARM_LOCK, andArchive: '**/outputs/androidTest-results/connected/*.xml'
+                    instrumentationTest withScreenOn: true, withLock: env.ANDROID_DEVICE_FARM_LOCK, andArchive: '**/outputs/androidTest-results/connected/*.xml'
                 }
             }
 
