@@ -7,7 +7,9 @@ import com.emarsys.mobileengage.BuildConfig;
 import com.emarsys.mobileengage.MobileEngageConfig;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -19,6 +21,9 @@ import static org.mockito.Mockito.mock;
 public class DefaultHeaderUtilsTest {
 
     private MobileEngageConfig config;
+
+    @Rule
+    public Timeout globalTimeout = Timeout.seconds(30);
 
     @Before
     public void setup() {

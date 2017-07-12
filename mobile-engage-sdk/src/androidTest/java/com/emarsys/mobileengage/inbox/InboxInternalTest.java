@@ -42,9 +42,6 @@ import static org.mockito.Mockito.verify;
 
 public class InboxInternalTest {
 
-    @Rule
-    public Timeout globalTimeout = Timeout.seconds(30);
-
     private static List<Notification> notificationList;
 
     private InboxInternal inbox;
@@ -56,6 +53,9 @@ public class InboxInternalTest {
     private AppLoginParameters appLoginParameters_withCredentials;
     private AppLoginParameters appLoginParameters_noCredentials;
     private AppLoginParameters appLoginParameters_missing;
+
+    @Rule
+    public Timeout globalTimeout = Timeout.seconds(30);
 
     @Before
     @SuppressWarnings("unchecked")

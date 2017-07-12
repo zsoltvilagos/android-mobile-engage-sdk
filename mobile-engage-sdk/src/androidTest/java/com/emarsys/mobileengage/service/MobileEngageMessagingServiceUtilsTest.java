@@ -6,7 +6,9 @@ import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 
 import java.util.HashMap;
@@ -21,6 +23,9 @@ import static junit.framework.Assert.assertTrue;
 public class MobileEngageMessagingServiceUtilsTest {
 
     private Context context;
+
+    @Rule
+    public Timeout globalTimeout = Timeout.seconds(30);
 
     @Before
     public void init() {

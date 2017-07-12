@@ -4,7 +4,9 @@ import android.app.Application;
 import android.support.test.InstrumentationRegistry;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
@@ -14,6 +16,9 @@ public class MobileEngageConfigTest {
     private String SECRET = "5678987654345678654";
     private MobileEngageStatusListener statusListenerMock;
     private Application application;
+
+    @Rule
+    public Timeout globalTimeout = Timeout.seconds(30);
 
     @Before
     public void init(){

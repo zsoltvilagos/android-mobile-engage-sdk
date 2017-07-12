@@ -7,7 +7,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,6 +18,9 @@ import java.util.List;
 import java.util.Map;
 
 public class InboxParseUtilsTest {
+
+    @Rule
+    public Timeout globalTimeout = Timeout.seconds(30);
 
     public static final String NOTIFICATION_STRING_1 = "{" +
             "\"id\":\"id1\", " +

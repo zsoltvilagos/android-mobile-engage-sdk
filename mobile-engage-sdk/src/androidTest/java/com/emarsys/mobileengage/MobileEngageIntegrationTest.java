@@ -35,10 +35,10 @@ public class MobileEngageIntegrationTest {
     private CountDownLatch latch;
     private FakeStatusListener listener;
 
+    private Application context;
+
     @Rule
     public Timeout globalTimeout = Timeout.seconds(30);
-
-    private Application context;
 
     @Before
     public void setup() {
