@@ -23,9 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.Assert.assertNotNull;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
 @RunWith(AndroidJUnit4.class)
@@ -68,20 +66,6 @@ public class MobileEngageTest {
         MobileEngage.setup(baseConfig);
 
         assertNotNull(MobileEngage.inboxInstance);
-    }
-
-    @Test
-    public void testSetup_registersActivityLifecycleCallback(){
-        Application applicationSpy = spy(application);
-
-        MobileEngageConfig config = new MobileEngageConfig.Builder()
-                .application(applicationSpy)
-                .credentials(appID, appSecret)
-                .build();
-
-        MobileEngage.setup(config);
-
-        verify(applicationSpy).registerActivityLifecycleCallbacks(any(DefaultActivityLifecycleCallback.class));
     }
 
     @Test
