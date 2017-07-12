@@ -31,9 +31,7 @@ node('android') {
             }
 
             stage("instrumentation-test") {
-                retry(2) {
-                    instrumentationTest withScreenOn: true, withLock: env.ANDROID_DEVICE_FARM_LOCK, andArchive: '**/outputs/androidTest-results/connected/*.xml'
-                }
+                instrumentationTest withScreenOn: true, withLock: env.ANDROID_DEVICE_FARM_LOCK, withRetryCount: 2, andArchive: '**/outputs/androidTest-results/connected/*.xml'
             }
 
             stage('local-maven-deploy') {
