@@ -41,7 +41,7 @@ node('android') {
             }
 
             def version = sh(script: 'git describe', returnStdout: true).trim()
-            def statusCode = sh returnStdout: true, script: "curl -I https://jcenter.bintray.com/com/emarsys/mobile-engage-sdk/$version/ | head -n 1 | cut -d\$' ' -f2".trim()
+            def statusCode = sh returnStdout: true, script: "curl -I https://jcenter.bintray.com/com/emarsys/mobile-engage-sdk/$version/ | head -n 1 | cut -d ' ' -f2".trim()
             def releaseExists = "200" == statusCode.trim()
             if (version ==~ /\d\.\d\.\d/ && !releaseExists) {
                 stage('release-bintray') {
