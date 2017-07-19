@@ -55,7 +55,7 @@ public class MobileEngageIntegrationTest {
                 .build();
         MobileEngage.setup(config);
         SqliteQueue queue = new SqliteQueue(context);
-        queue.setHelper(new TestDbHelper(context, this.getClass()));
+        queue.setHelper(new TestDbHelper(context));
         MobileEngage.instance.manager = new RequestManager(new ConnectionWatchDog(context), queue, new CoreCompletionHandler() {
             @Override
             public void onSuccess(String id, ResponseModel responseModel) {

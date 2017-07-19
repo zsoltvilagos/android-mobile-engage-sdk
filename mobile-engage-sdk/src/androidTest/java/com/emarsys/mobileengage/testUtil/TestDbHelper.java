@@ -2,41 +2,19 @@ package com.emarsys.mobileengage.testUtil;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
 
-public class TestDbHelper extends SQLiteOpenHelper {
-    public static final int DATABASE_VERSION = 1;
-    public static final String DATABASE_NAME_SUFFIX = "_EmarsysCoreQueueTest.db";
+import com.emarsys.core.queue.sqlite.DbHelper;
 
+public class TestDbHelper extends DbHelper {
     public static final String TABLE_NAME = "request";
-    public static final String COLUMN_NAME_REQUEST_ID = "request_id";
-    public static final String COLUMN_NAME_METHOD = "method";
-    public static final String COLUMN_NAME_URL = "url";
-    public static final String COLUMN_NAME_HEADERS = "headers";
-    public static final String COLUMN_NAME_PAYLOAD = "payload";
-    public static final String COLUMN_NAME_TIMESTAMP = "timestamp";
 
-    public TestDbHelper(Context context, Class<?> cls) {
-        super(context, cls.getName() + DATABASE_NAME_SUFFIX, null, DATABASE_VERSION);
+    public TestDbHelper(Context context) {
+        super(context);
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL(String.format("CREATE TABLE IF NOT EXISTS %s (" +
-                        "%s TEXT," +
-                        "%s TEXT," +
-                        "%s TEXT," +
-                        "%s BLOB," +
-                        "%s BLOB," +
-                        "%s INTEGER" +
-                        ");",
-                TABLE_NAME,
-                COLUMN_NAME_REQUEST_ID,
-                COLUMN_NAME_METHOD,
-                COLUMN_NAME_URL,
-                COLUMN_NAME_HEADERS,
-                COLUMN_NAME_PAYLOAD,
-                COLUMN_NAME_TIMESTAMP));
+        super.onCreate(db);
     }
 
     @Override
@@ -46,7 +24,7 @@ public class TestDbHelper extends SQLiteOpenHelper {
 
     @Override
     public void onOpen(SQLiteDatabase db) {
-        super.onOpen(db);
-        db.execSQL(String.format("DELETE FROM %s;", TABLE_NAME));
+        db.execSQL(String.format("DROP TABLE IF EXISTS %s;", TABLE_NAME));
+        onCreate(db);
     }
 }
