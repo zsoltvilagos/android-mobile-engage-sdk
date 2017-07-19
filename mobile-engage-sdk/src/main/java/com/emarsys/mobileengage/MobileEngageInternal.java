@@ -50,6 +50,7 @@ public class MobileEngageInternal {
 
             @Override
             public void onSuccess(final String id, final ResponseModel responseModel) {
+                MobileEngage.idlingResource.decrement();
                 if (weakStatusListener.get() != null) {
                     weakStatusListener.get().onStatusLog(id, responseModel.getMessage());
                 }
@@ -57,11 +58,13 @@ public class MobileEngageInternal {
 
             @Override
             public void onError(final String id, final Exception cause) {
+                MobileEngage.idlingResource.decrement();
                 handleOnError(id, cause);
             }
 
             @Override
             public void onError(final String id, final ResponseModel responseModel) {
+                MobileEngage.idlingResource.decrement();
                 Exception exception = new MobileEngageException(
                         responseModel.getStatusCode(),
                         responseModel.getMessage(),
@@ -149,6 +152,7 @@ public class MobileEngageInternal {
                 .payload(payload)
                 .build();
 
+        MobileEngage.idlingResource.increment();
         manager.submit(model);
         return model.getId();
     }
@@ -168,6 +172,7 @@ public class MobileEngageInternal {
                 .payload(payload)
                 .build();
 
+        MobileEngage.idlingResource.increment();
         manager.submit(model);
         return model.getId();
     }
@@ -179,6 +184,8 @@ public class MobileEngageInternal {
                 .url(ENDPOINT_LOGOUT)
                 .payload(createBasePayload())
                 .build();
+
+        MobileEngage.idlingResource.increment();
         manager.submit(model);
         return model.getId();
     }
@@ -193,6 +200,8 @@ public class MobileEngageInternal {
                 .url(getEventUrl(eventName))
                 .payload(payload)
                 .build();
+
+        MobileEngage.idlingResource.increment();
         manager.submit(model);
         return model.getId();
     }
@@ -212,6 +221,7 @@ public class MobileEngageInternal {
                 .payload(payload)
                 .build();
 
+        MobileEngage.idlingResource.increment();
         manager.submit(model);
         return model.getId();
     }
@@ -237,6 +247,8 @@ public class MobileEngageInternal {
                     .url(getEventUrl("message_open"))
                     .payload(payload)
                     .build();
+
+            MobileEngage.idlingResource.increment();
             manager.submit(model);
             return model.getId();
         } else {
