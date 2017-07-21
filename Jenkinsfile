@@ -19,19 +19,19 @@ node('android') {
             }
 
             stage("build") {
-                build andArchive: '**/*.aar'
+                androidBuild andArchive: '**/*.aar'
             }
 
             stage('lint') {
-                lint andArchive: '**/lint-results*.*'
+                androidLint andArchive: '**/lint-results*.*'
             }
 
             stage("unit-test") {
-                test andArchive: '**/test-results/**/*.xml'
+                androidTest andArchive: '**/test-results/**/*.xml'
             }
 
             stage("instrumentation-test") {
-                instrumentationTest withScreenOn: true, withLock: env.ANDROID_DEVICE_FARM_LOCK, withRetryCount: 2, andArchive: '**/outputs/androidTest-results/connected/*.xml'
+                androidInstrumentationTest withScreenOn: true, withLock: env.ANDROID_DEVICE_FARM_LOCK, withRetryCount: 2, andArchive: '**/outputs/androidTest-results/connected/*.xml'
             }
 
             stage('local-maven-deploy') {
