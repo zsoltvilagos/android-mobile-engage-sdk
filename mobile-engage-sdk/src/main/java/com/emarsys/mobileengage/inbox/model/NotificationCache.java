@@ -9,7 +9,13 @@ public class NotificationCache {
 
     public void cache(Notification notification) {
         if (notification != null) {
-            internalCache.add(notification);
+            internalCache.add(0, notification);
         }
+    }
+
+    public List<Notification> merge(List<Notification> fetchedList) {
+        ArrayList<Notification> result = new ArrayList<>(internalCache);
+        result.addAll(fetchedList);
+        return result;
     }
 }

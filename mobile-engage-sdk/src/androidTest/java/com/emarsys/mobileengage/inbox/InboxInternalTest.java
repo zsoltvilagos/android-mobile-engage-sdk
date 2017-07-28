@@ -17,6 +17,7 @@ import com.emarsys.mobileengage.fake.FakeInboxResultListener;
 import com.emarsys.mobileengage.fake.FakeResetBadgeCountResultListener;
 import com.emarsys.mobileengage.fake.FakeRestClient;
 import com.emarsys.mobileengage.inbox.model.Notification;
+import com.emarsys.mobileengage.inbox.model.NotificationCache;
 import com.emarsys.mobileengage.inbox.model.NotificationInboxStatus;
 
 import junit.framework.Assert;
@@ -29,6 +30,8 @@ import org.junit.Test;
 import org.junit.rules.Timeout;
 import org.mockito.ArgumentCaptor;
 
+import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -54,12 +57,15 @@ public class InboxInternalTest {
     private AppLoginParameters appLoginParameters_noCredentials;
     private AppLoginParameters appLoginParameters_missing;
 
+    private List<Notification> notificationCache;
+    private NotificationCache cache;
+
     @Rule
     public Timeout globalTimeout = Timeout.seconds(30);
 
     @Before
     @SuppressWarnings("unchecked")
-    public void init() throws JSONException {
+    public void init() throws Exception {
         latch = new CountDownLatch(1);
 
         notificationList = createNotificationList();
@@ -74,6 +80,13 @@ public class InboxInternalTest {
         appLoginParameters_withCredentials = new AppLoginParameters(30, "value");
         appLoginParameters_noCredentials = new AppLoginParameters();
         appLoginParameters_missing = null;
+
+        Field cacheField = NotificationCache.class.getDeclaredField("internalCache");
+        cacheField.setAccessible(true);
+        notificationCache = (List) cacheField.get(null);
+        notificationCache.clear();
+
+        cache = new NotificationCache();
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -134,6 +147,30 @@ public class InboxInternalTest {
         latch.await();
 
         Assert.assertEquals(1, listener.successCount);
+    }
+
+    @Test
+    public void testFetchNotifications_listener_success_withCachedNotifications() throws Exception {
+        List<Notification> cachedNotifications = createCacheList();
+        for(int i=cachedNotifications.size()-1; i>=0; --i){
+            cache.cache(cachedNotifications.get(i));
+        }
+
+        inbox.setAppLoginParameters(appLoginParameters_withCredentials);
+
+        inbox.client = new FakeRestClient(createSuccessResponse(), FakeRestClient.Mode.SUCCESS);
+
+        FakeInboxResultListener listener = new FakeInboxResultListener(latch, Mode.MAIN_THREAD);
+        inbox.fetchNotifications(listener);
+
+        latch.await();
+
+        List<Notification> result = listener.resultStatus.getNotifications();
+
+        List<Notification> expected = new ArrayList<>(cachedNotifications);
+        expected.addAll(createNotificationList());
+
+        Assert.assertEquals(expected, result);
     }
 
     @Test
@@ -539,6 +576,29 @@ public class InboxInternalTest {
                 new Notification("id2", "sid2", "title2", customData2, rootParams2, 200, 30000000),
                 new Notification("id3", "sid3", "title3", customData3, rootParams3, 100, 25000000)
 
+        );
+    }
+
+    private List<Notification> createCacheList() throws JSONException {
+        Map<String, String> customData4 = new HashMap<>();
+        customData4.put("data7", "dataValue7");
+        customData4.put("data8", "dataValue8");
+
+        JSONObject rootParams4 = new JSONObject();
+        rootParams4.put("param7", "paramValue7");
+        rootParams4.put("param8", "paramValue8");
+
+        Map<String, String> customData5 = new HashMap<>();
+        customData5.put("data9", "dataValue9");
+        customData5.put("data10", "dataValue10");
+
+        JSONObject rootParams5 = new JSONObject();
+        rootParams5.put("param9", "paramValue9");
+        rootParams5.put("param10", "paramValue10");
+
+        return Arrays.asList(
+                new Notification("id4", "sid4", "title4", customData4, rootParams4, 400, 40000000),
+                new Notification("id5", "sid5", "title5", customData5, rootParams5, 500, 50000000)
         );
     }
 

@@ -14,6 +14,7 @@ import com.emarsys.core.util.HeaderUtils;
 import com.emarsys.mobileengage.AppLoginParameters;
 import com.emarsys.mobileengage.MobileEngageConfig;
 import com.emarsys.mobileengage.MobileEngageException;
+import com.emarsys.mobileengage.inbox.model.NotificationCache;
 import com.emarsys.mobileengage.inbox.model.NotificationInboxStatus;
 
 import java.util.HashMap;
@@ -28,12 +29,14 @@ public class InboxInternal {
     RestClient client;
     MobileEngageConfig config;
     AppLoginParameters appLoginParameters;
+    NotificationCache cache;
 
     public InboxInternal(MobileEngageConfig config) {
         Assert.notNull(config, "Config must not be null!");
         this.config = config;
         this.client = new RestClient();
         this.handler = new Handler(Looper.getMainLooper());
+        this.cache = new NotificationCache();
     }
 
     public void fetchNotifications(final InboxResultListener<NotificationInboxStatus> resultListener) {
@@ -61,7 +64,9 @@ public class InboxInternal {
         client.execute(model, new CoreCompletionHandler() {
             @Override
             public void onSuccess(String id, ResponseModel responseModel) {
-                resultListener.onSuccess(InboxParseUtils.parseNotificationInboxStatus(responseModel.getBody()));
+                NotificationInboxStatus status = InboxParseUtils.parseNotificationInboxStatus(responseModel.getBody());
+                NotificationInboxStatus resultStatus = new NotificationInboxStatus(cache.merge(status.getNotifications()), status.getBadgeCount());
+                resultListener.onSuccess(resultStatus);
             }
 
             @Override
