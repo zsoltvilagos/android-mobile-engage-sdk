@@ -89,4 +89,17 @@ public class Notification {
         result = 31 * result + (int) (receivedAt ^ (receivedAt >>> 32));
         return result;
     }
+
+    @Override
+    public String toString() {
+        return "Notification{" +
+                "id='" + id + '\'' +
+                ", sid='" + sid + '\'' +
+                ", title='" + title + '\'' +
+                ", customData=" + customData +
+                ", rootParams=" + rootParams +
+                ", expirationTime=" + expirationTime +
+                ", receivedAt=" + receivedAt +
+                '}';
+    }
 }
