@@ -294,4 +294,32 @@ public class InboxParseUtilsTest {
 
         Assert.assertEquals(expected, result);
     }
+
+    @Test
+    public void testParseNotificationFromPushMessage(){
+        Map<String, String> remoteData = new HashMap<>();
+        remoteData.put("ems_msg", "true");
+        remoteData.put("u", "{\"test_field\":\"\",\"image\":\"https:\\/\\/media.giphy.com\\/media\\/ktvFa67wmjDEI\\/giphy.gif\",\"deep_link\":\"lifestylelabels.com\\/mobile\\/product\\/3245678\",\"sid\":\"sid_here\"}");
+        remoteData.put("id", "21022.150123121212.43223434c3b9");
+        remoteData.put("inbox", "true");
+        remoteData.put("title", "hello there");
+        remoteData.put("rootParam1", "param_param");
+
+        Map<String, String> customData = new HashMap<>();
+        customData.put("test_field", "");
+        customData.put("image", "https://media.giphy.com/media/ktvFa67wmjDEI/giphy.gif");
+        customData.put("deep_link", "lifestylelabels.com/mobile/product/3245678");
+        customData.put("sid", "sid_here");
+
+        long before = System.currentTimeMillis();
+        Notification result = InboxParseUtils.parseNotificationFromPushMessage(remoteData);
+        long after = System.currentTimeMillis();
+
+        Assert.assertEquals("21022.150123121212.43223434c3b9", result.getId());
+        Assert.assertEquals("sid_here", result.getSid());
+        Assert.assertEquals("hello there", result.getTitle());
+        Assert.assertEquals(customData, result.getCustomData());
+        Assert.assertTrue(before <= result.getReceivedAt());
+        Assert.assertTrue(result.getReceivedAt() <= after);
+    }
 }

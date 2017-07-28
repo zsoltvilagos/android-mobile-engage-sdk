@@ -86,6 +86,38 @@ public class InboxParseUtils {
         return result;
     }
 
+    public static Notification parseNotificationFromPushMessage(Map<String, String> remoteData) {
+        Notification result = null;
+        if (remoteData != null) {
+            String id = remoteData.get("id");
+
+            String sid = null;
+            try {
+                sid = new JSONObject(remoteData.get("u")).getString("sid");
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            String title = remoteData.get("title");
+
+            Map<String, String> customData = null;
+            try {
+                customData = convertFlatJsonObject(new JSONObject(remoteData.get("u")));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            JSONObject rootParams = new JSONObject();
+
+            int expirationTime = Integer.MAX_VALUE;
+
+            long receivedAt = System.currentTimeMillis();
+
+            result = new Notification(id, sid, title, customData, rootParams, expirationTime, receivedAt);
+        }
+        return result;
+    }
+
     public static Map<String, String> convertFlatJsonObject(JSONObject jsonObject) {
         Map<String, String> result = new HashMap<>();
         if (jsonObject != null) {

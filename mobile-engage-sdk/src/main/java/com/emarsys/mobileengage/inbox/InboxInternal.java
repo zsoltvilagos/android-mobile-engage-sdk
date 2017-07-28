@@ -14,9 +14,12 @@ import com.emarsys.core.util.HeaderUtils;
 import com.emarsys.mobileengage.AppLoginParameters;
 import com.emarsys.mobileengage.MobileEngageConfig;
 import com.emarsys.mobileengage.MobileEngageException;
+import com.emarsys.mobileengage.inbox.model.Notification;
 import com.emarsys.mobileengage.inbox.model.NotificationInboxStatus;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class InboxInternal {
@@ -28,12 +31,14 @@ public class InboxInternal {
     RestClient client;
     MobileEngageConfig config;
     AppLoginParameters appLoginParameters;
+    List<Notification> notificationCache;
 
     public InboxInternal(MobileEngageConfig config) {
         Assert.notNull(config, "Config must not be null!");
         this.config = config;
         this.client = new RestClient();
         this.handler = new Handler(Looper.getMainLooper());
+        this.notificationCache = new ArrayList<>();
     }
 
     public void fetchNotifications(final InboxResultListener<NotificationInboxStatus> resultListener) {
@@ -89,6 +94,10 @@ public class InboxInternal {
                 });
             }
         }
+    }
+
+    public List<Notification> getNotificationCache() {
+        return notificationCache;
     }
 
     private void handleResetRequest(final ResetBadgeCountResultListener listener) {

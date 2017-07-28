@@ -20,7 +20,7 @@ import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
 
 @RunWith(AndroidJUnit4.class)
-public class MobileEngageMessagingServiceUtilsTest {
+public class MessagingServiceUtilsTest {
 
     private Context context;
 
@@ -34,20 +34,20 @@ public class MobileEngageMessagingServiceUtilsTest {
 
     @Test
     public void getSmallIconResourceId_shouldBePositive() {
-        assertTrue(MobileEngageMessagingServiceUtils.getSmallIconResourceId(context) > 0);
+        assertTrue(MessagingServiceUtils.getSmallIconResourceId(context) > 0);
     }
 
     @Test
     public void isMobileEngageMessage_shouldBeFalse_withEmptyData() {
         Map<String, String> remoteMessageData = new HashMap<>();
-        assertFalse(MobileEngageMessagingServiceUtils.isMobileEngageMessage(remoteMessageData));
+        assertFalse(MessagingServiceUtils.isMobileEngageMessage(remoteMessageData));
     }
 
     @Test
     public void isMobileEngageMessage_shouldBeTrue_withDataWhichContainsTheCorrectKey() {
         Map<String, String> remoteMessageData = new HashMap<>();
         remoteMessageData.put("ems_msg", "value");
-        assertTrue(MobileEngageMessagingServiceUtils.isMobileEngageMessage(remoteMessageData));
+        assertTrue(MessagingServiceUtils.isMobileEngageMessage(remoteMessageData));
     }
 
     @Test
@@ -55,7 +55,7 @@ public class MobileEngageMessagingServiceUtilsTest {
         Map<String, String> remoteMessageData = new HashMap<>();
         remoteMessageData.put("key1", "value1");
         remoteMessageData.put("key2", "value2");
-        assertFalse(MobileEngageMessagingServiceUtils.isMobileEngageMessage(remoteMessageData));
+        assertFalse(MessagingServiceUtils.isMobileEngageMessage(remoteMessageData));
     }
 
     @Test
@@ -64,7 +64,7 @@ public class MobileEngageMessagingServiceUtilsTest {
         remoteMessageData.put("key1", "value1");
         remoteMessageData.put("key2", "value2");
 
-        Intent resultIntent = MobileEngageMessagingServiceUtils.createIntent(remoteMessageData, context);
+        Intent resultIntent = MessagingServiceUtils.createIntent(remoteMessageData, context);
         assertEquals("value1", resultIntent.getBundleExtra("payload").getString("key1"));
         assertEquals("value2", resultIntent.getBundleExtra("payload").getString("key2"));
     }
@@ -74,6 +74,7 @@ public class MobileEngageMessagingServiceUtilsTest {
         Map<String, String> input = new HashMap<>();
         input.put("title", "titletex");
 
-        assertNotNull(MobileEngageMessagingServiceUtils.createNotification(input, context));
+        assertNotNull(MessagingServiceUtils.createNotification(input, context));
     }
+
 }

@@ -7,15 +7,21 @@ import android.content.Context;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
+import java.util.Map;
+
 public class MobileEngageMessagingService extends FirebaseMessagingService {
 
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
         super.onMessageReceived(remoteMessage);
 
-        if (MobileEngageMessagingServiceUtils.isMobileEngageMessage(remoteMessage.getData())) {
+        Map<String, String> remoteData = remoteMessage.getData();
 
-            Notification notification = MobileEngageMessagingServiceUtils.createNotification(remoteMessage.getData(), getApplicationContext());
+        if (MessagingServiceUtils.isMobileEngageMessage(remoteData)) {
+
+            MessagingServiceUtils.cacheNotification(remoteData);
+
+            Notification notification = MessagingServiceUtils.createNotification(remoteData, getApplicationContext());
 
             ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE))
                     .notify((int) System.currentTimeMillis(), notification);

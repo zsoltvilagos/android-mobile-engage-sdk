@@ -12,6 +12,7 @@ import com.emarsys.mobileengage.inbox.ResetBadgeCountResultListener;
 import com.emarsys.mobileengage.inbox.model.Notification;
 import com.emarsys.mobileengage.inbox.model.NotificationInboxStatus;
 
+import java.util.List;
 import java.util.Map;
 
 public class MobileEngage {
@@ -33,6 +34,10 @@ public class MobileEngage {
 
         public static void resetBadgeCount(@Nullable ResetBadgeCountResultListener resultListener) {
             inboxInstance.resetBadgeCount(resultListener);
+        }
+
+        public static List<Notification> getNotificationCache() {
+            return inboxInstance.getNotificationCache();
         }
     }
 
