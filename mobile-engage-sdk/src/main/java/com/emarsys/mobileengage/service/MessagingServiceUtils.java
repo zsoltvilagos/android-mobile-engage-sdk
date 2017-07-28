@@ -10,8 +10,8 @@ import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 
 import com.emarsys.core.util.Assert;
-import com.emarsys.mobileengage.MobileEngage;
 import com.emarsys.mobileengage.inbox.InboxParseUtils;
+import com.emarsys.mobileengage.inbox.model.NotificationCache;
 
 import java.util.Map;
 
@@ -19,6 +19,8 @@ class MessagingServiceUtils {
 
     public static final String MESSAGE_FILTER = "ems_msg";
     public static final String METADATA_SMALL_NOTIFICATION_ICON_KEY = "com.emarsys.mobileengage.small_notification_icon";
+
+    static NotificationCache notificationCache = new NotificationCache();
 
     static boolean isMobileEngageMessage(Map<String, String> remoteMessageData) {
         return remoteMessageData != null && remoteMessageData.size() > 0 && remoteMessageData.containsKey(MESSAGE_FILTER);
@@ -68,10 +70,7 @@ class MessagingServiceUtils {
 
     static void cacheNotification(Map<String, String> remoteMessageData) {
         Assert.notNull(remoteMessageData, "RemoteMessageData must not be null!");
-
-        com.emarsys.mobileengage.inbox.model.Notification notification = InboxParseUtils.parseNotificationFromPushMessage(remoteMessageData);
-
-        MobileEngage.Inbox.getNotificationCache().add(notification);
+        notificationCache.cache(InboxParseUtils.parseNotificationFromPushMessage(remoteMessageData));
     }
 
 }

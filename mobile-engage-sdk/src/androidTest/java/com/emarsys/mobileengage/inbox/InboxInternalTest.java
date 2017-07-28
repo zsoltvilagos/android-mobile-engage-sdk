@@ -491,11 +491,6 @@ public class InboxInternalTest {
         }
     }
 
-    @Test
-    public void testGetNotificationCache_cacheShouldBeInitialized(){
-        Assert.assertNotNull(inbox.getNotificationCache());
-    }
-
     private RequestModel createRequestModel(String path, RequestMethod method) {
         DeviceInfo deviceInfo = new DeviceInfo(InstrumentationRegistry.getContext());
 

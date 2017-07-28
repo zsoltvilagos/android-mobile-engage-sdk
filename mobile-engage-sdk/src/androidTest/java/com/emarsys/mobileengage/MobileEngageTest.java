@@ -183,10 +183,4 @@ public class MobileEngageTest {
         MobileEngage.Inbox.resetBadgeCount();
         verify(inboxInternal).resetBadgeCount(null);
     }
-
-    @Test
-    public void testGetNotificationCache_callsInternal(){
-        MobileEngage.Inbox.getNotificationCache();
-        verify(inboxInternal).getNotificationCache();
-    }
 }
