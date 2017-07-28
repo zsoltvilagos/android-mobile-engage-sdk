@@ -5,13 +5,18 @@ import android.support.test.runner.AndroidJUnit4;
 import junit.framework.Assert;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 
 import static org.mockito.Mockito.mock;
 
 @RunWith(AndroidJUnit4.class)
 public class NotificationCacheTest {
+
+    @Rule
+    public Timeout globalTimeout = Timeout.seconds(30);
 
     private NotificationCache notificationCache;
 
