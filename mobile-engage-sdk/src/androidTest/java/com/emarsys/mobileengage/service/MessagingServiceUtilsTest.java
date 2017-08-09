@@ -3,7 +3,9 @@ package com.emarsys.mobileengage.service;
 import android.content.Context;
 import android.content.Intent;
 import android.support.test.InstrumentationRegistry;
+import android.support.test.filters.SdkSuppress;
 import android.support.test.runner.AndroidJUnit4;
+import android.support.v7.app.NotificationCompat;
 
 import com.emarsys.mobileengage.inbox.model.Notification;
 import com.emarsys.mobileengage.inbox.model.NotificationCache;
@@ -23,10 +25,13 @@ import java.util.Map;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertTrue;
 
 @RunWith(AndroidJUnit4.class)
 public class MessagingServiceUtilsTest {
+    private static final String TITLE = "title";
+    private static final String BODY = "body";
 
     private Context context;
     private List<Notification> notificationCache;
@@ -84,14 +89,54 @@ public class MessagingServiceUtilsTest {
 
     @Test
     public void createNotification_shouldNotBeNull() {
-        Map<String, String> input = new HashMap<>();
-        input.put("title", "titletex");
-
-        assertNotNull(MessagingServiceUtils.createNotification(input, context));
+        assertNotNull(MessagingServiceUtils.createNotification(new HashMap<String, String>(), context));
     }
 
     @Test
-    public void testCacheNotification_shouldCacheNotification(){
+    @SdkSuppress(minSdkVersion = 19)
+    public void createNotification_withBigTextStyle_withTitleAndBody() {
+        Map<String, String> input = new HashMap<>();
+        input.put("title", TITLE);
+        input.put("body", BODY);
+
+        android.app.Notification result = MessagingServiceUtils.createNotification(input, context);
+
+        assertEquals(TITLE, result.extras.getString(NotificationCompat.EXTRA_TITLE));
+        assertEquals(TITLE, result.extras.getString(NotificationCompat.EXTRA_TITLE_BIG));
+        assertEquals(BODY, result.extras.getString(NotificationCompat.EXTRA_TEXT));
+        assertEquals(BODY, result.extras.getString(NotificationCompat.EXTRA_BIG_TEXT));
+    }
+
+    @Test
+    @SdkSuppress(minSdkVersion = 19)
+    public void createNotification_withBigTextStyle_withTitle_withoutBody() {
+        Map<String, String> input = new HashMap<>();
+        input.put("title", TITLE);
+
+        android.app.Notification result = MessagingServiceUtils.createNotification(input, context);
+
+        assertEquals(TITLE, result.extras.getString(NotificationCompat.EXTRA_TITLE));
+        assertEquals(TITLE, result.extras.getString(NotificationCompat.EXTRA_TITLE_BIG));
+        assertNull(result.extras.getString(NotificationCompat.EXTRA_TEXT));
+        assertNull(result.extras.getString(NotificationCompat.EXTRA_BIG_TEXT));
+    }
+
+    @Test
+    @SdkSuppress(minSdkVersion = 19)
+    public void createNotification_withBigTextStyle__withoutTitle_withBody() {
+        Map<String, String> input = new HashMap<>();
+        input.put("body", BODY);
+
+        android.app.Notification result = MessagingServiceUtils.createNotification(input, context);
+
+        assertNull(result.extras.getString(NotificationCompat.EXTRA_TITLE));
+        assertNull(result.extras.getString(NotificationCompat.EXTRA_TITLE_BIG));
+        assertEquals(BODY, result.extras.getString(NotificationCompat.EXTRA_TEXT));
+        assertEquals(BODY, result.extras.getString(NotificationCompat.EXTRA_BIG_TEXT));
+    }
+
+    @Test
+    public void testCacheNotification_shouldCacheNotification() {
         Map<String, String> remoteData = new HashMap<>();
         remoteData.put("ems_msg", "true");
         remoteData.put("u", "{\"test_field\":\"\",\"image\":\"https:\\/\\/media.giphy.com\\/media\\/ktvFa67wmjDEI\\/giphy.gif\",\"deep_link\":\"lifestylelabels.com\\/mobile\\/product\\/3245678\",\"sid\":\"sid_here\"}");
@@ -110,14 +155,14 @@ public class MessagingServiceUtilsTest {
         MessagingServiceUtils.cacheNotification(remoteData);
         long after = System.currentTimeMillis();
 
-        Assert.assertEquals(1, notificationCache.size());
+        assertEquals(1, notificationCache.size());
 
         Notification result = notificationCache.get(0);
 
-        Assert.assertEquals("21022.150123121212.43223434c3b9", result.getId());
-        Assert.assertEquals("sid_here", result.getSid());
-        Assert.assertEquals("hello there", result.getTitle());
-        Assert.assertEquals(customData, result.getCustomData());
+        assertEquals("21022.150123121212.43223434c3b9", result.getId());
+        assertEquals("sid_here", result.getSid());
+        assertEquals("hello there", result.getTitle());
+        assertEquals(customData, result.getCustomData());
         Assert.assertTrue(before <= result.getReceivedAt());
         Assert.assertTrue(result.getReceivedAt() <= after);
     }

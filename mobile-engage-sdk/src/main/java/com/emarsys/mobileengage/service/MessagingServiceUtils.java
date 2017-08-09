@@ -29,10 +29,17 @@ class MessagingServiceUtils {
     static Notification createNotification(Map<String, String> remoteMessageData, Context context) {
         int resourceId = getSmallIconResourceId(context);
 
+        String title = remoteMessageData.get("title");
+        String body = remoteMessageData.get("body");
+
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(context)
-                        .setContentText("")
-                        .setContentTitle(remoteMessageData.get("title"))
+                        .setContentTitle(title)
+                        .setContentText(body)
+                        .setStyle(
+                                new NotificationCompat.BigTextStyle()
+                                        .bigText(body)
+                                        .setBigContentTitle(title))
                         .setSmallIcon(resourceId)
                         .setAutoCancel(true);
 
