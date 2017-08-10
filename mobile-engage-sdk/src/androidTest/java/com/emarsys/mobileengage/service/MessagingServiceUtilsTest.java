@@ -126,7 +126,7 @@ public class MessagingServiceUtilsTest {
 
     @Test
     @SdkSuppress(minSdkVersion = 19)
-    public void createNotification_withBigTextStyle__withoutTitle_withBody() {
+    public void createNotification_withBigTextStyle_withoutTitle_withBody() {
         Map<String, String> input = new HashMap<>();
         input.put("body", BODY);
 
@@ -142,7 +142,7 @@ public class MessagingServiceUtilsTest {
 
     @Test
     @SdkSuppress(minSdkVersion = 19)
-    public void createNotification_withBigTextStyle__withoutTitle_withBody_withDefaultTitle() {
+    public void createNotification_withBigTextStyle_withoutTitle_withBody_withDefaultTitle() {
         Map<String, String> input = new HashMap<>();
         input.put("body", BODY);
         input.put("u", "{\"test_field\":\"\",\"ems_default_title\":\"" + DEFAULT_TITLE + "\",\"image\":\"https:\\/\\/media.giphy.com\\/media\\/ktvFa67wmjDEI\\/giphy.gif\",\"deep_link\":\"lifestylelabels.com\\/mobile\\/product\\/3245678\",\"sid\":\"sid_here\"}");
