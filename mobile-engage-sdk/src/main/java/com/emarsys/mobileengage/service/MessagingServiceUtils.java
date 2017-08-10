@@ -6,12 +6,16 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 
 import com.emarsys.core.util.Assert;
 import com.emarsys.mobileengage.inbox.InboxParseUtils;
 import com.emarsys.mobileengage.inbox.model.NotificationCache;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.Map;
 
@@ -29,7 +33,7 @@ class MessagingServiceUtils {
     static Notification createNotification(Map<String, String> remoteMessageData, Context context) {
         int resourceId = getSmallIconResourceId(context);
 
-        String title = remoteMessageData.get("title");
+        String title = getTitle(remoteMessageData, context);
         String body = remoteMessageData.get("body");
 
         NotificationCompat.Builder mBuilder =
@@ -47,6 +51,33 @@ class MessagingServiceUtils {
         PendingIntent resultPendingIntent = PendingIntent.getService(context, 0, intent, 0);
         mBuilder.setContentIntent(resultPendingIntent);
         return mBuilder.build();
+    }
+
+    static String getTitle(Map<String, String> remoteMessageData, Context context) {
+        String title = remoteMessageData.get("title");
+        if (title == null || title.isEmpty()) {
+            title = getDefaultTitle(remoteMessageData, context);
+        }
+        return title;
+    }
+
+    private static String getDefaultTitle(Map<String, String> remoteMessageData, Context context) {
+        String title = "";
+        if (Build.VERSION.SDK_INT < 23) {
+            ApplicationInfo applicationInfo = context.getApplicationInfo();
+            int stringId = applicationInfo.labelRes;
+            title = stringId == 0 ? applicationInfo.nonLocalizedLabel.toString() : context.getString(stringId);
+
+            try {
+                String u = remoteMessageData.get("u");
+                if (u != null) {
+                    JSONObject customData = new JSONObject(u);
+                    title = customData.getString("ems_default_title");
+                }
+            } catch (JSONException ignored) {
+            }
+        }
+        return title;
     }
 
     static int getSmallIconResourceId(Context context) {

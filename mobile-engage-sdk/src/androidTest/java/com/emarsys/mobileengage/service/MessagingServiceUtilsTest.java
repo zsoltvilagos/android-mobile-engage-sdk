@@ -2,6 +2,8 @@ package com.emarsys.mobileengage.service;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
+import android.os.Build;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SdkSuppress;
 import android.support.test.runner.AndroidJUnit4;
@@ -31,6 +33,7 @@ import static junit.framework.Assert.assertTrue;
 @RunWith(AndroidJUnit4.class)
 public class MessagingServiceUtilsTest {
     private static final String TITLE = "title";
+    private static final String DEFAULT_TITLE = "This is a default title";
     private static final String BODY = "body";
 
     private Context context;
@@ -129,10 +132,96 @@ public class MessagingServiceUtilsTest {
 
         android.app.Notification result = MessagingServiceUtils.createNotification(input, context);
 
-        assertNull(result.extras.getString(NotificationCompat.EXTRA_TITLE));
-        assertNull(result.extras.getString(NotificationCompat.EXTRA_TITLE_BIG));
+        String expectedTitle = expectedBasedOnApiLevel(getApplicationName(), "");
+
+        assertEquals(expectedTitle, result.extras.getString(NotificationCompat.EXTRA_TITLE));
+        assertEquals(expectedTitle, result.extras.getString(NotificationCompat.EXTRA_TITLE_BIG));
         assertEquals(BODY, result.extras.getString(NotificationCompat.EXTRA_TEXT));
         assertEquals(BODY, result.extras.getString(NotificationCompat.EXTRA_BIG_TEXT));
+    }
+
+    @Test
+    @SdkSuppress(minSdkVersion = 19)
+    public void createNotification_withBigTextStyle__withoutTitle_withBody_withDefaultTitle() {
+        Map<String, String> input = new HashMap<>();
+        input.put("body", BODY);
+        input.put("u", "{\"test_field\":\"\",\"ems_default_title\":\"" + DEFAULT_TITLE + "\",\"image\":\"https:\\/\\/media.giphy.com\\/media\\/ktvFa67wmjDEI\\/giphy.gif\",\"deep_link\":\"lifestylelabels.com\\/mobile\\/product\\/3245678\",\"sid\":\"sid_here\"}");
+
+        android.app.Notification result = MessagingServiceUtils.createNotification(input, context);
+
+        String expectedTitle = expectedBasedOnApiLevel(DEFAULT_TITLE, "");
+
+        assertEquals(expectedTitle, result.extras.getString(NotificationCompat.EXTRA_TITLE));
+        assertEquals(expectedTitle, result.extras.getString(NotificationCompat.EXTRA_TITLE_BIG));
+        assertEquals(BODY, result.extras.getString(NotificationCompat.EXTRA_TEXT));
+        assertEquals(BODY, result.extras.getString(NotificationCompat.EXTRA_BIG_TEXT));
+    }
+
+    @Test
+    public void testGetTitle_withTitleSet() {
+        Map<String, String> input = new HashMap<>();
+        input.put("title", TITLE);
+
+        assertEquals(TITLE, MessagingServiceUtils.getTitle(input, context));
+    }
+
+    @Test
+    public void testGetTitle_shouldReturnAppName_whenTitleNotSet() {
+        Map<String, String> input = new HashMap<>();
+        input.put("key1", "value1");
+        input.put("key2", "value2");
+
+        String expectedBefore23 = getApplicationName();
+
+        String expectedFrom23 = "";
+
+        String expected = expectedBasedOnApiLevel(expectedBefore23, expectedFrom23);
+
+        assertEquals(expected, MessagingServiceUtils.getTitle(input, context));
+    }
+
+    @Test
+    public void testGetTitle_shouldReturnAppName_whenTitleIsEmpty() {
+        Map<String, String> input = new HashMap<>();
+        input.put("key1", "value1");
+        input.put("key2", "value2");
+        input.put("title", "");
+
+        String expectedBefore23 = getApplicationName();
+
+        String expectedFrom23 = "";
+
+        String expected = expectedBasedOnApiLevel(expectedBefore23, expectedFrom23);
+
+        assertEquals(expected, MessagingServiceUtils.getTitle(input, context));
+    }
+
+    @Test
+    public void testGetTitle_shouldReturnDefaultTitle_whenDefaultTitleSet() {
+        Map<String, String> input = new HashMap<>();
+        input.put("key1", "value1");
+        input.put("key2", "value2");
+        input.put("u", "{\"test_field\":\"\",\"ems_default_title\":\"" + DEFAULT_TITLE + "\",\"image\":\"https:\\/\\/media.giphy.com\\/media\\/ktvFa67wmjDEI\\/giphy.gif\",\"deep_link\":\"lifestylelabels.com\\/mobile\\/product\\/3245678\",\"sid\":\"sid_here\"}");
+
+        String expectedBefore23 = DEFAULT_TITLE;
+
+        String expectedFrom23 = "";
+
+        String expected = expectedBasedOnApiLevel(expectedBefore23, expectedFrom23);
+
+        assertEquals(expected, MessagingServiceUtils.getTitle(input, context));
+    }
+
+
+    @Test
+    public void testGetTitle_defaultTitleShouldNotOverrideTitle() {
+        Map<String, String> input = new HashMap<>();
+        input.put("key1", "value1");
+        input.put("key2", "value2");
+        input.put("title", TITLE);
+        input.put("u", "{\"test_field\":\"\",\"ems_default_title\":\"" + DEFAULT_TITLE + "\",\"image\":\"https:\\/\\/media.giphy.com\\/media\\/ktvFa67wmjDEI\\/giphy.gif\",\"deep_link\":\"lifestylelabels.com\\/mobile\\/product\\/3245678\",\"sid\":\"sid_here\"}");
+
+        assertEquals(TITLE, MessagingServiceUtils.getTitle(input, context));
     }
 
     @Test
@@ -165,6 +254,20 @@ public class MessagingServiceUtilsTest {
         assertEquals(customData, result.getCustomData());
         Assert.assertTrue(before <= result.getReceivedAt());
         Assert.assertTrue(result.getReceivedAt() <= after);
+    }
+
+    private String expectedBasedOnApiLevel(String before23, String fromApi23) {
+        if(Build.VERSION.SDK_INT < 23){
+            return before23;
+        } else {
+            return fromApi23;
+        }
+    }
+
+    private String getApplicationName() {
+        ApplicationInfo applicationInfo = context.getApplicationInfo();
+        int stringId = applicationInfo.labelRes;
+        return stringId == 0 ? applicationInfo.nonLocalizedLabel.toString() : context.getString(stringId);
     }
 
 }
