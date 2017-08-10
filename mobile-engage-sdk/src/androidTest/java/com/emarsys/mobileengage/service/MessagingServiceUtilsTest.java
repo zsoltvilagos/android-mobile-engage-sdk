@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNotNull;
@@ -96,7 +97,7 @@ public class MessagingServiceUtilsTest {
     }
 
     @Test
-    @SdkSuppress(minSdkVersion = 19)
+    @SdkSuppress(minSdkVersion = LOLLIPOP)
     public void createNotification_withBigTextStyle_withTitleAndBody() {
         Map<String, String> input = new HashMap<>();
         input.put("title", TITLE);
@@ -111,7 +112,7 @@ public class MessagingServiceUtilsTest {
     }
 
     @Test
-    @SdkSuppress(minSdkVersion = 19)
+    @SdkSuppress(minSdkVersion = LOLLIPOP)
     public void createNotification_withBigTextStyle_withTitle_withoutBody() {
         Map<String, String> input = new HashMap<>();
         input.put("title", TITLE);
@@ -125,7 +126,7 @@ public class MessagingServiceUtilsTest {
     }
 
     @Test
-    @SdkSuppress(minSdkVersion = 19)
+    @SdkSuppress(minSdkVersion = LOLLIPOP)
     public void createNotification_withBigTextStyle_withoutTitle_withBody() {
         Map<String, String> input = new HashMap<>();
         input.put("body", BODY);
@@ -141,7 +142,7 @@ public class MessagingServiceUtilsTest {
     }
 
     @Test
-    @SdkSuppress(minSdkVersion = 19)
+    @SdkSuppress(minSdkVersion = LOLLIPOP)
     public void createNotification_withBigTextStyle_withoutTitle_withBody_withDefaultTitle() {
         Map<String, String> input = new HashMap<>();
         input.put("body", BODY);
