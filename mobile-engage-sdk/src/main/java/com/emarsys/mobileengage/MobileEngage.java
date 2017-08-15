@@ -3,7 +3,6 @@ package com.emarsys.mobileengage;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.test.espresso.idling.CountingIdlingResource;
 
 import com.emarsys.core.util.Assert;
 import com.emarsys.mobileengage.inbox.InboxInternal;
@@ -15,7 +14,6 @@ import com.emarsys.mobileengage.inbox.model.NotificationInboxStatus;
 import java.util.Map;
 
 public class MobileEngage {
-    public static CountingIdlingResource idlingResource = new CountingIdlingResource("mobile-engage-idling-resource");
     private static final String TAG = "MobileEngage";
     static MobileEngageInternal instance;
     static InboxInternal inboxInstance;
