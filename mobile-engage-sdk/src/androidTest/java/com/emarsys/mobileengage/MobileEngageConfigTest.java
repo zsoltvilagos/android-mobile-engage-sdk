@@ -28,22 +28,22 @@ public class MobileEngageConfigTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_applicationShouldNotBeNull() throws Exception {
-        new MobileEngageConfig(null, APP_ID, SECRET, statusListenerMock);
+        new MobileEngageConfig(null, APP_ID, SECRET, statusListenerMock, false);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_applicationCodeShouldNotBeNull() throws Exception {
-        new MobileEngageConfig(application, null, SECRET, statusListenerMock);
+        new MobileEngageConfig(application, null, SECRET, statusListenerMock, false);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_secretShouldNotBeNull() throws Exception {
-        new MobileEngageConfig(application, APP_ID, null, statusListenerMock);
+        new MobileEngageConfig(application, APP_ID, null, statusListenerMock, false);
     }
 
     @Test
     public void testBuilder_withMandatoryArguments() {
-        MobileEngageConfig expected = new MobileEngageConfig(application, APP_ID, SECRET, null);
+        MobileEngageConfig expected = new MobileEngageConfig(application, APP_ID, SECRET, null, false);
 
         MobileEngageConfig result = new MobileEngageConfig.Builder()
                 .application(application)
@@ -55,12 +55,29 @@ public class MobileEngageConfigTest {
 
     @Test
     public void testBuilder_withAllArguments() {
-        MobileEngageConfig expected = new MobileEngageConfig(application, APP_ID, SECRET, statusListenerMock);
+        MobileEngageConfig expected = new MobileEngageConfig(application, APP_ID, SECRET, statusListenerMock, true);
 
         MobileEngageConfig result = new MobileEngageConfig.Builder()
                 .application(application)
                 .credentials(APP_ID, SECRET)
                 .statusListener(statusListenerMock)
+                .enableIdlingResource(true)
+                .build();
+
+        assertEquals(expected, result);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testBuilder_from_shouldNotAcceptNull(){
+        new MobileEngageConfig.Builder().from(null);
+    }
+
+    @Test
+    public void testBuilder_from(){
+        MobileEngageConfig expected = new MobileEngageConfig(application, APP_ID, SECRET, statusListenerMock, true);
+
+        MobileEngageConfig result = new MobileEngageConfig.Builder()
+                .from(expected)
                 .build();
 
         assertEquals(expected, result);

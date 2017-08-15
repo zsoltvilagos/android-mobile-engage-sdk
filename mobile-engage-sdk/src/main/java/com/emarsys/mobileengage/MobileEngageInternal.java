@@ -45,12 +45,14 @@ public class MobileEngageInternal {
     Application application;
     RequestManager manager;
     Handler handler;
+    CoreCompletionHandler coreCompletionHandler;
+
     MobileEngageInternal(MobileEngageConfig config) {
-        CoreCompletionHandler coreCompletionHandler = new CoreCompletionHandler() {
+        coreCompletionHandler = new CoreCompletionHandler() {
 
             @Override
             public void onSuccess(final String id, final ResponseModel responseModel) {
-                MobileEngage.idlingResource.decrement();
+                MobileEngageUtils.decrementIdlingResource();
                 if (weakStatusListener.get() != null) {
                     weakStatusListener.get().onStatusLog(id, responseModel.getMessage());
                 }
@@ -58,13 +60,13 @@ public class MobileEngageInternal {
 
             @Override
             public void onError(final String id, final Exception cause) {
-                MobileEngage.idlingResource.decrement();
+                MobileEngageUtils.decrementIdlingResource();
                 handleOnError(id, cause);
             }
 
             @Override
             public void onError(final String id, final ResponseModel responseModel) {
-                MobileEngage.idlingResource.decrement();
+                MobileEngageUtils.decrementIdlingResource();
                 Exception exception = new MobileEngageException(
                         responseModel.getStatusCode(),
                         responseModel.getMessage(),
@@ -152,7 +154,7 @@ public class MobileEngageInternal {
                 .payload(payload)
                 .build();
 
-        MobileEngage.idlingResource.increment();
+        MobileEngageUtils.incrementIdlingResource();
         manager.submit(model);
         return model.getId();
     }
@@ -172,7 +174,7 @@ public class MobileEngageInternal {
                 .payload(payload)
                 .build();
 
-        MobileEngage.idlingResource.increment();
+        MobileEngageUtils.incrementIdlingResource();
         manager.submit(model);
         return model.getId();
     }
@@ -185,7 +187,7 @@ public class MobileEngageInternal {
                 .payload(createBasePayload())
                 .build();
 
-        MobileEngage.idlingResource.increment();
+        MobileEngageUtils.incrementIdlingResource();
         manager.submit(model);
         return model.getId();
     }
@@ -201,7 +203,7 @@ public class MobileEngageInternal {
                 .payload(payload)
                 .build();
 
-        MobileEngage.idlingResource.increment();
+        MobileEngageUtils.incrementIdlingResource();
         manager.submit(model);
         return model.getId();
     }
@@ -221,7 +223,6 @@ public class MobileEngageInternal {
                 .payload(payload)
                 .build();
 
-        MobileEngage.idlingResource.increment();
         manager.submit(model);
         return model.getId();
     }
@@ -248,7 +249,7 @@ public class MobileEngageInternal {
                     .payload(payload)
                     .build();
 
-            MobileEngage.idlingResource.increment();
+            MobileEngageUtils.incrementIdlingResource();
             manager.submit(model);
             return model.getId();
         } else {

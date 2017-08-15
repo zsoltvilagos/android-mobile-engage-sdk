@@ -19,6 +19,7 @@ public class MobileEngage {
     private static final String TAG = "MobileEngage";
     static MobileEngageInternal instance;
     static InboxInternal inboxInstance;
+    static MobileEngageConfig config;
 
     public static class Inbox {
 
@@ -34,12 +35,17 @@ public class MobileEngage {
         public static void resetBadgeCount(@Nullable ResetBadgeCountResultListener resultListener) {
             inboxInstance.resetBadgeCount(resultListener);
         }
-    }
 
+    }
     public static void setup(@NonNull MobileEngageConfig config) {
         Assert.notNull(config, "Config must not be null!");
+        MobileEngage.config = config;
         instance = new MobileEngageInternal(config);
         inboxInstance = new InboxInternal(config);
+    }
+
+    public static MobileEngageConfig getConfig() {
+        return config;
     }
 
     public static void setPushToken(String pushToken) {

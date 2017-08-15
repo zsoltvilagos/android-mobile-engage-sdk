@@ -22,6 +22,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -66,6 +67,14 @@ public class MobileEngageTest {
         MobileEngage.setup(baseConfig);
 
         assertNotNull(MobileEngage.inboxInstance);
+    }
+
+    @Test
+    public void testSetup_initializesWithConfig() {
+        MobileEngage.config = null;
+        MobileEngage.setup(baseConfig);
+
+        assertEquals(baseConfig, MobileEngage.getConfig());
     }
 
     @Test
