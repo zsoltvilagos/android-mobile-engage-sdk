@@ -24,6 +24,7 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -75,6 +76,25 @@ public class MobileEngageTest {
         MobileEngage.setup(baseConfig);
 
         assertEquals(baseConfig, MobileEngage.getConfig());
+    }
+
+    @Test
+    public void testSetup_initializesMobileEngageUtils() {
+        MobileEngageConfig disabled = new MobileEngageConfig.Builder()
+                .from(baseConfig)
+                .enableIdlingResource(false)
+                .build();
+
+        MobileEngageConfig enabled = new MobileEngageConfig.Builder()
+                .from(baseConfig)
+                .enableIdlingResource(true)
+                .build();
+
+        MobileEngageUtils.setup(disabled);
+        assertNull(MobileEngageUtils.getIdlingResource());
+
+        MobileEngage.setup(enabled);
+        assertNotNull(MobileEngageUtils.getIdlingResource());
     }
 
     @Test

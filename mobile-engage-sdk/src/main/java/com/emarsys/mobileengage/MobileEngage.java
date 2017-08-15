@@ -38,6 +38,7 @@ public class MobileEngage {
     public static void setup(@NonNull MobileEngageConfig config) {
         Assert.notNull(config, "Config must not be null!");
         MobileEngage.config = config;
+        MobileEngageUtils.setup(config);
         instance = new MobileEngageInternal(config);
         inboxInstance = new InboxInternal(config);
     }
