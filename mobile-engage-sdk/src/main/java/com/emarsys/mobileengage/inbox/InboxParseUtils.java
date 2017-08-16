@@ -88,7 +88,7 @@ public class InboxParseUtils {
 
     public static Notification parseNotificationFromPushMessage(Map<String, String> remoteData) {
         Notification result = null;
-        if (remoteData != null) {
+        if (remoteData != null && "true".equals(remoteData.get("inbox"))) {
             String id = remoteData.get("id");
 
             String sid = null;
