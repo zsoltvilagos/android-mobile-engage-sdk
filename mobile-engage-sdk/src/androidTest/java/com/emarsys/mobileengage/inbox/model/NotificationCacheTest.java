@@ -45,11 +45,12 @@ public class NotificationCacheTest {
     }
 
     @Test
-    public void testCache(){
+    public void testCache() {
         Notification notification = mock(Notification.class);
         notificationCache.cache(notification);
 
         Assert.assertFalse(NotificationCache.internalCache.isEmpty());
+        Assert.assertEquals(1, NotificationCache.internalCache.size());
         Assert.assertEquals(notification, NotificationCache.internalCache.get(0));
     }
 
@@ -65,13 +66,13 @@ public class NotificationCacheTest {
     }
 
     @Test
-    public void testMerge_withEmptyLists(){
+    public void testMerge_withEmptyLists() {
         List<Notification> result = notificationCache.merge(new ArrayList<Notification>());
         Assert.assertTrue(result.isEmpty());
     }
 
     @Test
-    public void testMerge_withEmptyCache(){
+    public void testMerge_withEmptyCache() {
         List<Notification> fetched = new ArrayList<>(Arrays.asList(notification1, notification2, notification3));
         List<Notification> result = notificationCache.merge(fetched);
 
@@ -81,7 +82,7 @@ public class NotificationCacheTest {
     }
 
     @Test
-    public void testMerge_withEmptyFetched(){
+    public void testMerge_withEmptyFetched() {
         notificationCache.cache(notification3);
         notificationCache.cache(notification2);
         notificationCache.cache(notification1);
@@ -95,7 +96,7 @@ public class NotificationCacheTest {
     }
 
     @Test
-    public void testMerge_withNonEmptyLists(){
+    public void testMerge_withNonEmptyLists() {
         notificationCache.cache(notification3);
         notificationCache.cache(notification2);
         notificationCache.cache(notification1);
@@ -118,7 +119,7 @@ public class NotificationCacheTest {
     }
 
     @Test
-    public void testMerge_withInvalidate(){
+    public void testMerge_shouldInvalidateAutomatically() {
         List<Notification> expected = new ArrayList<>();
         expected.add(notification1);
         expected.add(notification2);
@@ -138,7 +139,7 @@ public class NotificationCacheTest {
     }
 
     @Test
-    public void testInvalidate_withEmptyList(){
+    public void testInvalidate_withEmptyList() {
         notificationCache.cache(notification3);
         notificationCache.cache(notification2);
         notificationCache.cache(notification1);
@@ -153,7 +154,7 @@ public class NotificationCacheTest {
     }
 
     @Test
-    public void testInvalidate_withNonEmptyList(){
+    public void testInvalidate_withNonEmptyList() {
         notificationCache.cache(notification3);
         notificationCache.cache(notification2);
         notificationCache.cache(notification1);
@@ -169,5 +170,20 @@ public class NotificationCacheTest {
 
         Assert.assertEquals(1, NotificationCache.internalCache.size());
         Assert.assertEquals(expected, NotificationCache.internalCache.get(0));
+    }
+
+    @Test
+    public void testInvalidate_withoutCommonElements() {
+        notificationCache.cache(notification3);
+        notificationCache.cache(notification2);
+        notificationCache.cache(notification1);
+
+        List<Notification> fetched = new ArrayList<>(Arrays.asList(notification4, notification5));
+
+        notificationCache.invalidate(fetched);
+
+        List<Notification> expected = new ArrayList<>(Arrays.asList(notification1, notification2, notification3));
+
+        Assert.assertEquals(expected, NotificationCache.internalCache);
     }
 }
