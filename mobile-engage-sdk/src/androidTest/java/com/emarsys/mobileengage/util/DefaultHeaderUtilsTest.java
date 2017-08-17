@@ -53,7 +53,7 @@ public class DefaultHeaderUtilsTest {
         expected.put("Authorization", HeaderUtils.createBasicAuth(debugConfig.getApplicationCode(), debugConfig.getApplicationPassword()));
         expected.put("Content-Type", "application/json");
         expected.put("X-MOBILEENGAGE-SDK-VERSION", BuildConfig.VERSION_NAME);
-        expected.put("X-MOBILEENGAGE-SDK-MODE", "true");
+        expected.put("X-MOBILEENGAGE-SDK-MODE", "debug");
 
         Map<String, String> result = DefaultHeaderUtils.createDefaultHeaders(debugConfig);
 
@@ -66,7 +66,7 @@ public class DefaultHeaderUtilsTest {
         expected.put("Authorization", HeaderUtils.createBasicAuth(releaseConfig.getApplicationCode(), releaseConfig.getApplicationPassword()));
         expected.put("Content-Type", "application/json");
         expected.put("X-MOBILEENGAGE-SDK-VERSION", BuildConfig.VERSION_NAME);
-        expected.put("X-MOBILEENGAGE-SDK-MODE", "false");
+        expected.put("X-MOBILEENGAGE-SDK-MODE", "production");
 
         Map<String, String> result = DefaultHeaderUtils.createDefaultHeaders(releaseConfig);
 

@@ -17,7 +17,7 @@ public class DefaultHeaderUtils {
         defaultHeaders.put("Authorization", HeaderUtils.createBasicAuth(config.getApplicationCode(), config.getApplicationPassword()));
         defaultHeaders.put("Content-Type", "application/json");
         defaultHeaders.put("X-MOBILEENGAGE-SDK-VERSION", BuildConfig.VERSION_NAME);
-        defaultHeaders.put("X-MOBILEENGAGE-SDK-MODE", String.valueOf(config.isDebugMode()));
+        defaultHeaders.put("X-MOBILEENGAGE-SDK-MODE", config.isDebugMode() ? "debug" : "production");
 
         return defaultHeaders;
     }
