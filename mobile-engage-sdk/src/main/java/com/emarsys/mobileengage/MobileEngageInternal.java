@@ -16,8 +16,8 @@ import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.request.RequestModel;
 import com.emarsys.core.response.ResponseModel;
 import com.emarsys.core.util.CoreJsonObject;
-import com.emarsys.core.util.HeaderUtils;
 import com.emarsys.mobileengage.inbox.model.Notification;
+import com.emarsys.mobileengage.util.DefaultHeaderUtils;
 import com.google.firebase.iid.FirebaseInstanceId;
 
 import org.json.JSONException;
@@ -29,7 +29,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MobileEngageInternal {
-    public static final String MOBILEENGAGE_SDK_VERSION_KEY = "X-MOBILEENGAGE-SDK-VERSION";
     public static final String MOBILEENGAGE_SDK_VERSION = BuildConfig.VERSION_NAME;
     private static String ENDPOINT_BASE = "https://push.eservice.emarsys.net/api/mobileengage/v2/";
     private static String ENDPOINT_LOGIN = ENDPOINT_BASE + "users/login";
@@ -93,7 +92,7 @@ public class MobileEngageInternal {
         this.weakStatusListener = new WeakReference<>(config.getStatusListener());
 
         this.manager = manager;
-        initializeRequestManager(config.getApplicationCode(), config.getApplicationPassword());
+        manager.setDefaultHeaders(DefaultHeaderUtils.createDefaultHeaders(config));
 
         this.deviceInfo = new DeviceInfo(application.getApplicationContext());
 
@@ -104,14 +103,6 @@ public class MobileEngageInternal {
         }
 
         this.handler = new Handler(Looper.getMainLooper());
-    }
-
-    void initializeRequestManager(String id, String secret) {
-        Map<String, String> headers = new HashMap<>();
-        headers.put("Authorization", HeaderUtils.createBasicAuth(id, secret));
-        headers.put("Content-Type", "application/json");
-        headers.put(MOBILEENGAGE_SDK_VERSION_KEY, MOBILEENGAGE_SDK_VERSION);
-        this.manager.setDefaultHeaders(headers);
     }
 
     MobileEngageStatusListener getStatusListener() {

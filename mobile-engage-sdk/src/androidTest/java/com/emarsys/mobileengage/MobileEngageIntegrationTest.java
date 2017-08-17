@@ -14,6 +14,7 @@ import com.emarsys.mobileengage.fake.FakeStatusListener;
 import com.emarsys.mobileengage.inbox.model.Notification;
 import com.emarsys.mobileengage.testUtil.ConnectionTestUtils;
 import com.emarsys.mobileengage.testUtil.TestDbHelper;
+import com.emarsys.mobileengage.util.DefaultHeaderUtils;
 
 import org.json.JSONObject;
 import org.junit.Before;
@@ -72,7 +73,7 @@ public class MobileEngageIntegrationTest {
                 listener.onError(id, mock(Exception.class));
             }
         });
-        MobileEngage.instance.initializeRequestManager(config.getApplicationCode(), config.getApplicationPassword());
+        MobileEngage.instance.manager.setDefaultHeaders(DefaultHeaderUtils.createDefaultHeaders(config));
     }
 
     @Test

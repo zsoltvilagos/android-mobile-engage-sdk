@@ -1,7 +1,6 @@
 package com.emarsys.mobileengage;
 
 import android.app.Application;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.test.InstrumentationRegistry;
@@ -12,6 +11,7 @@ import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.request.RequestModel;
 import com.emarsys.core.util.CoreJsonObject;
 import com.emarsys.mobileengage.inbox.model.Notification;
+import com.emarsys.mobileengage.util.DefaultHeaderUtils;
 
 import org.json.JSONObject;
 import org.junit.Before;
@@ -34,7 +34,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @RunWith(AndroidJUnit4.class)
 public class MobileEngageInternalTest {
@@ -49,7 +48,6 @@ public class MobileEngageInternalTest {
     private MobileEngageConfig baseConfig;
     private RequestManager manager;
     private Application application;
-    private Context context;
     private DeviceInfo deviceInfo;
 
     private MobileEngageInternal mobileEngage;
@@ -59,15 +57,9 @@ public class MobileEngageInternalTest {
 
     @Before
     public void init() {
-        defaultHeaders = new HashMap<>();
-        defaultHeaders.put("Authorization", "Basic dXNlcjpwYXNz");
-        defaultHeaders.put("Content-Type", "application/json");
-        defaultHeaders.put("X-MOBILEENGAGE-SDK-VERSION", MOBILEENGAGE_SDK_VERSION);
         manager = mock(RequestManager.class);
-        context = InstrumentationRegistry.getTargetContext();
-        deviceInfo = new DeviceInfo(context);
-        application = mock(Application.class);
-        when(application.getApplicationContext()).thenReturn(context);
+        application = (Application) InstrumentationRegistry.getTargetContext().getApplicationContext();
+        deviceInfo = new DeviceInfo(application);
 
         statusListener = mock(MobileEngageStatusListener.class);
         baseConfig = new MobileEngageConfig.Builder()
@@ -76,13 +68,14 @@ public class MobileEngageInternalTest {
                 .statusListener(statusListener)
                 .build();
 
+        defaultHeaders = DefaultHeaderUtils.createDefaultHeaders(baseConfig);
+
         mobileEngage = new MobileEngageInternal(baseConfig, manager);
     }
 
     @Test
     public void testSetup_constructorInitializesFields() {
         MobileEngageInternal engage = new MobileEngageInternal(baseConfig, manager);
-        new DeviceInfo(context);
         assertEquals(baseConfig.getStatusListener(), engage.getStatusListener());
         assertNotNull(engage.getManager());
     }

@@ -13,6 +13,7 @@ import com.emarsys.mobileengage.fake.FakeResetBadgeCountResultListener;
 import com.emarsys.mobileengage.fake.FakeStatusListener;
 import com.emarsys.mobileengage.testUtil.ConnectionTestUtils;
 import com.emarsys.mobileengage.testUtil.TestDbHelper;
+import com.emarsys.mobileengage.util.DefaultHeaderUtils;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -72,7 +73,7 @@ public class NotificationInboxIntegrationTest {
                 listener.onError(id, mock(Exception.class));
             }
         });
-        MobileEngage.instance.initializeRequestManager(config.getApplicationCode(), config.getApplicationPassword());
+        MobileEngage.instance.manager.setDefaultHeaders(DefaultHeaderUtils.createDefaultHeaders(config));
 
         inboxLatch = new CountDownLatch(1);
         resetLatch = new CountDownLatch(1);
