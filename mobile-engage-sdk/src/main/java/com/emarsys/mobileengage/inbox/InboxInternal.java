@@ -10,12 +10,12 @@ import com.emarsys.core.request.RequestModel;
 import com.emarsys.core.request.RestClient;
 import com.emarsys.core.response.ResponseModel;
 import com.emarsys.core.util.Assert;
-import com.emarsys.core.util.HeaderUtils;
 import com.emarsys.mobileengage.AppLoginParameters;
 import com.emarsys.mobileengage.MobileEngageConfig;
 import com.emarsys.mobileengage.MobileEngageException;
 import com.emarsys.mobileengage.inbox.model.NotificationCache;
 import com.emarsys.mobileengage.inbox.model.NotificationInboxStatus;
+import com.emarsys.mobileengage.util.DefaultHeaderUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -130,11 +130,12 @@ public class InboxInternal {
     private Map<String, String> createBaseHeaders(MobileEngageConfig config) {
         Map<String, String> result = new HashMap<>();
 
-        result.put("Authorization", HeaderUtils.createBasicAuth(config.getApplicationCode(), config.getApplicationPassword()));
         result.put("x-ems-me-hardware-id", new DeviceInfo(config.getApplication()).getHwid());
         result.put("x-ems-me-application-code", config.getApplicationCode());
         result.put("x-ems-me-contact-field-id", String.valueOf(appLoginParameters.getContactFieldId()));
         result.put("x-ems-me-contact-field-value", appLoginParameters.getContactFieldValue());
+
+        result.putAll(DefaultHeaderUtils.createDefaultHeaders(config));
 
         return result;
     }

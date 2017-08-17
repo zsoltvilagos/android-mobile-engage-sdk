@@ -9,7 +9,6 @@ import com.emarsys.core.request.RequestMethod;
 import com.emarsys.core.request.RequestModel;
 import com.emarsys.core.request.RestClient;
 import com.emarsys.core.response.ResponseModel;
-import com.emarsys.core.util.HeaderUtils;
 import com.emarsys.mobileengage.AppLoginParameters;
 import com.emarsys.mobileengage.MobileEngageConfig;
 import com.emarsys.mobileengage.MobileEngageException;
@@ -19,6 +18,7 @@ import com.emarsys.mobileengage.fake.FakeRestClient;
 import com.emarsys.mobileengage.inbox.model.Notification;
 import com.emarsys.mobileengage.inbox.model.NotificationCache;
 import com.emarsys.mobileengage.inbox.model.NotificationInboxStatus;
+import com.emarsys.mobileengage.util.DefaultHeaderUtils;
 
 import junit.framework.Assert;
 
@@ -532,11 +532,11 @@ public class InboxInternalTest {
         DeviceInfo deviceInfo = new DeviceInfo(InstrumentationRegistry.getContext());
 
         Map<String, String> headers = new HashMap<>();
-        headers.put("Authorization", HeaderUtils.createBasicAuth(config.getApplicationCode(), config.getApplicationPassword()));
         headers.put("x-ems-me-hardware-id", deviceInfo.getHwid());
         headers.put("x-ems-me-application-code", config.getApplicationCode());
         headers.put("x-ems-me-contact-field-id", String.valueOf(appLoginParameters_withCredentials.getContactFieldId()));
         headers.put("x-ems-me-contact-field-value", appLoginParameters_withCredentials.getContactFieldValue());
+        headers.putAll(DefaultHeaderUtils.createDefaultHeaders(config));
 
         return new RequestModel.Builder()
                 .url(path)
