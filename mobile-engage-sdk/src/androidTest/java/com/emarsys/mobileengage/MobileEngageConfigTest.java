@@ -1,8 +1,9 @@
 package com.emarsys.mobileengage;
 
 import android.app.Application;
-import android.content.pm.ApplicationInfo;
 import android.support.test.InstrumentationRegistry;
+
+import com.emarsys.mobileengage.testUtil.ApplicationTestUtils;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -13,7 +14,6 @@ import static junit.framework.Assert.assertFalse;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class MobileEngageConfigTest {
     private String APP_ID = "appID";
@@ -29,8 +29,8 @@ public class MobileEngageConfigTest {
     @Before
     public void init(){
         application = (Application) InstrumentationRegistry.getTargetContext().getApplicationContext();
-        initApplicationDebug();
-        initApplicationRelease();
+        applicationDebug = ApplicationTestUtils.applicationDebug();
+        applicationRelease = ApplicationTestUtils.applicationRelease();
         statusListenerMock =  mock(MobileEngageStatusListener.class);
     }
 
@@ -107,19 +107,5 @@ public class MobileEngageConfigTest {
                 .credentials("", "")
                 .build();
         assertFalse(result.isDebugMode());
-    }
-
-    private void initApplicationDebug(){
-        applicationDebug = mock(Application.class);
-        ApplicationInfo info = new ApplicationInfo();
-        info.flags = ApplicationInfo.FLAG_DEBUGGABLE;
-        when(applicationDebug.getApplicationInfo()).thenReturn(info);
-    }
-
-    private void initApplicationRelease(){
-        applicationRelease = mock(Application.class);
-        ApplicationInfo info = new ApplicationInfo();
-        info.flags = 0;
-        when(applicationRelease.getApplicationInfo()).thenReturn(info);
     }
 }
