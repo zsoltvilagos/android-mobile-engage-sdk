@@ -1,6 +1,7 @@
 package com.emarsys.mobileengage.util;
 
 import android.app.Application;
+import android.support.test.InstrumentationRegistry;
 
 import com.emarsys.core.util.HeaderUtils;
 import com.emarsys.mobileengage.BuildConfig;
@@ -16,7 +17,6 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.mockito.Mockito.mock;
 
 public class DefaultHeaderUtilsTest {
 
@@ -27,8 +27,10 @@ public class DefaultHeaderUtilsTest {
 
     @Before
     public void setup() {
+        Application application = (Application) InstrumentationRegistry.getTargetContext().getApplicationContext();
+
         config = new MobileEngageConfig.Builder()
-                .application(mock(Application.class))
+                .application(application)
                 .credentials("applicationCode", "applicationPassword")
                 .build();
     }

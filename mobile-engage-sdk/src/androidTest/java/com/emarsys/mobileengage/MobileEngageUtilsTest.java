@@ -1,6 +1,7 @@
 package com.emarsys.mobileengage;
 
 import android.app.Application;
+import android.support.test.InstrumentationRegistry;
 
 import com.emarsys.mobileengage.util.MobileEngageIdlingResource;
 
@@ -27,8 +28,9 @@ public class MobileEngageUtilsTest {
 
     @Before
     public void init() {
+        Application application = (Application) InstrumentationRegistry.getTargetContext().getApplicationContext();
         MobileEngageConfig baseConfig = new MobileEngageConfig.Builder()
-                .application(mock(Application.class))
+                .application(application)
                 .credentials("applicationCode", "applicationPassword")
                 .build();
 

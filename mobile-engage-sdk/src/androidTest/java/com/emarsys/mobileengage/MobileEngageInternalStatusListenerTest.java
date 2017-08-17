@@ -28,7 +28,6 @@ import static com.emarsys.mobileengage.fake.FakeRequestManager.ResponseType.SUCC
 import static junit.framework.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class MobileEngageInternalStatusListenerTest {
 
@@ -59,8 +58,7 @@ public class MobileEngageInternalStatusListenerTest {
         authHeader = new HashMap<>();
         authHeader.put("Authorization", "Basic dXNlcjpwYXNz");
         context = InstrumentationRegistry.getTargetContext();
-        application = mock(Application.class);
-        when(application.getApplicationContext()).thenReturn(context);
+        application = (Application) InstrumentationRegistry.getTargetContext().getApplicationContext();
 
         intent = new Intent();
         Bundle payload = new Bundle();
