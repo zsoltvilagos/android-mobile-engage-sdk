@@ -1,6 +1,7 @@
 package com.emarsys.mobileengage;
 
 import android.app.Application;
+import android.content.pm.ApplicationInfo;
 import android.support.annotation.NonNull;
 
 import com.emarsys.core.util.Assert;
@@ -11,12 +12,14 @@ public class MobileEngageConfig {
     private final String applicationCode;
     private final String applicationPassword;
     private final MobileEngageStatusListener statusListener;
+    private final boolean isDebugMode;
     private final boolean idlingResourceEnabled;
 
     MobileEngageConfig(Application application,
                        String applicationCode,
                        String applicationPassword,
                        MobileEngageStatusListener statusListener,
+                       boolean isDebugMode,
                        boolean idlingResourceEnabled) {
         Assert.notNull(application, "Application must not be null");
         Assert.notNull(applicationCode, "ApplicationCode must not be null");
@@ -25,6 +28,7 @@ public class MobileEngageConfig {
         this.applicationCode = applicationCode;
         this.applicationPassword = applicationPassword;
         this.statusListener = statusListener;
+        this.isDebugMode = isDebugMode;
         this.idlingResourceEnabled = idlingResourceEnabled;
     }
 
@@ -48,21 +52,26 @@ public class MobileEngageConfig {
         return idlingResourceEnabled;
     }
 
+    public boolean isDebugMode() {
+        return isDebugMode;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        MobileEngageConfig that = (MobileEngageConfig) o;
+        MobileEngageConfig config = (MobileEngageConfig) o;
 
-        if (idlingResourceEnabled != that.idlingResourceEnabled) return false;
-        if (application != null ? !application.equals(that.application) : that.application != null)
+        if (isDebugMode != config.isDebugMode) return false;
+        if (idlingResourceEnabled != config.idlingResourceEnabled) return false;
+        if (application != null ? !application.equals(config.application) : config.application != null)
             return false;
-        if (applicationCode != null ? !applicationCode.equals(that.applicationCode) : that.applicationCode != null)
+        if (applicationCode != null ? !applicationCode.equals(config.applicationCode) : config.applicationCode != null)
             return false;
-        if (applicationPassword != null ? !applicationPassword.equals(that.applicationPassword) : that.applicationPassword != null)
+        if (applicationPassword != null ? !applicationPassword.equals(config.applicationPassword) : config.applicationPassword != null)
             return false;
-        return statusListener != null ? statusListener.equals(that.statusListener) : that.statusListener == null;
+        return statusListener != null ? statusListener.equals(config.statusListener) : config.statusListener == null;
 
     }
 
@@ -72,8 +81,21 @@ public class MobileEngageConfig {
         result = 31 * result + (applicationCode != null ? applicationCode.hashCode() : 0);
         result = 31 * result + (applicationPassword != null ? applicationPassword.hashCode() : 0);
         result = 31 * result + (statusListener != null ? statusListener.hashCode() : 0);
+        result = 31 * result + (isDebugMode ? 1 : 0);
         result = 31 * result + (idlingResourceEnabled ? 1 : 0);
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return "MobileEngageConfig{" +
+                "application=" + application +
+                ", applicationCode='" + applicationCode + '\'' +
+                ", applicationPassword='" + applicationPassword + '\'' +
+                ", statusListener=" + statusListener +
+                ", isDebugMode=" + isDebugMode +
+                ", idlingResourceEnabled=" + idlingResourceEnabled +
+                '}';
     }
 
     public static class Builder {
@@ -116,11 +138,14 @@ public class MobileEngageConfig {
         }
 
         public MobileEngageConfig build() {
+            boolean isDebuggable = (0 != (application.getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE));
+
             return new MobileEngageConfig(
                     application,
                     applicationCode,
                     applicationPassword,
                     statusListener,
+                    isDebuggable,
                     idlingResourceEnabled
             );
         }
