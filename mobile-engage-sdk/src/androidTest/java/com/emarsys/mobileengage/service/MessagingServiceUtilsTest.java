@@ -159,6 +159,38 @@ public class MessagingServiceUtilsTest {
     }
 
     @Test
+    @SdkSuppress(minSdkVersion = LOLLIPOP)
+    public void testCreateNotification_withBigPictureStyle_whenImageIsAvailable() {
+        Map<String, String> input = new HashMap<>();
+        input.put("title", TITLE);
+        input.put("body", BODY);
+        input.put("imageUrl", "https://www.emarsys.com/wp-content/themes/emarsys/images/home-page/press-releases-header.jpg");
+
+        android.app.Notification result = MessagingServiceUtils.createNotification(input, context);
+
+        assertEquals(TITLE, result.extras.getString(NotificationCompat.EXTRA_TITLE));
+        assertEquals(TITLE, result.extras.getString(NotificationCompat.EXTRA_TITLE_BIG));
+        assertEquals(BODY, result.extras.getString(NotificationCompat.EXTRA_SUMMARY_TEXT));
+        assertNotNull(result.extras.get(NotificationCompat.EXTRA_PICTURE));
+    }
+
+    @Test
+    @SdkSuppress(minSdkVersion = LOLLIPOP)
+    public void testCreateNotification_withBigTextStyle_whenImageCannotBeLoaded() {
+        Map<String, String> input = new HashMap<>();
+        input.put("title", TITLE);
+        input.put("body", BODY);
+        input.put("imageUrl", "https://fa.il/img.jpg");
+
+        android.app.Notification result = MessagingServiceUtils.createNotification(input, context);
+
+        assertEquals(TITLE, result.extras.getString(NotificationCompat.EXTRA_TITLE));
+        assertEquals(TITLE, result.extras.getString(NotificationCompat.EXTRA_TITLE_BIG));
+        assertEquals(BODY, result.extras.getString(NotificationCompat.EXTRA_TEXT));
+        assertEquals(BODY, result.extras.getString(NotificationCompat.EXTRA_BIG_TEXT));
+    }
+
+    @Test
     public void testGetTitle_withTitleSet() {
         Map<String, String> input = new HashMap<>();
         input.put("title", TITLE);

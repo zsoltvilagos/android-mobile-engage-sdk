@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
@@ -13,6 +14,7 @@ import android.support.v4.app.NotificationCompat;
 import com.emarsys.core.util.Assert;
 import com.emarsys.mobileengage.inbox.InboxParseUtils;
 import com.emarsys.mobileengage.inbox.model.NotificationCache;
+import com.emarsys.mobileengage.util.ImageUtils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -35,22 +37,40 @@ class MessagingServiceUtils {
 
         String title = getTitle(remoteMessageData, context);
         String body = remoteMessageData.get("body");
+        String imageUrl = remoteMessageData.get("imageUrl");
+        Bitmap bitmap = null;
+        NotificationCompat.Builder builder;
 
-        NotificationCompat.Builder mBuilder =
-                new NotificationCompat.Builder(context)
-                        .setContentTitle(title)
-                        .setContentText(body)
-                        .setStyle(
-                                new NotificationCompat.BigTextStyle()
-                                        .bigText(body)
-                                        .setBigContentTitle(title))
-                        .setSmallIcon(resourceId)
-                        .setAutoCancel(true);
+        if (imageUrl != null) {
+            bitmap = ImageUtils.loadBitmapFromUrl(imageUrl);
+        }
+        if (bitmap != null) {
+            builder = new NotificationCompat.Builder(context)
+                    .setContentTitle(title)
+                    .setContentText(body)
+                    .setStyle(new NotificationCompat
+                            .BigPictureStyle()
+                            .bigPicture(bitmap)
+                            .setBigContentTitle(title)
+                            .setSummaryText(body))
+                    .setSmallIcon(resourceId)
+                    .setAutoCancel(true);
+        } else {
+            builder = new NotificationCompat.Builder(context)
+                    .setContentTitle(title)
+                    .setContentText(body)
+                    .setStyle(new NotificationCompat
+                            .BigTextStyle()
+                            .bigText(body)
+                            .setBigContentTitle(title))
+                    .setSmallIcon(resourceId)
+                    .setAutoCancel(true);
+        }
 
         Intent intent = createIntent(remoteMessageData, context);
         PendingIntent resultPendingIntent = PendingIntent.getService(context, 0, intent, 0);
-        mBuilder.setContentIntent(resultPendingIntent);
-        return mBuilder.build();
+        builder.setContentIntent(resultPendingIntent);
+        return builder.build();
     }
 
     static String getTitle(Map<String, String> remoteMessageData, Context context) {
