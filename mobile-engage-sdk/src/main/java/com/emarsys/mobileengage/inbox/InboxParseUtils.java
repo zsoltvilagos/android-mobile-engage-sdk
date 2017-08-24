@@ -75,11 +75,15 @@ public class InboxParseUtils {
                 String id = json.getString("id");
                 String sid = json.getString("sid");
                 String title = json.getString("title");
+                String body = null;
+                if (json.has("body")) {
+                    body = json.getString("body");
+                }
                 Map<String, String> customData = convertFlatJsonObject(new JSONObject(json.getString("custom_data")));
                 JSONObject rootParams = new JSONObject(json.getString("root_params"));
                 int expirationTime = json.getInt("expiration_time");
                 long receivedAt = json.getLong("received_at");
-                result = new Notification(id, sid, title, customData, rootParams, expirationTime, receivedAt);
+                result = new Notification(id, sid, title, body, customData, rootParams, expirationTime, receivedAt);
             } catch (JSONException e) {
             }
         }
@@ -99,6 +103,7 @@ public class InboxParseUtils {
             }
 
             String title = remoteData.get("title");
+            String body = remoteData.get("body");
 
             Map<String, String> customData = null;
             try {
@@ -113,7 +118,7 @@ public class InboxParseUtils {
 
             long receivedAt = System.currentTimeMillis();
 
-            result = new Notification(id, sid, title, customData, rootParams, expirationTime, receivedAt);
+            result = new Notification(id, sid, title, body, customData, rootParams, expirationTime, receivedAt);
         }
         return result;
     }

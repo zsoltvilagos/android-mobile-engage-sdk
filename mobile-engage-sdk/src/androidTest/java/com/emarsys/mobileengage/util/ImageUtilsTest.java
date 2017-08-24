@@ -11,7 +11,7 @@ public class ImageUtilsTest {
 
     @Rule
     public Timeout globalTimeout = Timeout.seconds(30);
-    
+
     @Test
     public void testLoadBitmapFromUrl_shouldReturnNullWhenImageUrlIsNull() throws Exception {
         Bitmap result = ImageUtils.loadBitmapFromUrl(null);

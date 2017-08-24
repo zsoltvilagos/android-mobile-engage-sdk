@@ -37,11 +37,11 @@ public class NotificationCacheTest {
         notificationCache = new NotificationCache();
         NotificationCache.internalCache.clear();
 
-        notification1 = new Notification("id1", "sid1", "title1", new HashMap<String, String>(), new JSONObject(), 100, 10000000);
-        notification2 = new Notification("id2", "sid2", "title2", new HashMap<String, String>(), new JSONObject(), 200, 20000000);
-        notification3 = new Notification("id3", "sid3", "title3", new HashMap<String, String>(), new JSONObject(), 300, 30000000);
-        notification4 = new Notification("id4", "sid4", "title4", new HashMap<String, String>(), new JSONObject(), 400, 40000000);
-        notification5 = new Notification("id5", "sid5", "title5", new HashMap<String, String>(), new JSONObject(), 500, 50000000);
+        notification1 = new Notification("id1", "sid1", "title1", null, new HashMap<String, String>(), new JSONObject(), 100, 10000000);
+        notification2 = new Notification("id2", "sid2", "title2", null, new HashMap<String, String>(), new JSONObject(), 200, 20000000);
+        notification3 = new Notification("id3", "sid3", "title3", null, new HashMap<String, String>(), new JSONObject(), 300, 30000000);
+        notification4 = new Notification("id4", "sid4", "title4", null, new HashMap<String, String>(), new JSONObject(), 400, 40000000);
+        notification5 = new Notification("id5", "sid5", "title5", null, new HashMap<String, String>(), new JSONObject(), 500, 50000000);
     }
 
     @Test
@@ -160,8 +160,8 @@ public class NotificationCacheTest {
         notificationCache.cache(notification1);
 
         List<Notification> fetched = new ArrayList<>(Arrays.asList(
-                new Notification("id1", "sid1", "title1", null, null, Integer.MAX_VALUE, 20),
-                new Notification("id3", "sid3", "title3", null, null, Integer.MAX_VALUE, 50)
+                new Notification("id1", "sid1", "title1", null, null, null, Integer.MAX_VALUE, 20),
+                new Notification("id3", "sid3", "title3", null, null, null, Integer.MAX_VALUE, 50)
         ));
 
         notificationCache.invalidate(fetched);

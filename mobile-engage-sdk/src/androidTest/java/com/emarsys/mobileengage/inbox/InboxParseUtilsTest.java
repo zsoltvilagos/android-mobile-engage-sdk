@@ -67,10 +67,27 @@ public class InboxParseUtilsTest {
             "\"expiration_time\": 100, " +
             "\"received_at\":25000000" +
             "}";
+    public static final String NOTIFICATION_STRING_4 = "{" +
+            "\"id\":\"id4\", " +
+            "\"sid\":\"sid4\", " +
+            "\"title\":\"title4\", " +
+            "\"body\":\"body4\", " +
+            "\"custom_data\": {" +
+            "\"data5\":\"dataValue5\"," +
+            "\"data6\":\"dataValue6\"" +
+            "}," +
+            "\"root_params\": {" +
+            "\"param5\":\"paramValue5\"," +
+            "\"param6\":\"paramValue6\"" +
+            "}," +
+            "\"expiration_time\": 100, " +
+            "\"received_at\":25000000" +
+            "}";
 
     private Notification notification1;
     private Notification notification2;
     private Notification notification3;
+    private Notification notification4;
 
     private List<Notification> notifications;
 
@@ -101,9 +118,10 @@ public class InboxParseUtilsTest {
         rootParams3.put("param5", "paramValue5");
         rootParams3.put("param6", "paramValue6");
 
-        notification1 = new Notification("id1", "sid1", "title1", customData1, rootParams1, 300, 10000000);
-        notification2 = new Notification("id2", "sid2", "title2", customData2, rootParams2, 200, 30000000);
-        notification3 = new Notification("id3", "sid3", "title3", customData3, rootParams3, 100, 25000000);
+        notification1 = new Notification("id1", "sid1", "title1", null, customData1, rootParams1, 300, 10000000);
+        notification2 = new Notification("id2", "sid2", "title2", null, customData2, rootParams2, 200, 30000000);
+        notification3 = new Notification("id3", "sid3", "title3", null, customData3, rootParams3, 100, 25000000);
+        notification4 = new Notification("id4", "sid4", "title4", "body4", customData3, rootParams3, 100, 25000000);
 
         notifications = Arrays.asList(notification1, notification2, notification3);
     }
@@ -268,6 +286,14 @@ public class InboxParseUtilsTest {
     }
 
     @Test
+    public void parseNotification_withCorrectStringWithBody_returnsNotification() throws JSONException {
+        Notification expected = notification4;
+
+        Notification result = InboxParseUtils.parseNotification(NOTIFICATION_STRING_4);
+        Assert.assertEquals(expected, result);
+    }
+
+    @Test
     public void convertFlatJsonObject_withNull() {
         HashMap<Object, Object> expected = new HashMap<>();
         Map<String, String> result = InboxParseUtils.convertFlatJsonObject(null);
@@ -318,6 +344,36 @@ public class InboxParseUtilsTest {
         Assert.assertEquals("21022.150123121212.43223434c3b9", result.getId());
         Assert.assertEquals("sid_here", result.getSid());
         Assert.assertEquals("hello there", result.getTitle());
+        Assert.assertEquals(customData, result.getCustomData());
+        Assert.assertTrue(before <= result.getReceivedAt());
+        Assert.assertTrue(result.getReceivedAt() <= after);
+    }
+
+    @Test
+    public void testParseNotificationFromPushMessageWithBody() {
+        Map<String, String> remoteData = new HashMap<>();
+        remoteData.put("inbox", "true");
+        remoteData.put("ems_msg", "true");
+        remoteData.put("u", "{\"test_field\":\"\",\"image\":\"https:\\/\\/media.giphy.com\\/media\\/ktvFa67wmjDEI\\/giphy.gif\",\"deep_link\":\"lifestylelabels.com\\/mobile\\/product\\/3245678\",\"sid\":\"sid_here\"}");
+        remoteData.put("id", "21022.150123121212.43223434c3b9");
+        remoteData.put("title", "hello there");
+        remoteData.put("body", "o<-<");
+        remoteData.put("rootParam1", "param_param");
+
+        Map<String, String> customData = new HashMap<>();
+        customData.put("test_field", "");
+        customData.put("image", "https://media.giphy.com/media/ktvFa67wmjDEI/giphy.gif");
+        customData.put("deep_link", "lifestylelabels.com/mobile/product/3245678");
+        customData.put("sid", "sid_here");
+
+        long before = System.currentTimeMillis();
+        Notification result = InboxParseUtils.parseNotificationFromPushMessage(remoteData);
+        long after = System.currentTimeMillis();
+
+        Assert.assertEquals("21022.150123121212.43223434c3b9", result.getId());
+        Assert.assertEquals("sid_here", result.getSid());
+        Assert.assertEquals("hello there", result.getTitle());
+        Assert.assertEquals("o<-<", result.getBody());
         Assert.assertEquals(customData, result.getCustomData());
         Assert.assertTrue(before <= result.getReceivedAt());
         Assert.assertTrue(result.getReceivedAt() <= after);

@@ -572,9 +572,9 @@ public class InboxInternalTest {
         rootParams3.put("param6", "paramValue6");
 
         return Arrays.asList(
-                new Notification("id1", "sid1", "title1", customData1, rootParams1, 300, 10000000),
-                new Notification("id2", "sid2", "title2", customData2, rootParams2, 200, 30000000),
-                new Notification("id3", "sid3", "title3", customData3, rootParams3, 100, 25000000)
+                new Notification("id1", "sid1", "title1", null, customData1, rootParams1, 300, 10000000),
+                new Notification("id2", "sid2", "title2", null, customData2, rootParams2, 200, 30000000),
+                new Notification("id3", "sid3", "title3", null, customData3, rootParams3, 100, 25000000)
 
         );
     }
@@ -597,8 +597,8 @@ public class InboxInternalTest {
         rootParams5.put("param10", "paramValue10");
 
         return Arrays.asList(
-                new Notification("id4", "sid4", "title4", customData4, rootParams4, 400, 40000000),
-                new Notification("id5", "sid5", "title5", customData5, rootParams5, 500, 50000000)
+                new Notification("id4", "sid4", "title4", null, customData4, rootParams4, 400, 40000000),
+                new Notification("id5", "sid5", "title5", null, customData5, rootParams5, 500, 50000000)
         );
     }
 
