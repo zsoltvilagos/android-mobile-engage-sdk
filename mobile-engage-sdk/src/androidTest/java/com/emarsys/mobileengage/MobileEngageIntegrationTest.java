@@ -127,7 +127,8 @@ public class MobileEngageIntegrationTest {
                 "id",
                 "161e_D/1UiO/jCmE4",
                 "title",
-                null, new HashMap<String, String>(),
+                null,
+                new HashMap<String, String>(),
                 new JSONObject(),
                 2000,
                 new Date().getTime());
