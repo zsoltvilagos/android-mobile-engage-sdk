@@ -37,40 +37,41 @@ class MessagingServiceUtils {
 
         String title = getTitle(remoteMessageData, context);
         String body = remoteMessageData.get("body");
-        String imageUrl = remoteMessageData.get("imageUrl");
-        Bitmap bitmap = null;
-        NotificationCompat.Builder builder;
+        Bitmap image = ImageUtils.loadBitmapFromUrl(remoteMessageData.get("imageUrl"));
 
-        if (imageUrl != null) {
-            bitmap = ImageUtils.loadBitmapFromUrl(imageUrl);
-        }
-        if (bitmap != null) {
-            builder = new NotificationCompat.Builder(context)
-                    .setContentTitle(title)
-                    .setContentText(body)
-                    .setStyle(new NotificationCompat
-                            .BigPictureStyle()
-                            .bigPicture(bitmap)
-                            .setBigContentTitle(title)
-                            .setSummaryText(body))
-                    .setSmallIcon(resourceId)
-                    .setAutoCancel(true);
-        } else {
-            builder = new NotificationCompat.Builder(context)
-                    .setContentTitle(title)
-                    .setContentText(body)
-                    .setStyle(new NotificationCompat
-                            .BigTextStyle()
-                            .bigText(body)
-                            .setBigContentTitle(title))
-                    .setSmallIcon(resourceId)
-                    .setAutoCancel(true);
-        }
+        PendingIntent resultPendingIntent = createPendingIntent(context, remoteMessageData);
 
+        return new NotificationCompat.Builder(context)
+                .setContentTitle(title)
+                .setContentText(body)
+                .setStyle(createStyle(title, body, image))
+                .setSmallIcon(resourceId)
+                .setAutoCancel(true)
+                .setContentIntent(resultPendingIntent)
+                .build();
+    }
+
+    private static PendingIntent createPendingIntent(Context context, Map<String, String> remoteMessageData) {
         Intent intent = createIntent(remoteMessageData, context);
-        PendingIntent resultPendingIntent = PendingIntent.getService(context, 0, intent, 0);
-        builder.setContentIntent(resultPendingIntent);
-        return builder.build();
+        return PendingIntent.getService(context, 0, intent, 0);
+    }
+
+    private static NotificationCompat.Style createStyle(String title, String body, Bitmap bitmap) {
+        NotificationCompat.Style style;
+        if (bitmap != null) {
+            style = new NotificationCompat
+                    .BigPictureStyle()
+                    .bigPicture(bitmap)
+                    .setBigContentTitle(title)
+                    .setSummaryText(body);
+        } else {
+            style = new NotificationCompat
+                    .BigTextStyle()
+                    .bigText(body)
+                    .setBigContentTitle(title)
+                    .setSummaryText(body);
+        }
+        return style;
     }
 
     static String getTitle(Map<String, String> remoteMessageData, Context context) {
