@@ -70,8 +70,7 @@ class MessagingServiceUtils {
             builder.setStyle(new NotificationCompat
                     .BigTextStyle()
                     .bigText(body)
-                    .setBigContentTitle(title)
-                    .setSummaryText(body));
+                    .setBigContentTitle(title));
         }
     }
 

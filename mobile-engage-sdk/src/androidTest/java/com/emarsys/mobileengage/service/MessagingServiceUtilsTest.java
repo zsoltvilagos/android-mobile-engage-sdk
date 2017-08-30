@@ -109,6 +109,8 @@ public class MessagingServiceUtilsTest {
         assertEquals(TITLE, result.extras.getString(NotificationCompat.EXTRA_TITLE_BIG));
         assertEquals(BODY, result.extras.getString(NotificationCompat.EXTRA_TEXT));
         assertEquals(BODY, result.extras.getString(NotificationCompat.EXTRA_BIG_TEXT));
+
+        assertNull(result.extras.getString(NotificationCompat.EXTRA_SUMMARY_TEXT));
     }
 
     @Test
@@ -121,8 +123,10 @@ public class MessagingServiceUtilsTest {
 
         assertEquals(TITLE, result.extras.getString(NotificationCompat.EXTRA_TITLE));
         assertEquals(TITLE, result.extras.getString(NotificationCompat.EXTRA_TITLE_BIG));
+
         assertNull(result.extras.getString(NotificationCompat.EXTRA_TEXT));
         assertNull(result.extras.getString(NotificationCompat.EXTRA_BIG_TEXT));
+        assertNull(result.extras.getString(NotificationCompat.EXTRA_SUMMARY_TEXT));
     }
 
     @Test
@@ -139,6 +143,8 @@ public class MessagingServiceUtilsTest {
         assertEquals(expectedTitle, result.extras.getString(NotificationCompat.EXTRA_TITLE_BIG));
         assertEquals(BODY, result.extras.getString(NotificationCompat.EXTRA_TEXT));
         assertEquals(BODY, result.extras.getString(NotificationCompat.EXTRA_BIG_TEXT));
+
+        assertNull(result.extras.getString(NotificationCompat.EXTRA_SUMMARY_TEXT));
     }
 
     @Test
@@ -156,6 +162,8 @@ public class MessagingServiceUtilsTest {
         assertEquals(expectedTitle, result.extras.getString(NotificationCompat.EXTRA_TITLE_BIG));
         assertEquals(BODY, result.extras.getString(NotificationCompat.EXTRA_TEXT));
         assertEquals(BODY, result.extras.getString(NotificationCompat.EXTRA_BIG_TEXT));
+
+        assertNull(result.extras.getString(NotificationCompat.EXTRA_SUMMARY_TEXT));
     }
 
     @Test
@@ -171,8 +179,10 @@ public class MessagingServiceUtilsTest {
         assertEquals(TITLE, result.extras.getString(NotificationCompat.EXTRA_TITLE));
         assertEquals(TITLE, result.extras.getString(NotificationCompat.EXTRA_TITLE_BIG));
         assertEquals(BODY, result.extras.getString(NotificationCompat.EXTRA_SUMMARY_TEXT));
+
         assertNotNull(result.extras.get(NotificationCompat.EXTRA_PICTURE));
         assertNotNull(result.extras.get(NotificationCompat.EXTRA_LARGE_ICON));
+
         assertNull(result.extras.get(NotificationCompat.EXTRA_LARGE_ICON_BIG));
     }
 
@@ -190,6 +200,8 @@ public class MessagingServiceUtilsTest {
         assertEquals(TITLE, result.extras.getString(NotificationCompat.EXTRA_TITLE_BIG));
         assertEquals(BODY, result.extras.getString(NotificationCompat.EXTRA_TEXT));
         assertEquals(BODY, result.extras.getString(NotificationCompat.EXTRA_BIG_TEXT));
+
+        assertNull(result.extras.getString(NotificationCompat.EXTRA_SUMMARY_TEXT));
     }
 
     @Test
