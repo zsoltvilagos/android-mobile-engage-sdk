@@ -172,6 +172,8 @@ public class MessagingServiceUtilsTest {
         assertEquals(TITLE, result.extras.getString(NotificationCompat.EXTRA_TITLE_BIG));
         assertEquals(BODY, result.extras.getString(NotificationCompat.EXTRA_SUMMARY_TEXT));
         assertNotNull(result.extras.get(NotificationCompat.EXTRA_PICTURE));
+        assertNotNull(result.extras.get(NotificationCompat.EXTRA_LARGE_ICON));
+        assertNull(result.extras.get(NotificationCompat.EXTRA_LARGE_ICON_BIG));
     }
 
     @Test
@@ -290,7 +292,7 @@ public class MessagingServiceUtilsTest {
     }
 
     private String expectedBasedOnApiLevel(String before23, String fromApi23) {
-        if(Build.VERSION.SDK_INT < 23){
+        if (Build.VERSION.SDK_INT < 23) {
             return before23;
         } else {
             return fromApi23;

@@ -41,14 +41,16 @@ class MessagingServiceUtils {
 
         PendingIntent resultPendingIntent = createPendingIntent(context, remoteMessageData);
 
-        return new NotificationCompat.Builder(context)
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
                 .setContentTitle(title)
                 .setContentText(body)
-                .setStyle(createStyle(title, body, image))
                 .setSmallIcon(resourceId)
                 .setAutoCancel(true)
-                .setContentIntent(resultPendingIntent)
-                .build();
+                .setContentIntent(resultPendingIntent);
+
+        styleNotification(builder, title, body, image);
+
+        return builder.build();
     }
 
     private static PendingIntent createPendingIntent(Context context, Map<String, String> remoteMessageData) {
@@ -56,22 +58,21 @@ class MessagingServiceUtils {
         return PendingIntent.getService(context, 0, intent, 0);
     }
 
-    private static NotificationCompat.Style createStyle(String title, String body, Bitmap bitmap) {
-        NotificationCompat.Style style;
+    private static void styleNotification(NotificationCompat.Builder builder, String title, String body, Bitmap bitmap) {
         if (bitmap != null) {
-            style = new NotificationCompat
-                    .BigPictureStyle()
-                    .bigPicture(bitmap)
-                    .setBigContentTitle(title)
-                    .setSummaryText(body);
+            builder.setLargeIcon(bitmap)
+                    .setStyle(new NotificationCompat
+                            .BigPictureStyle()
+                            .bigPicture(bitmap)
+                            .setBigContentTitle(title)
+                            .setSummaryText(body));
         } else {
-            style = new NotificationCompat
+            builder.setStyle(new NotificationCompat
                     .BigTextStyle()
                     .bigText(body)
                     .setBigContentTitle(title)
-                    .setSummaryText(body);
+                    .setSummaryText(body));
         }
-        return style;
     }
 
     static String getTitle(Map<String, String> remoteMessageData, Context context) {
