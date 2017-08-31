@@ -64,6 +64,7 @@ class MessagingServiceUtils {
                     .setStyle(new NotificationCompat
                             .BigPictureStyle()
                             .bigPicture(bitmap)
+                            .bigLargeIcon(null)
                             .setBigContentTitle(title)
                             .setSummaryText(body));
         } else {
