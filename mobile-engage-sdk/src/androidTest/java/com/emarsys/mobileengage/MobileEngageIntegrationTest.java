@@ -30,7 +30,6 @@ import java.util.concurrent.CountDownLatch;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.mockito.Mockito.mock;
 
 public class MobileEngageIntegrationTest {
     private CountDownLatch latch;
@@ -65,12 +64,12 @@ public class MobileEngageIntegrationTest {
 
             @Override
             public void onError(String id, ResponseModel responseModel) {
-                listener.onError(id, mock(Exception.class));
+                listener.onError(id, new MobileEngageException(responseModel));
             }
 
             @Override
             public void onError(String id, Exception cause) {
-                listener.onError(id, mock(Exception.class));
+                listener.onError(id, cause);
             }
         });
         MobileEngage.instance.manager.setDefaultHeaders(DefaultHeaderUtils.createDefaultHeaders(config));
