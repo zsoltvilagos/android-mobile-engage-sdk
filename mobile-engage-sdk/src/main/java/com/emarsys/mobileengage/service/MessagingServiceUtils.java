@@ -104,7 +104,7 @@ class MessagingServiceUtils {
             NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
             NotificationChannel channel = notificationManager.getNotificationChannel(channelId);
             if (channel == null) {
-                notificationManager.createNotificationChannel(new NotificationChannel(channelId, channelId, 1));
+                notificationManager.createNotificationChannel(new NotificationChannel(channelId, channelId, NotificationManager.IMPORTANCE_DEFAULT));
             }
         }
     }

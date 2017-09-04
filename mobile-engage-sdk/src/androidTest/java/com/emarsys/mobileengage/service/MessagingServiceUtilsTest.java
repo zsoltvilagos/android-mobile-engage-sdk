@@ -245,12 +245,13 @@ public class MessagingServiceUtilsTest {
     public void testCreateChannel(){
         NotificationManager manager = (NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
         manager.deleteNotificationChannel(CHANNEL_ID);
-
         assertNull(manager.getNotificationChannel(CHANNEL_ID));
 
         MessagingServiceUtils.createChannelIfNotExists(context, CHANNEL_ID);
 
-        assertNotNull(manager.getNotificationChannel(CHANNEL_ID));
+        NotificationChannel channel = manager.getNotificationChannel(CHANNEL_ID);
+        assertNotNull(channel);
+        assertEquals(NotificationManager.IMPORTANCE_DEFAULT, channel.getImportance());
     }
 
     @Test
