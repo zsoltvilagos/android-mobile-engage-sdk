@@ -1,6 +1,8 @@
 package com.emarsys.mobileengage.service;
 
 import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
@@ -25,6 +27,7 @@ class MessagingServiceUtils {
 
     public static final String MESSAGE_FILTER = "ems_msg";
     public static final String METADATA_SMALL_NOTIFICATION_ICON_KEY = "com.emarsys.mobileengage.small_notification_icon";
+    public static final String DEFAULT_CHANNEL_ID = "default";
 
     static NotificationCache notificationCache = new NotificationCache();
 
@@ -38,10 +41,15 @@ class MessagingServiceUtils {
         String title = getTitle(remoteMessageData, context);
         String body = remoteMessageData.get("body");
         Bitmap image = ImageUtils.loadBitmapFromUrl(remoteMessageData.get("imageUrl"));
+        String channelId = getChannelId(remoteMessageData);
+
+        if (channelId.equals(DEFAULT_CHANNEL_ID)) {
+            createChannelIfNotExists(context, DEFAULT_CHANNEL_ID);
+        }
 
         PendingIntent resultPendingIntent = createPendingIntent(context, remoteMessageData);
 
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, channelId)
                 .setContentTitle(title)
                 .setContentText(body)
                 .setSmallIcon(resourceId)
@@ -81,6 +89,24 @@ class MessagingServiceUtils {
             title = getDefaultTitle(remoteMessageData, context);
         }
         return title;
+    }
+
+    static String getChannelId(Map<String, String> remoteMessageData) {
+        String result = remoteMessageData.get("channelId");
+        if (result == null) {
+            result = DEFAULT_CHANNEL_ID;
+        }
+        return result;
+    }
+
+    static void createChannelIfNotExists(Context context, String channelId) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+            NotificationChannel channel = notificationManager.getNotificationChannel(channelId);
+            if (channel == null) {
+                notificationManager.createNotificationChannel(new NotificationChannel(channelId, channelId, 1));
+            }
+        }
     }
 
     private static String getDefaultTitle(Map<String, String> remoteMessageData, Context context) {

@@ -1,5 +1,7 @@
 package com.emarsys.mobileengage.service;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
@@ -7,7 +9,7 @@ import android.os.Build;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SdkSuppress;
 import android.support.test.runner.AndroidJUnit4;
-import android.support.v7.app.NotificationCompat;
+import android.support.v4.app.NotificationCompat;
 
 import com.emarsys.mobileengage.inbox.model.Notification;
 import com.emarsys.mobileengage.inbox.model.NotificationCache;
@@ -25,17 +27,24 @@ import java.util.List;
 import java.util.Map;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.O;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(AndroidJUnit4.class)
 public class MessagingServiceUtilsTest {
     private static final String TITLE = "title";
     private static final String DEFAULT_TITLE = "This is a default title";
     private static final String BODY = "body";
+    private static final String CHANNEL_ID = "channelId";
 
     private Context context;
     private List<Notification> notificationCache;
@@ -205,6 +214,60 @@ public class MessagingServiceUtilsTest {
     }
 
     @Test
+    @SdkSuppress(minSdkVersion = O)
+    public void testCreateNotification_withChannelId() {
+        Map<String, String> input = new HashMap<>();
+        input.put("title", TITLE);
+        input.put("body", BODY);
+        input.put("channelId", CHANNEL_ID);
+
+        android.app.Notification result = MessagingServiceUtils.createNotification(input, context);
+
+        assertEquals(CHANNEL_ID, result.getChannelId());
+    }
+
+    @Test
+    @SdkSuppress(minSdkVersion = O)
+    public void testCreateNotification_withoutChannelId() {
+        Map<String, String> input = new HashMap<>();
+        input.put("title", TITLE);
+        input.put("body", BODY);
+
+        android.app.Notification result = MessagingServiceUtils.createNotification(input, context);
+
+        String expected = "default";
+
+        assertEquals(expected, result.getChannelId());
+    }
+
+    @Test
+    @SdkSuppress(minSdkVersion = O)
+    public void testCreateChannel(){
+        NotificationManager manager = (NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
+        manager.deleteNotificationChannel(CHANNEL_ID);
+
+        assertNull(manager.getNotificationChannel(CHANNEL_ID));
+
+        MessagingServiceUtils.createChannelIfNotExists(context, CHANNEL_ID);
+
+        assertNotNull(manager.getNotificationChannel(CHANNEL_ID));
+    }
+
+    @Test
+    @SdkSuppress(minSdkVersion = O)
+    public void testCreateChannel_doesNotOverrideExistingChannel(){
+        Context contextMock = mock(Context.class);
+        NotificationManager managerMock = mock(NotificationManager.class);
+        NotificationChannel channelDummy = new NotificationChannel("dummyId", "dummyName", 42);
+        when(contextMock.getSystemService(Context.NOTIFICATION_SERVICE)).thenReturn(managerMock);
+        when(managerMock.getNotificationChannel(CHANNEL_ID)).thenReturn(channelDummy);
+
+        MessagingServiceUtils.createChannelIfNotExists(contextMock, CHANNEL_ID);
+
+        verify(managerMock, never()).createNotificationChannel(any(NotificationChannel.class));
+    }
+
+    @Test
     public void testGetTitle_withTitleSet() {
         Map<String, String> input = new HashMap<>();
         input.put("title", TITLE);
@@ -254,7 +317,7 @@ public class MessagingServiceUtilsTest {
 
         String expectedFrom23 = "";
 
-        String expected = expectedBasedOnApiLevel(expectedBefore23, expectedFrom23);
+        String expected = expectedBasedOnApiLevel(DEFAULT_TITLE, expectedFrom23);
 
         assertEquals(expected, MessagingServiceUtils.getTitle(input, context));
     }
