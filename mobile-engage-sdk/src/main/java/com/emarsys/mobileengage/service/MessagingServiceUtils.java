@@ -100,7 +100,7 @@ class MessagingServiceUtils {
     }
 
     static void createChannelIfNotExists(Context context, String channelId) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        if (Build.VERSION.SDK_INT >= 26) {
             NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
             NotificationChannel channel = notificationManager.getNotificationChannel(channelId);
             if (channel == null) {
