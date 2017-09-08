@@ -2,6 +2,7 @@ package com.emarsys.mobileengage.util;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.webkit.URLUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,7 +13,7 @@ public class ImageUtils {
 
     public static Bitmap loadBitmapFromUrl(String imageUrl) {
         Bitmap result = null;
-        if (imageUrl != null) {
+        if (imageUrl != null && URLUtil.isHttpsUrl(imageUrl)) {
             try {
                 URL url = new URL(imageUrl);
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();

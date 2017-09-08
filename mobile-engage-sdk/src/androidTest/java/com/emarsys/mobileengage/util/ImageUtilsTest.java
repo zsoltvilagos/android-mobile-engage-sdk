@@ -25,9 +25,9 @@ public class ImageUtilsTest {
     }
 
     @Test
-    public void testLoadBitmapFromUrl_shouldReturnBitmapWhenUrlIsValidWithHttpProtocol() throws Exception {
+    public void testLoadBitmapFromUrl_shouldNotWorkWithHTTPProtocol() throws Exception {
         Bitmap result = ImageUtils.loadBitmapFromUrl("http://www.emarsys.com/wp-content/themes/emarsys/images/home-page/press-releases-header.jpg");
-        Assert.assertNotNull(result);
+        Assert.assertNull(result);
     }
 
     @Test
