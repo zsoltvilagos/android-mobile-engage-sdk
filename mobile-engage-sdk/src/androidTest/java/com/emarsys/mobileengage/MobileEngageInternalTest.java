@@ -9,7 +9,6 @@ import android.support.test.runner.AndroidJUnit4;
 import com.emarsys.core.DeviceInfo;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.request.RequestModel;
-import com.emarsys.core.util.CoreJsonObject;
 import com.emarsys.mobileengage.inbox.model.Notification;
 import com.emarsys.mobileengage.util.DefaultHeaderUtils;
 
@@ -189,7 +188,7 @@ public class MobileEngageInternalTest {
         eventAttributes.put("tom", "jerry");
 
         Map<String, Object> payload = createBasePayload();
-        payload.put("attributes", new CoreJsonObject(eventAttributes));
+        payload.put("attributes", eventAttributes);
 
         RequestModel expected = new RequestModel.Builder()
                 .url(ENDPOINT_BASE + "events/" + eventName)

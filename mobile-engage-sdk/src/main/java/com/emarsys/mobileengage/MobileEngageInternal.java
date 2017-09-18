@@ -15,7 +15,6 @@ import com.emarsys.core.queue.sqlite.SqliteQueue;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.request.RequestModel;
 import com.emarsys.core.response.ResponseModel;
-import com.emarsys.core.util.CoreJsonObject;
 import com.emarsys.mobileengage.inbox.model.Notification;
 import com.emarsys.mobileengage.util.DefaultHeaderUtils;
 import com.google.firebase.iid.FirebaseInstanceId;
@@ -187,7 +186,7 @@ public class MobileEngageInternal {
                             @Nullable Map<String, String> eventAttributes) {
         Map<String, Object> payload = createBasePayload();
         if (eventAttributes != null && !eventAttributes.isEmpty()) {
-            payload.put("attributes", new CoreJsonObject(eventAttributes));
+            payload.put("attributes", eventAttributes);
         }
         RequestModel model = new RequestModel.Builder()
                 .url(getEventUrl(eventName))
