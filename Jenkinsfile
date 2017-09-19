@@ -31,6 +31,7 @@ node('android') {
             }
 
             stage("instrumentation-test") {
+                sh './gradlew uninstallDebugAndroidTest'
                 androidInstrumentationTest withScreenOn: true, withLock: env.ANDROID_DEVICE_FARM_LOCK, withRetryCount: 2, andArchive: '**/outputs/androidTest-results/connected/*.xml'
             }
 
