@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.test.InstrumentationRegistry;
 
-import com.emarsys.core.CoreCompletionHandler;
 import com.emarsys.core.connection.ConnectionWatchDog;
 import com.emarsys.core.queue.InMemoryQueue;
 import com.emarsys.core.request.RequestManager;
@@ -37,6 +36,7 @@ public class MobileEngageInternalStatusListenerTest {
     private static final int CONTACT_FIELD_ID = 3456;
     public static final String CONTACT_FIELD_VALUE = "value";
 
+    private MobileEngageCoreCompletionHandler completionHandler;
     private MobileEngageInternal mobileEngage;
     private MobileEngageStatusListener statusListener;
     private FakeStatusListener mainThreadStatusListener;
@@ -68,7 +68,8 @@ public class MobileEngageInternalStatusListenerTest {
 
         manager = mock(RequestManager.class);
         latch = new CountDownLatch(1);
-        CoreCompletionHandler completionHandler = new CoreCompletionHandler() {
+        statusListener = mock(MobileEngageStatusListener.class);
+        completionHandler = new MobileEngageCoreCompletionHandler(statusListener) {
             @Override
             public void onSuccess(String id, ResponseModel responseModel) {
                 mainThreadStatusListener.onStatusLog(id, responseModel.getMessage());
@@ -101,7 +102,7 @@ public class MobileEngageInternalStatusListenerTest {
                 .credentials(APPLICATION_ID, APPLICATION_SECRET)
                 .statusListener(statusListener)
                 .build();
-        mobileEngage = new MobileEngageInternal(baseConfig, requestManager);
+        mobileEngage = new MobileEngageInternal(baseConfig, requestManager, completionHandler);
     }
 
     @Test
@@ -163,20 +164,6 @@ public class MobileEngageInternalStatusListenerTest {
     public void testTrackMessageOpen_intent_whenIntentIsEmpty() throws Exception {
         mobileEngageWith(mainThreadStatusListener, manager);
         eventuallyAssertFailure(mobileEngage.trackMessageOpen(new Intent()), IllegalArgumentException.class, "No messageId found!");
-    }
-
-    @Test
-    public void testSetStatusListener_shouldOverridePreviousListener() throws Exception {
-        FakeStatusListener originalListener = new FakeStatusListener();
-        FakeStatusListener newListener = new FakeStatusListener(latch);
-        mobileEngageWith(originalListener, succeedingManager);
-
-        mobileEngage.setStatusListener(newListener);
-        mobileEngage.appLogin();
-
-        latch.await();
-        assertEquals(0, originalListener.onStatusLogCount);
-        assertEquals(0, originalListener.onErrorCount);
     }
 
     private void eventuallyAssertSuccess(String expectedId) throws Exception {

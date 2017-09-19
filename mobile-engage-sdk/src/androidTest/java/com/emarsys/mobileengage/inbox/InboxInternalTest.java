@@ -5,6 +5,7 @@ import android.support.test.InstrumentationRegistry;
 
 import com.emarsys.core.CoreCompletionHandler;
 import com.emarsys.core.DeviceInfo;
+import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.request.RequestMethod;
 import com.emarsys.core.request.RequestModel;
 import com.emarsys.core.request.RestClient;
@@ -18,7 +19,7 @@ import com.emarsys.mobileengage.fake.FakeRestClient;
 import com.emarsys.mobileengage.inbox.model.Notification;
 import com.emarsys.mobileengage.inbox.model.NotificationCache;
 import com.emarsys.mobileengage.inbox.model.NotificationInboxStatus;
-import com.emarsys.mobileengage.util.DefaultHeaderUtils;
+import com.emarsys.mobileengage.util.RequestUtils;
 
 import junit.framework.Assert;
 
@@ -33,6 +34,7 @@ import org.mockito.ArgumentCaptor;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,19 +47,24 @@ import static org.mockito.Mockito.verify;
 
 public class InboxInternalTest {
 
+    public static final String APPLICATION_ID = "id";
     private static List<Notification> notificationList;
 
-    private InboxInternal inbox;
-    private CountDownLatch latch;
     private InboxResultListener<NotificationInboxStatus> resultListenerMock;
     private ResetBadgeCountResultListener resetListenerMock;
+    private Map<String, String> defaultHeaders;
     private MobileEngageConfig config;
+    private RequestManager manager;
+    private CountDownLatch latch;
+    private InboxInternal inbox;
 
     private AppLoginParameters appLoginParameters_withCredentials;
     private AppLoginParameters appLoginParameters_noCredentials;
     private AppLoginParameters appLoginParameters_missing;
 
     private List<Notification> notificationCache;
+    private Application application;
+
     private NotificationCache cache;
 
     @Rule
@@ -68,12 +75,19 @@ public class InboxInternalTest {
     public void init() throws Exception {
         latch = new CountDownLatch(1);
 
+        application = (Application) InstrumentationRegistry.getTargetContext().getApplicationContext();
+
+
+        manager = mock(RequestManager.class);
+
         notificationList = createNotificationList();
         config = new MobileEngageConfig.Builder()
                 .application((Application) InstrumentationRegistry.getTargetContext().getApplicationContext())
-                .credentials("applicationCode", "applicationPassword")
+                .credentials(APPLICATION_ID, "applicationPassword")
                 .build();
-        inbox = new InboxInternal(config);
+
+        defaultHeaders = RequestUtils.createDefaultHeaders(config);
+        inbox = new InboxInternal(config, manager);
 
         resultListenerMock = mock(InboxResultListener.class);
         resetListenerMock = mock(ResetBadgeCountResultListener.class);
@@ -91,7 +105,12 @@ public class InboxInternalTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_mobileEngageInternal_shouldNotBeNull() {
-        inbox = new InboxInternal(null);
+        inbox = new InboxInternal(null, manager);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructor_requestManager_shouldNotBeNull() {
+        inbox = new InboxInternal(config, null);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -528,6 +547,46 @@ public class InboxInternalTest {
         }
     }
 
+    @Test
+    public void testTrackMessageOpen_requestManagerCalledWithCorrectRequestModel() throws Exception {
+        Notification message = new Notification("id1", "sid1", "title", null, new HashMap<String, String>(), new JSONObject(), 7200, new Date().getTime());
+
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("application_id", APPLICATION_ID);
+        payload.put("hardware_id", new DeviceInfo(application).getHwid());
+        payload.put("sid", "sid1");
+        payload.put("source", "inbox");
+
+        RequestModel expected = new RequestModel.Builder()
+                .url(RequestUtils.ENDPOINT_BASE + "events/message_open")
+                .payload(payload)
+                .headers(defaultHeaders)
+                .build();
+
+        ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
+
+        inbox.trackMessageOpen(message);
+
+        verify(manager).submit(captor.capture());
+
+        RequestModel result = captor.getValue();
+        Assert.assertEquals(expected.getUrl(), result.getUrl());
+        Assert.assertEquals(expected.getMethod(), result.getMethod());
+        Assert.assertEquals(expected.getPayload(), result.getPayload());
+    }
+
+    @Test
+    public void trackMessageOpen_returnsWithRequestId() {
+        Notification message = new Notification("id1", "sid1", "title", null, new HashMap<String, String>(), new JSONObject(), 7200, new Date().getTime());
+        ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
+
+        String result = inbox.trackMessageOpen(message);
+
+        verify(manager).submit(captor.capture());
+
+        Assert.assertEquals(captor.getValue().getId(), result);
+    }
+
     private RequestModel createRequestModel(String path, RequestMethod method) {
         DeviceInfo deviceInfo = new DeviceInfo(InstrumentationRegistry.getContext());
 
@@ -536,7 +595,7 @@ public class InboxInternalTest {
         headers.put("x-ems-me-application-code", config.getApplicationCode());
         headers.put("x-ems-me-contact-field-id", String.valueOf(appLoginParameters_withCredentials.getContactFieldId()));
         headers.put("x-ems-me-contact-field-value", appLoginParameters_withCredentials.getContactFieldValue());
-        headers.putAll(DefaultHeaderUtils.createDefaultHeaders(config));
+        headers.putAll(RequestUtils.createDefaultHeaders(config));
 
         return new RequestModel.Builder()
                 .url(path)

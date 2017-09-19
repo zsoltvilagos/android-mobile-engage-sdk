@@ -14,7 +14,7 @@ import com.emarsys.mobileengage.fake.FakeStatusListener;
 import com.emarsys.mobileengage.inbox.model.Notification;
 import com.emarsys.mobileengage.testUtil.ConnectionTestUtils;
 import com.emarsys.mobileengage.testUtil.TestDbHelper;
-import com.emarsys.mobileengage.util.DefaultHeaderUtils;
+import com.emarsys.mobileengage.util.RequestUtils;
 
 import org.json.JSONObject;
 import org.junit.Before;
@@ -72,7 +72,7 @@ public class MobileEngageIntegrationTest {
                 listener.onError(id, cause);
             }
         });
-        MobileEngage.instance.manager.setDefaultHeaders(DefaultHeaderUtils.createDefaultHeaders(config));
+        MobileEngage.instance.manager.setDefaultHeaders(RequestUtils.createDefaultHeaders(config));
     }
 
     @Test
@@ -132,7 +132,7 @@ public class MobileEngageIntegrationTest {
                 2000,
                 new Date().getTime());
 
-        eventuallyAssertSuccess(MobileEngage.trackMessageOpen(notification));
+        eventuallyAssertSuccess(MobileEngage.Inbox.trackMessageOpen(notification));
     }
 
     private void eventuallyAssertSuccess(String id) throws Exception {

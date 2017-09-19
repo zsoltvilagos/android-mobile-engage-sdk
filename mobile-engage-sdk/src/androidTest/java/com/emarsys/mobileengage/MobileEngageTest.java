@@ -5,6 +5,11 @@ import android.content.Intent;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
+import com.emarsys.core.connection.ConnectionWatchDog;
+import com.emarsys.core.queue.InMemoryQueue;
+import com.emarsys.core.request.RequestManager;
+import com.emarsys.mobileengage.fake.FakeRequestManager;
+import com.emarsys.mobileengage.fake.FakeStatusListener;
 import com.emarsys.mobileengage.inbox.InboxInternal;
 import com.emarsys.mobileengage.inbox.InboxResultListener;
 import com.emarsys.mobileengage.inbox.ResetBadgeCountResultListener;
@@ -21,7 +26,9 @@ import org.junit.runner.RunWith;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 
+import static com.emarsys.mobileengage.fake.FakeRequestManager.ResponseType.SUCCESS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -33,6 +40,7 @@ public class MobileEngageTest {
     private static final String appID = "56789876";
     private static final String appSecret = "secret";
 
+    private MobileEngageCoreCompletionHandler coreCompletionHandler;
     private MobileEngageInternal mobileEngageInternal;
     private InboxInternal inboxInternal;
     private Application application;
@@ -44,6 +52,7 @@ public class MobileEngageTest {
     @Before
     public void init() {
         application = (Application) InstrumentationRegistry.getTargetContext().getApplicationContext();
+        coreCompletionHandler = mock(MobileEngageCoreCompletionHandler.class);
         mobileEngageInternal = mock(MobileEngageInternal.class);
         inboxInternal = mock(InboxInternal.class);
         baseConfig = new MobileEngageConfig.Builder()
@@ -52,6 +61,7 @@ public class MobileEngageTest {
                 .build();
         MobileEngage.inboxInstance = inboxInternal;
         MobileEngage.instance = mobileEngageInternal;
+        MobileEngage.completionHandler = coreCompletionHandler;
     }
 
     @Test
@@ -108,7 +118,36 @@ public class MobileEngageTest {
     public void testSetStatusListener_callsInternal() {
         MobileEngageStatusListener listener = mock(MobileEngageStatusListener.class);
         MobileEngage.setStatusListener(listener);
-        verify(mobileEngageInternal).setStatusListener(listener);
+        verify(coreCompletionHandler).setStatusListener(listener);
+    }
+
+    @Test
+    public void testSetStatusListener_shouldSwapListener() throws InterruptedException {
+        CountDownLatch latch = new CountDownLatch(1);
+        FakeStatusListener originalListener = new FakeStatusListener();
+        FakeStatusListener newListener = new FakeStatusListener(latch);
+
+        MobileEngageCoreCompletionHandler completionHandler = new MobileEngageCoreCompletionHandler(originalListener);
+        RequestManager succeedingManager = new FakeRequestManager(
+                SUCCESS,
+                null,
+                new ConnectionWatchDog(InstrumentationRegistry.getContext()),
+                new InMemoryQueue(),
+                completionHandler);
+        MobileEngageInternal internal = new MobileEngageInternal(baseConfig, succeedingManager, completionHandler);
+
+        MobileEngage.completionHandler = completionHandler;
+        MobileEngage.instance = internal;
+
+        MobileEngage.setStatusListener(newListener);
+        MobileEngage.appLogin();
+
+        latch.await();
+
+        assertEquals(0, originalListener.onStatusLogCount);
+        assertEquals(0, originalListener.onErrorCount);
+        assertEquals(1, newListener.onStatusLogCount);
+        assertEquals(0, newListener.onErrorCount);
     }
 
     @Test
@@ -164,8 +203,8 @@ public class MobileEngageTest {
     @Test
     public void testTrackMessageOpen_message_callsInternal() throws JSONException {
         Notification message = new Notification("id", "sid", "title", null, new HashMap<String, String>(), new JSONObject(), 7200, new Date().getTime());
-        MobileEngage.trackMessageOpen(message);
-        verify(mobileEngageInternal).trackMessageOpen(message);
+        MobileEngage.Inbox.trackMessageOpen(message);
+        verify(inboxInternal).trackMessageOpen(message);
     }
 
     @Test(expected = IllegalArgumentException.class)

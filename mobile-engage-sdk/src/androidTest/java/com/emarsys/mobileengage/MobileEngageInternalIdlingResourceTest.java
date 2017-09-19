@@ -7,6 +7,8 @@ import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
 import com.emarsys.core.CoreCompletionHandler;
+import com.emarsys.core.connection.ConnectionWatchDog;
+import com.emarsys.core.queue.sqlite.SqliteQueue;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.response.ResponseModel;
 import com.emarsys.mobileengage.util.MobileEngageIdlingResource;
@@ -46,11 +48,11 @@ public class MobileEngageInternalIdlingResourceTest {
                 .enableIdlingResource(true)
                 .build();
 
-        mobileEngageWithRealRequestManager = new MobileEngageInternal(config);
+        mobileEngageWithRealRequestManager = mobileEngageWithRealRequestManager(config);
 
         coreCompletionHandler = mobileEngageWithRealRequestManager.coreCompletionHandler;
 
-        mobileEngage = new MobileEngageInternal(config, mock(RequestManager.class));
+        mobileEngage = new MobileEngageInternal(config, mock(RequestManager.class), mock(MobileEngageCoreCompletionHandler.class));
 
         MobileEngageUtils.setup(config);
         idlingResource = mock(MobileEngageIdlingResource.class);
@@ -135,6 +137,22 @@ public class MobileEngageInternalIdlingResourceTest {
         coreCompletionHandler.onError("id", new Exception("exception"));
 
         verify(idlingResource, times(1)).decrement();
+    }
+
+    private MobileEngageInternal mobileEngageWithRealRequestManager(MobileEngageConfig config) {
+        MobileEngageCoreCompletionHandler completionHandler = new MobileEngageCoreCompletionHandler(new MobileEngageStatusListener() {
+            @Override
+            public void onError(String id, Exception cause) {
+
+            }
+
+            @Override
+            public void onStatusLog(String id, String log) {
+
+            }
+        });
+        RequestManager manager = new RequestManager(new ConnectionWatchDog(config.getApplication()), new SqliteQueue(config.getApplication()), completionHandler);
+        return new MobileEngageInternal(config, manager, completionHandler);
     }
 
 }

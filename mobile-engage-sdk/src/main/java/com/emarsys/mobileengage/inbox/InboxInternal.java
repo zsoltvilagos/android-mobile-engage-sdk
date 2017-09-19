@@ -5,6 +5,7 @@ import android.os.Looper;
 
 import com.emarsys.core.CoreCompletionHandler;
 import com.emarsys.core.DeviceInfo;
+import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.request.RequestMethod;
 import com.emarsys.core.request.RequestModel;
 import com.emarsys.core.request.RestClient;
@@ -13,9 +14,10 @@ import com.emarsys.core.util.Assert;
 import com.emarsys.mobileengage.AppLoginParameters;
 import com.emarsys.mobileengage.MobileEngageConfig;
 import com.emarsys.mobileengage.MobileEngageException;
+import com.emarsys.mobileengage.inbox.model.Notification;
 import com.emarsys.mobileengage.inbox.model.NotificationCache;
 import com.emarsys.mobileengage.inbox.model.NotificationInboxStatus;
-import com.emarsys.mobileengage.util.DefaultHeaderUtils;
+import com.emarsys.mobileengage.util.RequestUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,13 +32,16 @@ public class InboxInternal {
     MobileEngageConfig config;
     AppLoginParameters appLoginParameters;
     NotificationCache cache;
+    RequestManager manager;
 
-    public InboxInternal(MobileEngageConfig config) {
+    public InboxInternal(MobileEngageConfig config, RequestManager requestManager) {
         Assert.notNull(config, "Config must not be null!");
+        Assert.notNull(requestManager, "RequestManager must not be null!");
         this.config = config;
         this.client = new RestClient();
         this.handler = new Handler(Looper.getMainLooper());
         this.cache = new NotificationCache();
+        this.manager = requestManager;
     }
 
     public void fetchNotifications(final InboxResultListener<NotificationInboxStatus> resultListener) {
@@ -96,6 +101,20 @@ public class InboxInternal {
         }
     }
 
+    public String trackMessageOpen(Notification message) {
+        Map<String, Object> payload = RequestUtils.createBasePayload(config);
+        payload.put("source", "inbox");
+        payload.put("sid", message.getSid());
+        RequestModel model = new RequestModel.Builder()
+                .url(RequestUtils.createEventUrl("message_open"))
+                .payload(payload)
+                .build();
+
+        manager.submit(model);
+        return model.getId();
+    }
+
+
     private void handleResetRequest(final ResetBadgeCountResultListener listener) {
         RequestModel model = new RequestModel.Builder()
                 .url("https://me-inbox.eservice.emarsys.net/api/reset-badge-count")
@@ -135,7 +154,7 @@ public class InboxInternal {
         result.put("x-ems-me-contact-field-id", String.valueOf(appLoginParameters.getContactFieldId()));
         result.put("x-ems-me-contact-field-value", appLoginParameters.getContactFieldValue());
 
-        result.putAll(DefaultHeaderUtils.createDefaultHeaders(config));
+        result.putAll(RequestUtils.createDefaultHeaders(config));
 
         return result;
     }

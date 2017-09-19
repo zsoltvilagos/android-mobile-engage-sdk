@@ -4,6 +4,9 @@ import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.emarsys.core.connection.ConnectionWatchDog;
+import com.emarsys.core.queue.sqlite.SqliteQueue;
+import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.util.Assert;
 import com.emarsys.mobileengage.inbox.InboxInternal;
 import com.emarsys.mobileengage.inbox.InboxResultListener;
@@ -18,6 +21,7 @@ public class MobileEngage {
     static MobileEngageInternal instance;
     static InboxInternal inboxInstance;
     static MobileEngageConfig config;
+    static MobileEngageCoreCompletionHandler completionHandler;
 
     public static class Inbox {
 
@@ -34,13 +38,22 @@ public class MobileEngage {
             inboxInstance.resetBadgeCount(resultListener);
         }
 
+        public static String trackMessageOpen(Notification message) {
+            return inboxInstance.trackMessageOpen(message);
+        }
+
     }
     public static void setup(@NonNull MobileEngageConfig config) {
         Assert.notNull(config, "Config must not be null!");
         MobileEngage.config = config;
         MobileEngageUtils.setup(config);
-        instance = new MobileEngageInternal(config);
-        inboxInstance = new InboxInternal(config);
+
+        completionHandler = new MobileEngageCoreCompletionHandler(config.getStatusListener());
+
+        RequestManager requestManager = new RequestManager(new ConnectionWatchDog(config.getApplication()), new SqliteQueue(config.getApplication()), completionHandler);
+
+        instance = new MobileEngageInternal(config, requestManager, completionHandler);
+        inboxInstance = new InboxInternal(config, requestManager);
     }
 
     public static MobileEngageConfig getConfig() {
@@ -52,7 +65,7 @@ public class MobileEngage {
     }
 
     public static void setStatusListener(MobileEngageStatusListener listener) {
-        instance.setStatusListener(listener);
+        completionHandler.setStatusListener(listener);
     }
 
     public static String appLogin() {
@@ -81,10 +94,6 @@ public class MobileEngage {
     public static String trackMessageOpen(@NonNull Intent intent) {
         Assert.notNull(intent, "Intent must not be null!");
         return instance.trackMessageOpen(intent);
-    }
-
-    public static String trackMessageOpen(Notification message) {
-        return instance.trackMessageOpen(message);
     }
 
 }
