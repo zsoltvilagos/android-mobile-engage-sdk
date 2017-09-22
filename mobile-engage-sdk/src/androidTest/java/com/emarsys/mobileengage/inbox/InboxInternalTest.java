@@ -11,8 +11,8 @@ import com.emarsys.core.request.RequestModel;
 import com.emarsys.core.request.RestClient;
 import com.emarsys.core.response.ResponseModel;
 import com.emarsys.mobileengage.AppLoginParameters;
-import com.emarsys.mobileengage.MobileEngageConfig;
 import com.emarsys.mobileengage.MobileEngageException;
+import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.fake.FakeInboxResultListener;
 import com.emarsys.mobileengage.fake.FakeResetBadgeCountResultListener;
 import com.emarsys.mobileengage.fake.FakeRestClient;
@@ -84,6 +84,7 @@ public class InboxInternalTest {
         config = new MobileEngageConfig.Builder()
                 .application((Application) InstrumentationRegistry.getTargetContext().getApplicationContext())
                 .credentials(APPLICATION_ID, "applicationPassword")
+                .disableDefaultChannel()
                 .build();
 
         defaultHeaders = RequestUtils.createDefaultHeaders(config);

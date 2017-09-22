@@ -6,7 +6,7 @@ import android.support.test.InstrumentationRegistry;
 import com.emarsys.core.DeviceInfo;
 import com.emarsys.core.util.HeaderUtils;
 import com.emarsys.mobileengage.BuildConfig;
-import com.emarsys.mobileengage.MobileEngageConfig;
+import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.testUtil.ApplicationTestUtils;
 
 import org.junit.Before;
@@ -37,16 +37,19 @@ public class RequestUtilsTest {
         config = new MobileEngageConfig.Builder()
                 .application((Application) InstrumentationRegistry.getTargetContext().getApplicationContext())
                 .credentials(APPLICATION_CODE, APPLICATION_PASSWORD)
+                .disableDefaultChannel()
                 .build();
 
         debugConfig = new MobileEngageConfig.Builder()
                 .application(ApplicationTestUtils.applicationDebug())
                 .credentials(APPLICATION_CODE, APPLICATION_PASSWORD)
+                .disableDefaultChannel()
                 .build();
 
         releaseConfig = new MobileEngageConfig.Builder()
                 .application(ApplicationTestUtils.applicationRelease())
                 .credentials(APPLICATION_CODE, APPLICATION_PASSWORD)
+                .disableDefaultChannel()
                 .build();
 
         deviceInfo = new DeviceInfo(InstrumentationRegistry.getContext());

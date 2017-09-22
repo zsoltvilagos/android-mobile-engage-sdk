@@ -1,10 +1,11 @@
-package com.emarsys.mobileengage;
+package com.emarsys.mobileengage.config;
 
 import android.app.Application;
 import android.content.pm.ApplicationInfo;
 import android.support.annotation.NonNull;
 
 import com.emarsys.core.util.Assert;
+import com.emarsys.mobileengage.MobileEngageStatusListener;
 
 public class MobileEngageConfig {
 
@@ -14,22 +15,27 @@ public class MobileEngageConfig {
     private final MobileEngageStatusListener statusListener;
     private final boolean isDebugMode;
     private final boolean idlingResourceEnabled;
+    private final OreoConfig oreoConfig;
 
     MobileEngageConfig(Application application,
                        String applicationCode,
                        String applicationPassword,
                        MobileEngageStatusListener statusListener,
                        boolean isDebugMode,
-                       boolean idlingResourceEnabled) {
+                       boolean idlingResourceEnabled,
+                       OreoConfig oreoConfig) {
         Assert.notNull(application, "Application must not be null");
         Assert.notNull(applicationCode, "ApplicationCode must not be null");
         Assert.notNull(applicationPassword, "ApplicationPassword must not be null");
+        Assert.notNull(oreoConfig, "OreoConfig must not be null");
+        validate(oreoConfig);
         this.application = application;
         this.applicationCode = applicationCode;
         this.applicationPassword = applicationPassword;
         this.statusListener = statusListener;
         this.isDebugMode = isDebugMode;
         this.idlingResourceEnabled = idlingResourceEnabled;
+        this.oreoConfig = oreoConfig;
     }
 
     public Application getApplication() {
@@ -56,22 +62,35 @@ public class MobileEngageConfig {
         return isDebugMode;
     }
 
+    public OreoConfig getOreoConfig() {
+        return oreoConfig;
+    }
+
+    private void validate(OreoConfig oreoConfig) {
+        if (oreoConfig.isDefaultChannelEnabled()) {
+            Assert.notNull(oreoConfig.getDefaultChannelName(), "DefaultChannelName must not be null");
+            Assert.notNull(oreoConfig.getDefaultChannelDescription(), "DefaultChannelDescription must not be null");
+        }
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        MobileEngageConfig config = (MobileEngageConfig) o;
+        MobileEngageConfig that = (MobileEngageConfig) o;
 
-        if (isDebugMode != config.isDebugMode) return false;
-        if (idlingResourceEnabled != config.idlingResourceEnabled) return false;
-        if (application != null ? !application.equals(config.application) : config.application != null)
+        if (isDebugMode != that.isDebugMode) return false;
+        if (idlingResourceEnabled != that.idlingResourceEnabled) return false;
+        if (application != null ? !application.equals(that.application) : that.application != null)
             return false;
-        if (applicationCode != null ? !applicationCode.equals(config.applicationCode) : config.applicationCode != null)
+        if (applicationCode != null ? !applicationCode.equals(that.applicationCode) : that.applicationCode != null)
             return false;
-        if (applicationPassword != null ? !applicationPassword.equals(config.applicationPassword) : config.applicationPassword != null)
+        if (applicationPassword != null ? !applicationPassword.equals(that.applicationPassword) : that.applicationPassword != null)
             return false;
-        return statusListener != null ? statusListener.equals(config.statusListener) : config.statusListener == null;
+        if (statusListener != null ? !statusListener.equals(that.statusListener) : that.statusListener != null)
+            return false;
+        return oreoConfig != null ? oreoConfig.equals(that.oreoConfig) : that.oreoConfig == null;
 
     }
 
@@ -83,6 +102,7 @@ public class MobileEngageConfig {
         result = 31 * result + (statusListener != null ? statusListener.hashCode() : 0);
         result = 31 * result + (isDebugMode ? 1 : 0);
         result = 31 * result + (idlingResourceEnabled ? 1 : 0);
+        result = 31 * result + (oreoConfig != null ? oreoConfig.hashCode() : 0);
         return result;
     }
 
@@ -95,6 +115,7 @@ public class MobileEngageConfig {
                 ", statusListener=" + statusListener +
                 ", isDebugMode=" + isDebugMode +
                 ", idlingResourceEnabled=" + idlingResourceEnabled +
+                ", oreoConfig=" + oreoConfig +
                 '}';
     }
 
@@ -104,6 +125,7 @@ public class MobileEngageConfig {
         private String applicationPassword;
         private MobileEngageStatusListener statusListener;
         private boolean idlingResourceEnabled;
+        private OreoConfig oreoConfig;
 
         public Builder from(MobileEngageConfig baseConfig) {
             Assert.notNull(baseConfig, "BaseConfig must not be null");
@@ -112,6 +134,7 @@ public class MobileEngageConfig {
             applicationPassword = baseConfig.getApplicationPassword();
             statusListener = baseConfig.getStatusListener();
             idlingResourceEnabled = baseConfig.isIdlingResourceEnabled();
+            oreoConfig = baseConfig.getOreoConfig();
             return this;
         }
 
@@ -137,6 +160,16 @@ public class MobileEngageConfig {
             return this;
         }
 
+        public Builder enableDefaultChannel(String name, String description) {
+            this.oreoConfig = new OreoConfig(true, name, description);
+            return this;
+        }
+
+        public Builder disableDefaultChannel() {
+            this.oreoConfig = new OreoConfig(false);
+            return this;
+        }
+
         public MobileEngageConfig build() {
             boolean isDebuggable = (0 != (application.getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE));
 
@@ -146,8 +179,8 @@ public class MobileEngageConfig {
                     applicationPassword,
                     statusListener,
                     isDebuggable,
-                    idlingResourceEnabled
-            );
+                    idlingResourceEnabled,
+                    oreoConfig);
         }
     }
 }

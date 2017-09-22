@@ -10,6 +10,7 @@ import com.emarsys.core.connection.ConnectionWatchDog;
 import com.emarsys.core.queue.InMemoryQueue;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.response.ResponseModel;
+import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.fake.FakeRequestManager;
 import com.emarsys.mobileengage.fake.FakeStatusListener;
 
@@ -101,6 +102,7 @@ public class MobileEngageInternalStatusListenerTest {
                 .application(application)
                 .credentials(APPLICATION_ID, APPLICATION_SECRET)
                 .statusListener(statusListener)
+                .disableDefaultChannel()
                 .build();
         mobileEngage = new MobileEngageInternal(baseConfig, requestManager, completionHandler);
     }

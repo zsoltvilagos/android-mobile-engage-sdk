@@ -11,6 +11,7 @@ import com.emarsys.core.connection.ConnectionWatchDog;
 import com.emarsys.core.queue.sqlite.SqliteQueue;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.response.ResponseModel;
+import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.util.MobileEngageIdlingResource;
 
 import org.junit.Before;
@@ -46,6 +47,7 @@ public class MobileEngageInternalIdlingResourceTest {
                 .application(application)
                 .credentials("user", "pass")
                 .enableIdlingResource(true)
+                .disableDefaultChannel()
                 .build();
 
         mobileEngageWithRealRequestManager = mobileEngageWithRealRequestManager(config);

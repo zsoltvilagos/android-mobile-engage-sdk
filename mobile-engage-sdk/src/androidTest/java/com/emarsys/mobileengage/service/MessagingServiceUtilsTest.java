@@ -102,7 +102,7 @@ public class MessagingServiceUtilsTest {
 
     @Test
     public void createNotification_shouldNotBeNull() {
-        assertNotNull(MessagingServiceUtils.createNotification(new HashMap<String, String>(), context));
+        assertNotNull(MessagingServiceUtils.createNotification(context, new HashMap<String, String>()));
     }
 
     @Test
@@ -112,7 +112,7 @@ public class MessagingServiceUtilsTest {
         input.put("title", TITLE);
         input.put("body", BODY);
 
-        android.app.Notification result = MessagingServiceUtils.createNotification(input, context);
+        android.app.Notification result = MessagingServiceUtils.createNotification(context, input);
 
         assertEquals(TITLE, result.extras.getString(NotificationCompat.EXTRA_TITLE));
         assertEquals(TITLE, result.extras.getString(NotificationCompat.EXTRA_TITLE_BIG));
@@ -128,7 +128,7 @@ public class MessagingServiceUtilsTest {
         Map<String, String> input = new HashMap<>();
         input.put("title", TITLE);
 
-        android.app.Notification result = MessagingServiceUtils.createNotification(input, context);
+        android.app.Notification result = MessagingServiceUtils.createNotification(context, input);
 
         assertEquals(TITLE, result.extras.getString(NotificationCompat.EXTRA_TITLE));
         assertEquals(TITLE, result.extras.getString(NotificationCompat.EXTRA_TITLE_BIG));
@@ -144,7 +144,7 @@ public class MessagingServiceUtilsTest {
         Map<String, String> input = new HashMap<>();
         input.put("body", BODY);
 
-        android.app.Notification result = MessagingServiceUtils.createNotification(input, context);
+        android.app.Notification result = MessagingServiceUtils.createNotification(context, input);
 
         String expectedTitle = expectedBasedOnApiLevel(getApplicationName(), "");
 
@@ -163,7 +163,7 @@ public class MessagingServiceUtilsTest {
         input.put("body", BODY);
         input.put("u", "{\"test_field\":\"\",\"ems_default_title\":\"" + DEFAULT_TITLE + "\",\"image\":\"https:\\/\\/media.giphy.com\\/media\\/ktvFa67wmjDEI\\/giphy.gif\",\"deep_link\":\"lifestylelabels.com\\/mobile\\/product\\/3245678\",\"sid\":\"sid_here\"}");
 
-        android.app.Notification result = MessagingServiceUtils.createNotification(input, context);
+        android.app.Notification result = MessagingServiceUtils.createNotification(context, input);
 
         String expectedTitle = expectedBasedOnApiLevel(DEFAULT_TITLE, "");
 
@@ -183,7 +183,7 @@ public class MessagingServiceUtilsTest {
         input.put("body", BODY);
         input.put("imageUrl", "https://www.emarsys.com/wp-content/themes/emarsys/images/home-page/press-releases-header.jpg");
 
-        android.app.Notification result = MessagingServiceUtils.createNotification(input, context);
+        android.app.Notification result = MessagingServiceUtils.createNotification(context, input);
 
         assertEquals(TITLE, result.extras.getString(NotificationCompat.EXTRA_TITLE));
         assertEquals(TITLE, result.extras.getString(NotificationCompat.EXTRA_TITLE_BIG));
@@ -203,7 +203,7 @@ public class MessagingServiceUtilsTest {
         input.put("body", BODY);
         input.put("imageUrl", "https://fa.il/img.jpg");
 
-        android.app.Notification result = MessagingServiceUtils.createNotification(input, context);
+        android.app.Notification result = MessagingServiceUtils.createNotification(context, input);
 
         assertEquals(TITLE, result.extras.getString(NotificationCompat.EXTRA_TITLE));
         assertEquals(TITLE, result.extras.getString(NotificationCompat.EXTRA_TITLE_BIG));
@@ -221,7 +221,7 @@ public class MessagingServiceUtilsTest {
         input.put("body", BODY);
         input.put("channelId", CHANNEL_ID);
 
-        android.app.Notification result = MessagingServiceUtils.createNotification(input, context);
+        android.app.Notification result = MessagingServiceUtils.createNotification(context, input);
 
         assertEquals(CHANNEL_ID, result.getChannelId());
     }
@@ -233,7 +233,7 @@ public class MessagingServiceUtilsTest {
         input.put("title", TITLE);
         input.put("body", BODY);
 
-        android.app.Notification result = MessagingServiceUtils.createNotification(input, context);
+        android.app.Notification result = MessagingServiceUtils.createNotification(context, input);
 
         String expected = "default";
 

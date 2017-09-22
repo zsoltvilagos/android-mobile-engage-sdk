@@ -1,8 +1,9 @@
-package com.emarsys.mobileengage;
+package com.emarsys.mobileengage.config;
 
 import android.app.Application;
 import android.support.test.InstrumentationRegistry;
 
+import com.emarsys.mobileengage.MobileEngageStatusListener;
 import com.emarsys.mobileengage.testUtil.ApplicationTestUtils;
 
 import org.junit.Before;
@@ -22,6 +23,7 @@ public class MobileEngageConfigTest {
     private Application application;
     private Application applicationDebug;
     private Application applicationRelease;
+    private OreoConfig mockOreoConfig;
 
     @Rule
     public Timeout globalTimeout = Timeout.seconds(30);
@@ -32,30 +34,54 @@ public class MobileEngageConfigTest {
         applicationDebug = ApplicationTestUtils.applicationDebug();
         applicationRelease = ApplicationTestUtils.applicationRelease();
         statusListenerMock =  mock(MobileEngageStatusListener.class);
+        mockOreoConfig = mock(OreoConfig.class);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_applicationShouldNotBeNull() throws Exception {
-        new MobileEngageConfig(null, APP_ID, SECRET, statusListenerMock, true, false);
+        new MobileEngageConfig(null, APP_ID, SECRET, statusListenerMock, true, false, mockOreoConfig);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_applicationCodeShouldNotBeNull() throws Exception {
-        new MobileEngageConfig(application, null, SECRET, statusListenerMock, true, false);
+        new MobileEngageConfig(application, null, SECRET, statusListenerMock, true, false, mockOreoConfig);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_secretShouldNotBeNull() throws Exception {
-        new MobileEngageConfig(application, APP_ID, null, statusListenerMock, true, false);
+        new MobileEngageConfig(application, APP_ID, null, statusListenerMock, true, false, mockOreoConfig);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructor_oreoConfigShouldNotBeNull() throws Exception {
+        new MobileEngageConfig(application, APP_ID, SECRET, statusListenerMock, true, false, null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructor_oreoConfigParameter_channelNameShouldNotBeNull_whenEnabled() {
+        new MobileEngageConfig(application, APP_ID, SECRET, statusListenerMock, true, false, new OreoConfig(true, null, "description"));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructor_oreoConfigParameter_channelDescriptionShouldNotBeNull_whenEnabled() {
+        new MobileEngageConfig(application, APP_ID, SECRET, statusListenerMock, true, false, new OreoConfig(true, "name", null));
     }
 
     @Test
     public void testBuilder_withMandatoryArguments() {
-        MobileEngageConfig expected = new MobileEngageConfig(applicationDebug, APP_ID, SECRET, null, true, false);
+        MobileEngageConfig expected = new MobileEngageConfig(
+                applicationDebug,
+                APP_ID,
+                SECRET,
+                null,
+                true,
+                false,
+                new OreoConfig(false));
 
         MobileEngageConfig result = new MobileEngageConfig.Builder()
                 .application(applicationDebug)
                 .credentials(APP_ID, SECRET)
+                .disableDefaultChannel()
                 .build();
 
         assertEquals(expected, result);
@@ -63,13 +89,21 @@ public class MobileEngageConfigTest {
 
     @Test
     public void testBuilder_withAllArguments() {
-        MobileEngageConfig expected = new MobileEngageConfig(applicationDebug, APP_ID, SECRET, statusListenerMock, true, true);
+        MobileEngageConfig expected = new MobileEngageConfig(
+                applicationDebug,
+                APP_ID,
+                SECRET,
+                statusListenerMock,
+                true,
+                true,
+                new OreoConfig(true, "defaultChannelName", "defaultChannelDescription"));
 
         MobileEngageConfig result = new MobileEngageConfig.Builder()
                 .application(applicationDebug)
                 .credentials(APP_ID, SECRET)
                 .statusListener(statusListenerMock)
                 .enableIdlingResource(true)
+                .enableDefaultChannel("defaultChannelName", "defaultChannelDescription")
                 .build();
 
         assertEquals(expected, result);
@@ -82,7 +116,14 @@ public class MobileEngageConfigTest {
 
     @Test
     public void testBuilder_from(){
-        MobileEngageConfig expected = new MobileEngageConfig(applicationDebug, APP_ID, SECRET, statusListenerMock, true, true);
+        MobileEngageConfig expected = new MobileEngageConfig(
+                applicationDebug,
+                APP_ID,
+                SECRET,
+                statusListenerMock,
+                true,
+                true,
+                new OreoConfig(false));
 
         MobileEngageConfig result = new MobileEngageConfig.Builder()
                 .from(expected)
@@ -92,19 +133,21 @@ public class MobileEngageConfigTest {
     }
 
     @Test
-    public void testDebugApplication(){
+    public void testBuilder_withDebugApplication(){
         MobileEngageConfig result = new MobileEngageConfig.Builder()
                 .application(applicationDebug)
                 .credentials("", "")
+                .disableDefaultChannel()
                 .build();
         assertTrue(result.isDebugMode());
     }
 
     @Test
-    public void testReleaseApplication(){
+    public void testBuilder_withReleaseApplication(){
         MobileEngageConfig result = new MobileEngageConfig.Builder()
                 .application(applicationRelease)
                 .credentials("", "")
+                .disableDefaultChannel()
                 .build();
         assertFalse(result.isDebugMode());
     }

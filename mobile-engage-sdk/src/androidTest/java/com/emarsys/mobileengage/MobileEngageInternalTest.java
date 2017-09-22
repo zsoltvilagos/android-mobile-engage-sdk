@@ -9,6 +9,7 @@ import android.support.test.runner.AndroidJUnit4;
 import com.emarsys.core.DeviceInfo;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.request.RequestModel;
+import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.util.RequestUtils;
 
 import org.junit.Before;
@@ -64,6 +65,7 @@ public class MobileEngageInternalTest {
                 .application(application)
                 .credentials(APPLICATION_ID, APPLICATION_SECRET)
                 .statusListener(statusListener)
+                .disableDefaultChannel()
                 .build();
 
         defaultHeaders = RequestUtils.createDefaultHeaders(baseConfig);

@@ -2,6 +2,7 @@ package com.emarsys.mobileengage;
 
 import android.support.test.espresso.IdlingResource;
 
+import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.util.MobileEngageIdlingResource;
 
 public class MobileEngageUtils {

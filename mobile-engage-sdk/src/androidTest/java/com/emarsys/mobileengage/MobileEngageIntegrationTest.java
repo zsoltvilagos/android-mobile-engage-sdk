@@ -10,6 +10,7 @@ import com.emarsys.core.connection.ConnectionWatchDog;
 import com.emarsys.core.queue.sqlite.SqliteQueue;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.response.ResponseModel;
+import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.fake.FakeStatusListener;
 import com.emarsys.mobileengage.inbox.model.Notification;
 import com.emarsys.mobileengage.testUtil.ConnectionTestUtils;
@@ -52,6 +53,7 @@ public class MobileEngageIntegrationTest {
                 .application(context)
                 .credentials("14C19-A121F", "PaNkfOD90AVpYimMBuZopCpm8OWCrREu")
                 .statusListener(listener)
+                .disableDefaultChannel()
                 .build();
         MobileEngage.setup(config);
         SqliteQueue queue = new SqliteQueue(context);

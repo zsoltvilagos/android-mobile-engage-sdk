@@ -4,7 +4,7 @@ import com.emarsys.core.DeviceInfo;
 import com.emarsys.core.util.Assert;
 import com.emarsys.core.util.HeaderUtils;
 import com.emarsys.mobileengage.BuildConfig;
-import com.emarsys.mobileengage.MobileEngageConfig;
+import com.emarsys.mobileengage.config.MobileEngageConfig;
 
 import java.util.Collections;
 import java.util.HashMap;

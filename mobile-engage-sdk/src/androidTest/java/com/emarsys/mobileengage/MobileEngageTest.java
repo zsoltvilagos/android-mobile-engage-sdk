@@ -8,6 +8,7 @@ import android.support.test.runner.AndroidJUnit4;
 import com.emarsys.core.connection.ConnectionWatchDog;
 import com.emarsys.core.queue.InMemoryQueue;
 import com.emarsys.core.request.RequestManager;
+import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.fake.FakeRequestManager;
 import com.emarsys.mobileengage.fake.FakeStatusListener;
 import com.emarsys.mobileengage.inbox.InboxInternal;
@@ -58,6 +59,7 @@ public class MobileEngageTest {
         baseConfig = new MobileEngageConfig.Builder()
                 .application(application)
                 .credentials(appID, appSecret)
+                .disableDefaultChannel()
                 .build();
         MobileEngage.inboxInstance = inboxInternal;
         MobileEngage.instance = mobileEngageInternal;

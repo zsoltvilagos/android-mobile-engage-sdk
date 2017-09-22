@@ -13,6 +13,7 @@ import com.emarsys.core.DeviceInfo;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.request.RequestModel;
 import com.emarsys.core.util.Assert;
+import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.util.RequestUtils;
 import com.google.firebase.iid.FirebaseInstanceId;
 

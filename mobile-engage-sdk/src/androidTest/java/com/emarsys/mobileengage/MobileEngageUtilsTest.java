@@ -3,6 +3,7 @@ package com.emarsys.mobileengage;
 import android.app.Application;
 import android.support.test.InstrumentationRegistry;
 
+import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.util.MobileEngageIdlingResource;
 
 import org.junit.Before;
@@ -32,6 +33,7 @@ public class MobileEngageUtilsTest {
         MobileEngageConfig baseConfig = new MobileEngageConfig.Builder()
                 .application(application)
                 .credentials("applicationCode", "applicationPassword")
+                .disableDefaultChannel()
                 .build();
 
         enabledConfig = new MobileEngageConfig.Builder()
