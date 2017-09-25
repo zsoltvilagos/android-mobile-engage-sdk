@@ -4,6 +4,7 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.Context;
 
+import com.emarsys.mobileengage.MobileEngage;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
@@ -21,7 +22,10 @@ public class MobileEngageMessagingService extends FirebaseMessagingService {
 
             MessagingServiceUtils.cacheNotification(remoteData);
 
-            Notification notification = MessagingServiceUtils.createNotification(remoteData, getApplicationContext());
+            Notification notification = MessagingServiceUtils.createNotification(
+                    getApplicationContext(),
+                    remoteData,
+                    MobileEngage.getConfig().getOreoConfig());
 
             ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE))
                     .notify((int) System.currentTimeMillis(), notification);

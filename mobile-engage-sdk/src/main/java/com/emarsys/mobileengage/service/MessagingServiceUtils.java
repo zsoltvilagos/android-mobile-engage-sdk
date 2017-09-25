@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 
 import com.emarsys.core.util.Assert;
+import com.emarsys.mobileengage.config.OreoConfig;
 import com.emarsys.mobileengage.inbox.InboxParseUtils;
 import com.emarsys.mobileengage.inbox.model.NotificationCache;
 import com.emarsys.mobileengage.util.ImageUtils;
@@ -27,7 +28,6 @@ class MessagingServiceUtils {
 
     public static final String MESSAGE_FILTER = "ems_msg";
     public static final String METADATA_SMALL_NOTIFICATION_ICON_KEY = "com.emarsys.mobileengage.small_notification_icon";
-    public static final String DEFAULT_CHANNEL_ID = "default";
 
     static NotificationCache notificationCache = new NotificationCache();
 
@@ -35,16 +35,16 @@ class MessagingServiceUtils {
         return remoteMessageData != null && remoteMessageData.size() > 0 && remoteMessageData.containsKey(MESSAGE_FILTER);
     }
 
-    static Notification createNotification(Map<String, String> remoteMessageData, Context context) {
+    static Notification createNotification(Context context, Map<String, String> remoteMessageData, OreoConfig oreoConfig) {
         int resourceId = getSmallIconResourceId(context);
 
         String title = getTitle(remoteMessageData, context);
         String body = remoteMessageData.get("body");
         Bitmap image = ImageUtils.loadBitmapFromUrl(remoteMessageData.get("imageUrl"));
-        String channelId = getChannelId(remoteMessageData);
+        String channelId = getChannelId(remoteMessageData, oreoConfig);
 
-        if (channelId.equals(DEFAULT_CHANNEL_ID)) {
-            createChannelIfNotExists(context, DEFAULT_CHANNEL_ID);
+        if (OreoConfig.DEFAULT_CHANNEL_ID.equals(channelId)) {
+            createDefaultChannel(context, oreoConfig);
         }
 
         PendingIntent resultPendingIntent = createPendingIntent(context, remoteMessageData);
@@ -91,21 +91,20 @@ class MessagingServiceUtils {
         return title;
     }
 
-    static String getChannelId(Map<String, String> remoteMessageData) {
+    static String getChannelId(Map<String, String> remoteMessageData, OreoConfig oreoConfig) {
         String result = remoteMessageData.get("channelId");
-        if (result == null) {
-            result = DEFAULT_CHANNEL_ID;
+        if (result == null && oreoConfig.isDefaultChannelEnabled()) {
+            result = OreoConfig.DEFAULT_CHANNEL_ID;
         }
         return result;
     }
 
-    static void createChannelIfNotExists(Context context, String channelId) {
+    static void createDefaultChannel(Context context, OreoConfig oreoConfig) {
         if (Build.VERSION.SDK_INT >= 26) {
             NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-            NotificationChannel channel = notificationManager.getNotificationChannel(channelId);
-            if (channel == null) {
-                notificationManager.createNotificationChannel(new NotificationChannel(channelId, channelId, NotificationManager.IMPORTANCE_DEFAULT));
-            }
+            NotificationChannel channel = new NotificationChannel(OreoConfig.DEFAULT_CHANNEL_ID, oreoConfig.getDefaultChannelName(), NotificationManager.IMPORTANCE_DEFAULT);
+            channel.setDescription(oreoConfig.getDefaultChannelDescription());
+            notificationManager.createNotificationChannel(channel);
         }
     }
 

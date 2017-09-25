@@ -2,15 +2,17 @@ package com.emarsys.mobileengage.config;
 
 public class OreoConfig {
 
+    public static final String DEFAULT_CHANNEL_ID = "ems_me_default";
+
     private final boolean isDefaultChannelEnabled;
     private final String defaultChannelName;
     private final String defaultChannelDescription;
 
-    OreoConfig(boolean isDefaultChannelEnabled) {
+    public OreoConfig(boolean isDefaultChannelEnabled) {
         this(isDefaultChannelEnabled, null, null);
     }
 
-    OreoConfig(boolean isDefaultChannelEnabled, String defaultChannelName, String defaultChannelDescription) {
+    public OreoConfig(boolean isDefaultChannelEnabled, String defaultChannelName, String defaultChannelDescription) {
         this.isDefaultChannelEnabled = isDefaultChannelEnabled;
         this.defaultChannelName = defaultChannelName;
         this.defaultChannelDescription = defaultChannelDescription;

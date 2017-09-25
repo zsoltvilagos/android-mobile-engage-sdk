@@ -11,6 +11,7 @@ import android.support.test.filters.SdkSuppress;
 import android.support.test.runner.AndroidJUnit4;
 import android.support.v4.app.NotificationCompat;
 
+import com.emarsys.mobileengage.config.OreoConfig;
 import com.emarsys.mobileengage.inbox.model.Notification;
 import com.emarsys.mobileengage.inbox.model.NotificationCache;
 
@@ -33,11 +34,6 @@ import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @RunWith(AndroidJUnit4.class)
 public class MessagingServiceUtilsTest {
@@ -48,6 +44,8 @@ public class MessagingServiceUtilsTest {
 
     private Context context;
     private List<Notification> notificationCache;
+    private OreoConfig enabledOreoConfig;
+    private OreoConfig disabledOreoConfig;
 
     @Rule
     public Timeout globalTimeout = Timeout.seconds(30);
@@ -61,6 +59,9 @@ public class MessagingServiceUtilsTest {
         cacheField.setAccessible(true);
         notificationCache = (List) cacheField.get(null);
         notificationCache.clear();
+
+        enabledOreoConfig = new OreoConfig(true, "name", "description");
+        disabledOreoConfig = new OreoConfig(false);
     }
 
     @Test
@@ -102,7 +103,7 @@ public class MessagingServiceUtilsTest {
 
     @Test
     public void createNotification_shouldNotBeNull() {
-        assertNotNull(MessagingServiceUtils.createNotification(context, new HashMap<String, String>()));
+        assertNotNull(MessagingServiceUtils.createNotification(context, new HashMap<String, String>(), disabledOreoConfig));
     }
 
     @Test
@@ -112,7 +113,7 @@ public class MessagingServiceUtilsTest {
         input.put("title", TITLE);
         input.put("body", BODY);
 
-        android.app.Notification result = MessagingServiceUtils.createNotification(context, input);
+        android.app.Notification result = MessagingServiceUtils.createNotification(context, input, disabledOreoConfig);
 
         assertEquals(TITLE, result.extras.getString(NotificationCompat.EXTRA_TITLE));
         assertEquals(TITLE, result.extras.getString(NotificationCompat.EXTRA_TITLE_BIG));
@@ -128,7 +129,7 @@ public class MessagingServiceUtilsTest {
         Map<String, String> input = new HashMap<>();
         input.put("title", TITLE);
 
-        android.app.Notification result = MessagingServiceUtils.createNotification(context, input);
+        android.app.Notification result = MessagingServiceUtils.createNotification(context, input, disabledOreoConfig);
 
         assertEquals(TITLE, result.extras.getString(NotificationCompat.EXTRA_TITLE));
         assertEquals(TITLE, result.extras.getString(NotificationCompat.EXTRA_TITLE_BIG));
@@ -144,7 +145,7 @@ public class MessagingServiceUtilsTest {
         Map<String, String> input = new HashMap<>();
         input.put("body", BODY);
 
-        android.app.Notification result = MessagingServiceUtils.createNotification(context, input);
+        android.app.Notification result = MessagingServiceUtils.createNotification(context, input, disabledOreoConfig);
 
         String expectedTitle = expectedBasedOnApiLevel(getApplicationName(), "");
 
@@ -163,7 +164,7 @@ public class MessagingServiceUtilsTest {
         input.put("body", BODY);
         input.put("u", "{\"test_field\":\"\",\"ems_default_title\":\"" + DEFAULT_TITLE + "\",\"image\":\"https:\\/\\/media.giphy.com\\/media\\/ktvFa67wmjDEI\\/giphy.gif\",\"deep_link\":\"lifestylelabels.com\\/mobile\\/product\\/3245678\",\"sid\":\"sid_here\"}");
 
-        android.app.Notification result = MessagingServiceUtils.createNotification(context, input);
+        android.app.Notification result = MessagingServiceUtils.createNotification(context, input, disabledOreoConfig);
 
         String expectedTitle = expectedBasedOnApiLevel(DEFAULT_TITLE, "");
 
@@ -183,7 +184,7 @@ public class MessagingServiceUtilsTest {
         input.put("body", BODY);
         input.put("imageUrl", "https://www.emarsys.com/wp-content/themes/emarsys/images/home-page/press-releases-header.jpg");
 
-        android.app.Notification result = MessagingServiceUtils.createNotification(context, input);
+        android.app.Notification result = MessagingServiceUtils.createNotification(context, input, disabledOreoConfig);
 
         assertEquals(TITLE, result.extras.getString(NotificationCompat.EXTRA_TITLE));
         assertEquals(TITLE, result.extras.getString(NotificationCompat.EXTRA_TITLE_BIG));
@@ -203,7 +204,7 @@ public class MessagingServiceUtilsTest {
         input.put("body", BODY);
         input.put("imageUrl", "https://fa.il/img.jpg");
 
-        android.app.Notification result = MessagingServiceUtils.createNotification(context, input);
+        android.app.Notification result = MessagingServiceUtils.createNotification(context, input, disabledOreoConfig);
 
         assertEquals(TITLE, result.extras.getString(NotificationCompat.EXTRA_TITLE));
         assertEquals(TITLE, result.extras.getString(NotificationCompat.EXTRA_TITLE_BIG));
@@ -221,51 +222,69 @@ public class MessagingServiceUtilsTest {
         input.put("body", BODY);
         input.put("channelId", CHANNEL_ID);
 
-        android.app.Notification result = MessagingServiceUtils.createNotification(context, input);
+        android.app.Notification result = MessagingServiceUtils.createNotification(context, input, disabledOreoConfig);
 
         assertEquals(CHANNEL_ID, result.getChannelId());
     }
 
     @Test
     @SdkSuppress(minSdkVersion = O)
-    public void testCreateNotification_withoutChannelId() {
+    public void testCreateNotification_withoutChannelId_withDefaultChannelEnabled() {
         Map<String, String> input = new HashMap<>();
         input.put("title", TITLE);
         input.put("body", BODY);
 
-        android.app.Notification result = MessagingServiceUtils.createNotification(context, input);
+        android.app.Notification result = MessagingServiceUtils.createNotification(context, input, enabledOreoConfig);
 
-        String expected = "default";
+        String expected = "ems_me_default";
 
         assertEquals(expected, result.getChannelId());
     }
 
     @Test
     @SdkSuppress(minSdkVersion = O)
-    public void testCreateChannel(){
-        NotificationManager manager = (NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
-        manager.deleteNotificationChannel(CHANNEL_ID);
-        assertNull(manager.getNotificationChannel(CHANNEL_ID));
+    public void testCreateNotification_withoutChannelId_withDefaultChannelDisabled() {
+        Map<String, String> input = new HashMap<>();
+        input.put("title", TITLE);
+        input.put("body", BODY);
 
-        MessagingServiceUtils.createChannelIfNotExists(context, CHANNEL_ID);
+        android.app.Notification result = MessagingServiceUtils.createNotification(context, input, disabledOreoConfig);
 
-        NotificationChannel channel = manager.getNotificationChannel(CHANNEL_ID);
-        assertNotNull(channel);
-        assertEquals(NotificationManager.IMPORTANCE_DEFAULT, channel.getImportance());
+        assertNull(result.getChannelId());
     }
 
     @Test
     @SdkSuppress(minSdkVersion = O)
-    public void testCreateChannel_doesNotOverrideExistingChannel(){
-        Context contextMock = mock(Context.class);
-        NotificationManager managerMock = mock(NotificationManager.class);
-        NotificationChannel channelDummy = new NotificationChannel("dummyId", "dummyName", 42);
-        when(contextMock.getSystemService(Context.NOTIFICATION_SERVICE)).thenReturn(managerMock);
-        when(managerMock.getNotificationChannel(CHANNEL_ID)).thenReturn(channelDummy);
+    public void testCreateChannel(){
+        NotificationManager manager = (NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
+        manager.deleteNotificationChannel("ems_me_default");
+        assertNull(manager.getNotificationChannel("ems_me_default"));
 
-        MessagingServiceUtils.createChannelIfNotExists(contextMock, CHANNEL_ID);
+        MessagingServiceUtils.createDefaultChannel(context, enabledOreoConfig);
 
-        verify(managerMock, never()).createNotificationChannel(any(NotificationChannel.class));
+        NotificationChannel channel = manager.getNotificationChannel("ems_me_default");
+        assertNotNull(channel);
+        assertEquals(NotificationManager.IMPORTANCE_DEFAULT, channel.getImportance());
+        assertEquals(enabledOreoConfig.getDefaultChannelName(), channel.getName());
+        assertEquals(enabledOreoConfig.getDefaultChannelDescription(), channel.getDescription());
+    }
+
+    @Test
+    @SdkSuppress(minSdkVersion = O)
+    public void testCreateChannel_overridesPrevious(){
+        NotificationManager manager = (NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
+        manager.deleteNotificationChannel("ems_me_default");
+        assertNull(manager.getNotificationChannel("ems_me_default"));
+        MessagingServiceUtils.createDefaultChannel(context, enabledOreoConfig);
+        NotificationChannel channel = manager.getNotificationChannel("ems_me_default");
+        assertNotNull(channel);
+
+        OreoConfig updatedConfig = new OreoConfig(true, "updatedName", "updatedDescription");
+        MessagingServiceUtils.createDefaultChannel(context, updatedConfig);
+
+        NotificationChannel updatedChannel = manager.getNotificationChannel("ems_me_default");
+        assertEquals(updatedConfig.getDefaultChannelName(), updatedChannel.getName());
+        assertEquals(updatedConfig.getDefaultChannelDescription(), updatedChannel.getDescription());
     }
 
     @Test
