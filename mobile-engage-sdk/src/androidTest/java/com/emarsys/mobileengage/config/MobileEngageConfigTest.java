@@ -38,22 +38,22 @@ public class MobileEngageConfigTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testConstructor_applicationShouldNotBeNull() throws Exception {
+    public void testConstructor_applicationShouldNotBeNull() {
         new MobileEngageConfig(null, APP_ID, SECRET, statusListenerMock, true, false, mockOreoConfig);
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testConstructor_applicationCodeShouldNotBeNull() throws Exception {
+    public void testConstructor_applicationCodeShouldNotBeNull() {
         new MobileEngageConfig(application, null, SECRET, statusListenerMock, true, false, mockOreoConfig);
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testConstructor_secretShouldNotBeNull() throws Exception {
+    public void testConstructor_secretShouldNotBeNull() {
         new MobileEngageConfig(application, APP_ID, null, statusListenerMock, true, false, mockOreoConfig);
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testConstructor_oreoConfigShouldNotBeNull() throws Exception {
+    public void testConstructor_oreoConfigShouldNotBeNull() {
         new MobileEngageConfig(application, APP_ID, SECRET, statusListenerMock, true, false, null);
     }
 
