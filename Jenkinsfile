@@ -1,6 +1,6 @@
 @Library(['android-pipeline', 'general-pipeline']) _
 
-node('android') {
+node('master') {
     withSlack channel: 'jenkins', {
         timeout(15) {
             stage("init") {
