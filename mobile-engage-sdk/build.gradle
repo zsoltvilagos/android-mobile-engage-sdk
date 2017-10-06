@@ -26,11 +26,16 @@ group = 'com.emarsys'
 version = gitVersionName
 
 dependencies {
+    if (project.hasProperty('development') || System.env.DEVELOPMENT_MODE) {
+        compile 'com.emarsys:core-sdk:+'
+    } else {
+        compile 'com.emarsys:core-sdk:0.10.0'
+    }
+
     compile 'com.android.support:appcompat-v7:26.0.2'
     compile "com.android.support:support-annotations:26.0.2"
     compile 'com.google.firebase:firebase-core:10.2.1'
     compile 'com.google.firebase:firebase-messaging:10.2.1'
-    compile 'com.emarsys:core-sdk:+'
     testCompile 'junit:junit:4.12'
     testCompile 'org.mockito:mockito-core:2.6.3'
     androidTestCompile 'org.mockito:mockito-android:2.6.3'

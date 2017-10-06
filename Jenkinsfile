@@ -19,7 +19,9 @@ node('android') {
             }
 
             stage("build") {
-                androidBuild andArchive: '**/*.aar'
+                withEnv(['DEVELOPMENT_MODE=true']) {
+                    androidBuild andArchive: '**/*.aar'
+                }
             }
 
             stage('lint') {
@@ -36,7 +38,9 @@ node('android') {
             }
 
             stage('local-maven-deploy') {
-                sh './gradlew install'
+                withEnv(['DEVELOPMENT_MODE=true']) {
+                    sh './gradlew install'
+                }
             }
 
             def version = sh(script: 'git describe', returnStdout: true).trim()
@@ -45,7 +49,7 @@ node('android') {
             if (version ==~ /\d+\.\d+\.\d+/ && !releaseExists) {
                 stage('release-bintray') {
                     slackMessage channel: 'jenkins', text: "Releasing Mobile Engage SDK $version."
-                    sh './gradlew bintrayUpload'
+                    sh './gradlew clean build -x lint -x test bintrayUpload'
                     slackMessage channel: 'jenkins', text: "Mobile Engage SDK $version released to Bintray."
                 }
             }
