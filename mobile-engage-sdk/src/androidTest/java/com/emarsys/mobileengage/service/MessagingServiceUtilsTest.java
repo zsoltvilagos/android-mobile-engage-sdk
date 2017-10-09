@@ -220,7 +220,7 @@ public class MessagingServiceUtilsTest {
         Map<String, String> input = new HashMap<>();
         input.put("title", TITLE);
         input.put("body", BODY);
-        input.put("channelId", CHANNEL_ID);
+        input.put("channel_id", CHANNEL_ID);
 
         android.app.Notification result = MessagingServiceUtils.createNotification(context, input, disabledOreoConfig);
 

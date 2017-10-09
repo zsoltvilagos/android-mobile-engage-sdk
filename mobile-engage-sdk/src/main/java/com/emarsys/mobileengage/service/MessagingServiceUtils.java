@@ -92,7 +92,7 @@ class MessagingServiceUtils {
     }
 
     static String getChannelId(Map<String, String> remoteMessageData, OreoConfig oreoConfig) {
-        String result = remoteMessageData.get("channelId");
+        String result = remoteMessageData.get("channel_id");
         if (result == null && oreoConfig.isDefaultChannelEnabled()) {
             result = OreoConfig.DEFAULT_CHANNEL_ID;
         }
