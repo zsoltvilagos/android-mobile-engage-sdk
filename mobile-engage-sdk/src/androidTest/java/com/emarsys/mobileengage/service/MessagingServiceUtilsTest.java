@@ -182,7 +182,7 @@ public class MessagingServiceUtilsTest {
         Map<String, String> input = new HashMap<>();
         input.put("title", TITLE);
         input.put("body", BODY);
-        input.put("imageUrl", "https://www.emarsys.com/wp-content/themes/emarsys/images/home-page/press-releases-header.jpg");
+        input.put("image_url", "https://www.emarsys.com/wp-content/themes/emarsys/images/home-page/press-releases-header.jpg");
 
         android.app.Notification result = MessagingServiceUtils.createNotification(context, input, disabledOreoConfig);
 
@@ -202,7 +202,7 @@ public class MessagingServiceUtilsTest {
         Map<String, String> input = new HashMap<>();
         input.put("title", TITLE);
         input.put("body", BODY);
-        input.put("imageUrl", "https://fa.il/img.jpg");
+        input.put("image_url", "https://fa.il/img.jpg");
 
         android.app.Notification result = MessagingServiceUtils.createNotification(context, input, disabledOreoConfig);
 

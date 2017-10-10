@@ -40,7 +40,7 @@ class MessagingServiceUtils {
 
         String title = getTitle(remoteMessageData, context);
         String body = remoteMessageData.get("body");
-        Bitmap image = ImageUtils.loadBitmapFromUrl(remoteMessageData.get("imageUrl"));
+        Bitmap image = ImageUtils.loadBitmapFromUrl(remoteMessageData.get("image_url"));
         String channelId = getChannelId(remoteMessageData, oreoConfig);
 
         if (OreoConfig.DEFAULT_CHANNEL_ID.equals(channelId)) {
