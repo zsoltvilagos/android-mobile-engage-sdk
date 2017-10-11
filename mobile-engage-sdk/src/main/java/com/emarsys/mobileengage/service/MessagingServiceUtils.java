@@ -14,10 +14,10 @@ import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 
 import com.emarsys.core.util.Assert;
+import com.emarsys.core.util.ImageUtils;
 import com.emarsys.mobileengage.config.OreoConfig;
 import com.emarsys.mobileengage.inbox.InboxParseUtils;
 import com.emarsys.mobileengage.inbox.model.NotificationCache;
-import com.emarsys.mobileengage.util.ImageUtils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -40,7 +40,7 @@ class MessagingServiceUtils {
 
         String title = getTitle(remoteMessageData, context);
         String body = remoteMessageData.get("body");
-        Bitmap image = ImageUtils.loadBitmapFromUrl(remoteMessageData.get("image_url"));
+        Bitmap image = ImageUtils.loadOptimizedBitmap(context, remoteMessageData.get("image_url"));
         String channelId = getChannelId(remoteMessageData, oreoConfig);
 
         if (OreoConfig.DEFAULT_CHANNEL_ID.equals(channelId)) {
