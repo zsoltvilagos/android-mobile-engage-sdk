@@ -159,9 +159,15 @@ public class MobileEngageTest {
     }
 
     @Test
-    public void testAppLogin_anonymous_callsInternalInbox() {
+    public void testAppLogin_anonymous_callsSetAppLoginParameters_onInternalInbox() {
         MobileEngage.appLogin();
         verify(inboxInternal).setAppLoginParameters(new AppLoginParameters());
+    }
+
+    @Test
+    public void testAppLogin_anonymous_callsSetAppLoginParameters_onInternalMobileEngage() {
+        MobileEngage.appLogin();
+        verify(mobileEngageInternal).setAppLoginParameters(new AppLoginParameters());
     }
 
     @Test
@@ -171,9 +177,15 @@ public class MobileEngageTest {
     }
 
     @Test
-    public void testAppLogin_withUser_callsInternalInbox() {
+    public void testAppLogin_withUser_callsSetAppLoginParameters_onInternalInbox() {
         MobileEngage.appLogin(4, "CONTACT_FIELD_VALUE");
         verify(inboxInternal).setAppLoginParameters(new AppLoginParameters(4, "CONTACT_FIELD_VALUE"));
+    }
+
+    @Test
+    public void testAppLogin_withUser_callsSetAppLoginParameters_onInternalMobileEngage() {
+        MobileEngage.appLogin(4, "CONTACT_FIELD_VALUE");
+        verify(mobileEngageInternal).setAppLoginParameters(new AppLoginParameters(4, "CONTACT_FIELD_VALUE"));
     }
 
     @Test
@@ -183,9 +195,15 @@ public class MobileEngageTest {
     }
 
     @Test
-    public void testAppLogout_callsInternalInbox() {
+    public void testAppLogout_callsSetAppLoginParameters_onInternalInbox() {
         MobileEngage.appLogout();
         verify(inboxInternal).setAppLoginParameters(null);
+    }
+
+    @Test
+    public void testAppLogout_callsSetAppLoginParameters_onInternalMobileEngage() {
+        MobileEngage.appLogout();
+        verify(mobileEngageInternal).setAppLoginParameters(null);
     }
 
     @Test

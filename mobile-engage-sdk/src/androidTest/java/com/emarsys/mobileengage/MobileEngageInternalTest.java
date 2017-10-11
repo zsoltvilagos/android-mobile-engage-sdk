@@ -236,12 +236,23 @@ public class MobileEngageInternalTest {
     }
 
     @Test
+    public void testCustomEvent_containsCredentials_fromApploginParameters() {
+        int contactFieldId = 3;
+        String contactFieldValue = "test@test.com";
+        mobileEngage.setAppLoginParameters(new AppLoginParameters(contactFieldId, contactFieldValue));
+        ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
+
+        mobileEngage.trackCustomEvent("customEvent", null);
+        verify(manager).submit(captor.capture());
+
+        Map<String, Object> payload = captor.getValue().getPayload();
+        assertEquals(payload.get("contact_field_id"), contactFieldId);
+        assertEquals(payload.get("contact_field_value"), contactFieldValue);
+    }
+
+    @Test
     public void testTrackMessageOpen_requestManagerCalledWithCorrectRequestModel() throws Exception {
-        Intent intent = new Intent();
-        Bundle bundlePayload = new Bundle();
-        bundlePayload.putString("key1", "value1");
-        bundlePayload.putString("u", "{\"sid\": \"+43c_lODSmXqCvdOz\"}");
-        intent.putExtra("payload", bundlePayload);
+        Intent intent = getTestIntent();
 
         Map<String, Object> payload = createBasePayload();
         payload.put("sid", "+43c_lODSmXqCvdOz");
@@ -265,11 +276,7 @@ public class MobileEngageInternalTest {
 
     @Test
     public void testTrackMessageOpen_returnsRequestModelId() throws Exception {
-        Intent intent = new Intent();
-        Bundle payload = new Bundle();
-        payload.putString("key1", "value1");
-        payload.putString("u", "{\"sid\": \"+43c_lODSmXqCvdOz\"}");
-        intent.putExtra("payload", payload);
+        Intent intent = getTestIntent();
 
         ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
 
@@ -281,6 +288,23 @@ public class MobileEngageInternalTest {
     }
 
     @Test
+    public void testTrackMessageOpen_containsCredentials_fromApploginParameters() {
+        Intent intent = getTestIntent();
+        int contactFieldId = 3;
+        String contactFieldValue = "test@test.com";
+        mobileEngage.setAppLoginParameters(new AppLoginParameters(contactFieldId, contactFieldValue));
+        ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
+
+        mobileEngage.trackMessageOpen(intent);
+        verify(manager).submit(captor.capture());
+
+        Map<String, Object> payload = captor.getValue().getPayload();
+        assertEquals(payload.get("contact_field_id"), contactFieldId);
+        assertEquals(payload.get("contact_field_value"), contactFieldValue);
+    }
+
+
+    @Test
     public void testGetMessageId_shouldReturnNullWithEmptyIntent() {
         String result = mobileEngage.getMessageId(new Intent());
         assertNull(result);
@@ -288,97 +312,51 @@ public class MobileEngageInternalTest {
 
     @Test
     public void testGetMessageId_shoudReturnTheCorrectSIDValue() throws Exception {
-        Intent intent = new Intent();
-        Bundle payload = new Bundle();
-        payload.putString("key1", "value1");
-        payload.putString("u", "{\"sid\": \"+43c_lODSmXqCvdOz\"}");
-        intent.putExtra("payload", payload);
+        Intent intent = getTestIntent();
         String result = mobileEngage.getMessageId(intent);
         assertEquals("+43c_lODSmXqCvdOz", result);
     }
 
     @Test
-    public void testSetPushToken_shouldNotCallAppLogins() {
+    public void testSetPushToken_whenApploginParameters_isEmpty() {
         MobileEngageInternal spy = spy(mobileEngage);
 
+        spy.setAppLoginParameters(new AppLoginParameters());
+        spy.setPushToken("123456789");
+
+        verify(spy, times(1)).appLogin();
+    }
+
+    @Test
+    public void testSetPushToken_whenApploginParameters_hasCredentials() {
+        int contactFieldId = 12;
+        String contactFieldValue = "asdf";
+        MobileEngageInternal spy = spy(mobileEngage);
+
+        spy.setAppLoginParameters(new AppLoginParameters(contactFieldId, contactFieldValue));
+        spy.setPushToken("123456789");
+
+        verify(spy, times(1)).appLogin(contactFieldId, contactFieldValue);
+    }
+
+    @Test
+    public void testSetPushToken_doesNotCallAppLogins_whenApploginParameters_isNull() {
+        MobileEngageInternal spy = spy(mobileEngage);
+
+        spy.setAppLoginParameters(null);
         spy.setPushToken("123456789");
 
         verify(spy, times(0)).appLogin();
         verify(spy, times(0)).appLogin(any(Integer.class), any(String.class));
     }
 
-    @Test
-    public void testSetPushToken_shouldCallAnonymousAppLogin() {
-        MobileEngageInternal spy = spy(mobileEngage);
-
-        spy.appLogin();
-        spy.setPushToken("123456789");
-
-        verify(spy, times(2)).appLogin();
-    }
-
-    @Test
-    public void testSetPushToken_shouldCallAppLogin() {
-        int contactFieldId = 12;
-        String contactFieldValue = "asdf";
-        MobileEngageInternal spy = spy(mobileEngage);
-
-        spy.appLogin(contactFieldId, contactFieldValue);
-        spy.setPushToken("123456789");
-
-        verify(spy, times(2)).appLogin(any(Integer.class), any(String.class));
-    }
-
-    @Test
-    public void testSetPushToken_shouldNotCallAnonymousLogin_afterLogout() {
-        MobileEngageInternal spy = spy(mobileEngage);
-
-        spy.appLogin();
-        spy.appLogout();
-        spy.setPushToken("123456789");
-
-        verify(spy, times(1)).appLogin();
-    }
-
-    @Test
-    public void testSetPushToken_shouldNotCallLogin_afterLogout() {
-        int contactFieldId = 12;
-        String contactFieldValue = "asdf";
-        MobileEngageInternal spy = spy(mobileEngage);
-
-        spy.appLogin(contactFieldId, contactFieldValue);
-        spy.appLogout();
-        spy.setPushToken("123456789");
-
-        verify(spy, times(1)).appLogin(any(Integer.class), any(String.class));
-    }
-
-    @Test
-    public void testSetPushToken_appLoginShouldOverride_anonymousAppLogin() {
-        int contactFieldId = 12;
-        String contactFieldValue = "asdf";
-        MobileEngageInternal spy = spy(mobileEngage);
-
-        spy.appLogin();
-        spy.appLogin(contactFieldId, contactFieldValue);
-        spy.setPushToken("123456789");
-
-        verify(spy, times(1)).appLogin();
-        verify(spy, times(2)).appLogin(any(Integer.class), any(String.class));
-    }
-
-    @Test
-    public void testSetPushToken_anonymousAppLoginShouldOverride_appLogin() {
-        int contactFieldId = 12;
-        String contactFieldValue = "asdf";
-        MobileEngageInternal spy = spy(mobileEngage);
-
-        spy.appLogin(contactFieldId, contactFieldValue);
-        spy.appLogin();
-        spy.setPushToken("123456789");
-
-        verify(spy, times(1)).appLogin(any(Integer.class), any(String.class));
-        verify(spy, times(2)).appLogin();
+    private Intent getTestIntent() {
+        Intent intent = new Intent();
+        Bundle bundlePayload = new Bundle();
+        bundlePayload.putString("key1", "value1");
+        bundlePayload.putString("u", "{\"sid\": \"+43c_lODSmXqCvdOz\"}");
+        intent.putExtra("payload", bundlePayload);
+        return intent;
     }
 
     private Map<String, Object> createBasePayload() {

@@ -5,6 +5,7 @@ import android.support.test.InstrumentationRegistry;
 
 import com.emarsys.core.DeviceInfo;
 import com.emarsys.core.util.HeaderUtils;
+import com.emarsys.mobileengage.AppLoginParameters;
 import com.emarsys.mobileengage.BuildConfig;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.testUtil.ApplicationTestUtils;
@@ -105,24 +106,24 @@ public class RequestUtilsTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testCreateBasePayload_config_configShouldNotBeNull() {
-        RequestUtils.createBasePayload(null);
+        RequestUtils.createBasePayload(null, null);
     }
 
     @Test
     public void testCreateBasePayload_config_shouldReturnTheCorrectPayload() {
-        Map<String, Object> payload = RequestUtils.createBasePayload(config);
-        Map<String, Object> expected = RequestUtils.createBasePayload(new HashMap<String, Object>(), config);
+        Map<String, Object> payload = RequestUtils.createBasePayload(config, null);
+        Map<String, Object> expected = RequestUtils.createBasePayload(new HashMap<String, Object>(), config, null);
         assertEquals(expected, payload);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testCreateBasePayload_map_config_additionalPayloadShouldNotBeNull() {
-        RequestUtils.createBasePayload(null, config);
+        RequestUtils.createBasePayload(null, config, null);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testCreateBasePayload_map_config_configShouldNotBeNull() {
-        RequestUtils.createBasePayload(new HashMap<String, Object>(), null);
+        RequestUtils.createBasePayload(new HashMap<String, Object>(), null, null);
     }
 
     @Test
@@ -137,7 +138,45 @@ public class RequestUtilsTest {
         input.put("key1", "value1");
         input.put("key2", "value2");
 
-        Map<String, Object> result = RequestUtils.createBasePayload(input, config);
+        Map<String, Object> result = RequestUtils.createBasePayload(input, config, null);
+
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void testCreateBasePayload_config_appLoginParameters_hasCredentials() {
+        int contactFieldId = 123;
+        String contactFieldValue = "contactFieldValue";
+
+        Map<String, Object> expected = new HashMap<>();
+        expected.put("application_id", config.getApplicationCode());
+        expected.put("hardware_id", deviceInfo.getHwid());
+        expected.put("contact_field_id", contactFieldId);
+        expected.put("contact_field_value", contactFieldValue);
+
+        Map<String, Object> result = RequestUtils.createBasePayload(config, new AppLoginParameters(contactFieldId, contactFieldValue));
+
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void testCreateBasePayload_config_appLoginParameters_withoutCredentials() {
+        Map<String, Object> expected = new HashMap<>();
+        expected.put("application_id", config.getApplicationCode());
+        expected.put("hardware_id", deviceInfo.getHwid());
+
+        Map<String, Object> result = RequestUtils.createBasePayload(config, new AppLoginParameters());
+
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void testCreateBasePayload_config_whenAppLoginParameters_isNull() {
+        Map<String, Object> expected = new HashMap<>();
+        expected.put("application_id", config.getApplicationCode());
+        expected.put("hardware_id", deviceInfo.getHwid());
+
+        Map<String, Object> result = RequestUtils.createBasePayload(config, null);
 
         assertEquals(expected, result);
     }

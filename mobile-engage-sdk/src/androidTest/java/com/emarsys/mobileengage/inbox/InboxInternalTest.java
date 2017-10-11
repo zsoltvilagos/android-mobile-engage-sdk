@@ -588,6 +588,21 @@ public class InboxInternalTest {
         Assert.assertEquals(captor.getValue().getId(), result);
     }
 
+    @Test
+    public void trackMessageOpen_containsCredentials_fromApploginParameters() {
+        int contactFieldId = 3;
+        String contactFieldValue = "test@test.com";
+        inbox.setAppLoginParameters(new AppLoginParameters(contactFieldId, contactFieldValue));
+        ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
+
+        inbox.trackMessageOpen(mock(Notification.class));
+        verify(manager).submit(captor.capture());
+
+        Map<String, Object> payload = captor.getValue().getPayload();
+        Assert.assertEquals(payload.get("contact_field_id"), contactFieldId);
+        Assert.assertEquals(payload.get("contact_field_value"), contactFieldValue);
+    }
+
     private RequestModel createRequestModel(String path, RequestMethod method) {
         DeviceInfo deviceInfo = new DeviceInfo(InstrumentationRegistry.getContext());
 

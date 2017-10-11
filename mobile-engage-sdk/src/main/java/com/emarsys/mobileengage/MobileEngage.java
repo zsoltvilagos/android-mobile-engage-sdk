@@ -44,6 +44,7 @@ public class MobileEngage {
         }
 
     }
+
     public static void setup(@NonNull MobileEngageConfig config) {
         Assert.notNull(config, "Config must not be null!");
         MobileEngage.config = config;
@@ -70,19 +71,19 @@ public class MobileEngage {
     }
 
     public static String appLogin() {
-        inboxInstance.setAppLoginParameters(new AppLoginParameters());
+        setAppLoginParameters(new AppLoginParameters());
         return instance.appLogin();
     }
 
     public static String appLogin(int contactField,
                                   @NonNull String contactFieldValue) {
         Assert.notNull(contactFieldValue, "ContactFieldValue must not be null!");
-        inboxInstance.setAppLoginParameters(new AppLoginParameters(contactField, contactFieldValue));
+        setAppLoginParameters(new AppLoginParameters(contactField, contactFieldValue));
         return instance.appLogin(contactField, contactFieldValue);
     }
 
     public static String appLogout() {
-        inboxInstance.setAppLoginParameters(null);
+        setAppLoginParameters(null);
         return instance.appLogout();
     }
 
@@ -95,6 +96,11 @@ public class MobileEngage {
     public static String trackMessageOpen(@NonNull Intent intent) {
         Assert.notNull(intent, "Intent must not be null!");
         return instance.trackMessageOpen(intent);
+    }
+
+    private static void setAppLoginParameters(AppLoginParameters parameters) {
+        instance.setAppLoginParameters(parameters);
+        inboxInstance.setAppLoginParameters(parameters);
     }
 
 }

@@ -3,6 +3,7 @@ package com.emarsys.mobileengage.util;
 import com.emarsys.core.DeviceInfo;
 import com.emarsys.core.util.Assert;
 import com.emarsys.core.util.HeaderUtils;
+import com.emarsys.mobileengage.AppLoginParameters;
 import com.emarsys.mobileengage.BuildConfig;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 
@@ -35,12 +36,12 @@ public class RequestUtils {
     }
 
     @SuppressWarnings("unchecked")
-    public static Map<String, Object> createBasePayload(MobileEngageConfig config) {
+    public static Map<String, Object> createBasePayload(MobileEngageConfig config, AppLoginParameters parameters) {
         Assert.notNull(config, "Config must not be null!");
-        return createBasePayload(Collections.EMPTY_MAP, config);
+        return createBasePayload(Collections.EMPTY_MAP, config, parameters);
     }
 
-    public static Map<String, Object> createBasePayload(Map<String, Object> additionalPayload, MobileEngageConfig config) {
+    public static Map<String, Object> createBasePayload(Map<String, Object> additionalPayload, MobileEngageConfig config, AppLoginParameters parameters) {
         Assert.notNull(config, "Config must not be null!");
         Assert.notNull(additionalPayload, "AdditionalPayload must not be null!");
         if (deviceInfo == null) {
@@ -49,6 +50,11 @@ public class RequestUtils {
         Map<String, Object> payload = new HashMap<>();
         payload.put("application_id", config.getApplicationCode());
         payload.put("hardware_id", deviceInfo.getHwid());
+
+        if (parameters != null && parameters.hasCredentials()) {
+            payload.put("contact_field_id", parameters.getContactFieldId());
+            payload.put("contact_field_value", parameters.getContactFieldValue());
+        }
 
         for (Map.Entry<String, Object> entry : additionalPayload.entrySet()) {
             payload.put(entry.getKey(), entry.getValue());

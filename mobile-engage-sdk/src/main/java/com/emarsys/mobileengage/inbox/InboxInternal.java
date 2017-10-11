@@ -102,7 +102,7 @@ public class InboxInternal {
     }
 
     public String trackMessageOpen(Notification message) {
-        Map<String, Object> payload = RequestUtils.createBasePayload(config);
+        Map<String, Object> payload = RequestUtils.createBasePayload(config, appLoginParameters);
         payload.put("source", "inbox");
         payload.put("sid", message.getSid());
         RequestModel model = new RequestModel.Builder()

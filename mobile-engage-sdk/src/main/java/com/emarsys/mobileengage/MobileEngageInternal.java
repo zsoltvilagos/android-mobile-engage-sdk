@@ -20,7 +20,6 @@ import com.google.firebase.iid.FirebaseInstanceId;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.HashMap;
 import java.util.Map;
 
 public class MobileEngageInternal {
@@ -78,10 +77,12 @@ public class MobileEngageInternal {
         }
     }
 
-    String appLogin() {
-        this.appLoginParameters = new AppLoginParameters();
+    void setAppLoginParameters(AppLoginParameters parameters) {
+        this.appLoginParameters = parameters;
+    }
 
-        Map<String, Object> payload = injectLoginPayload(RequestUtils.createBasePayload(config));
+    String appLogin() {
+        Map<String, Object> payload = injectLoginPayload(RequestUtils.createBasePayload(config, appLoginParameters));
         RequestModel model = new RequestModel.Builder()
                 .url(RequestUtils.ENDPOINT_LOGIN)
                 .payload(payload)
@@ -92,15 +93,9 @@ public class MobileEngageInternal {
         return model.getId();
     }
 
-    String appLogin(int contactFieldId,
-                    @NonNull String contactFieldValue) {
-        this.appLoginParameters = new AppLoginParameters(contactFieldId, contactFieldValue);
+    String appLogin(int contactFieldId, @NonNull String contactFieldValue) {
 
-        Map<String, Object> additionalPayload = new HashMap<>();
-        additionalPayload.put("contact_field_id", contactFieldId);
-        additionalPayload.put("contact_field_value", contactFieldValue);
-
-        Map<String, Object> payload = injectLoginPayload(RequestUtils.createBasePayload(additionalPayload, config));
+        Map<String, Object> payload = injectLoginPayload(RequestUtils.createBasePayload(config, appLoginParameters));
 
         RequestModel model = new RequestModel.Builder()
                 .url(RequestUtils.ENDPOINT_LOGIN)
@@ -113,11 +108,9 @@ public class MobileEngageInternal {
     }
 
     String appLogout() {
-        this.appLoginParameters = null;
-
         RequestModel model = new RequestModel.Builder()
                 .url(RequestUtils.ENDPOINT_LOGOUT)
-                .payload(RequestUtils.createBasePayload(config))
+                .payload(RequestUtils.createBasePayload(config, appLoginParameters))
                 .build();
 
         MobileEngageUtils.incrementIdlingResource();
@@ -127,7 +120,7 @@ public class MobileEngageInternal {
 
     String trackCustomEvent(@NonNull String eventName,
                             @Nullable Map<String, String> eventAttributes) {
-        Map<String, Object> payload = RequestUtils.createBasePayload(config);
+        Map<String, Object> payload = RequestUtils.createBasePayload(config, appLoginParameters);
         if (eventAttributes != null && !eventAttributes.isEmpty()) {
             payload.put("attributes", eventAttributes);
         }
@@ -162,7 +155,7 @@ public class MobileEngageInternal {
 
     private String handleMessageOpen(String messageId) {
         if (messageId != null) {
-            Map<String, Object> payload = RequestUtils.createBasePayload(config);
+            Map<String, Object> payload = RequestUtils.createBasePayload(config, appLoginParameters);
             payload.put("sid", messageId);
             RequestModel model = new RequestModel.Builder()
                     .url(RequestUtils.createEventUrl("message_open"))
