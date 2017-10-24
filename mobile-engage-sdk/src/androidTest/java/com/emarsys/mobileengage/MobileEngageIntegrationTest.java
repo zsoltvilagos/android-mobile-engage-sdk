@@ -3,9 +3,11 @@ package com.emarsys.mobileengage;
 import android.app.Application;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.test.InstrumentationRegistry;
 
 import com.emarsys.core.CoreCompletionHandler;
+import com.emarsys.core.concurrency.CoreSdkHandlerProvider;
 import com.emarsys.core.connection.ConnectionWatchDog;
 import com.emarsys.core.queue.sqlite.SqliteQueue;
 import com.emarsys.core.request.RequestManager;
@@ -58,7 +60,9 @@ public class MobileEngageIntegrationTest {
         MobileEngage.setup(config);
         SqliteQueue queue = new SqliteQueue(context);
         queue.setHelper(new TestDbHelper(context));
-        MobileEngage.instance.manager = new RequestManager(new ConnectionWatchDog(context), queue, new CoreCompletionHandler() {
+
+        Handler handler = new CoreSdkHandlerProvider().provideHandler();
+        MobileEngage.instance.manager = new RequestManager(handler, new ConnectionWatchDog(context, handler), queue, new CoreCompletionHandler() {
             @Override
             public void onSuccess(String id, ResponseModel responseModel) {
                 listener.onStatusLog(id, "");

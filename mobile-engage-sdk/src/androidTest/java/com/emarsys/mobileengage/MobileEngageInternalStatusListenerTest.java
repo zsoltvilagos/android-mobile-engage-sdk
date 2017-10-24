@@ -6,8 +6,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.test.InstrumentationRegistry;
 
-import com.emarsys.core.connection.ConnectionWatchDog;
-import com.emarsys.core.queue.InMemoryQueue;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.response.ResponseModel;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
@@ -90,8 +88,8 @@ public class MobileEngageInternalStatusListenerTest {
                 mainThreadStatusListener.onError(id, cause);
             }
         };
-        succeedingManager = new FakeRequestManager(SUCCESS, latch, new ConnectionWatchDog(context), new InMemoryQueue(), completionHandler);
-        failingManager = new FakeRequestManager(FAILURE, latch, new ConnectionWatchDog(context), new InMemoryQueue(), completionHandler);
+        succeedingManager = new FakeRequestManager(SUCCESS, latch, completionHandler);
+        failingManager = new FakeRequestManager(FAILURE, latch, completionHandler);
         statusListener = mock(MobileEngageStatusListener.class);
         mainThreadStatusListener = new FakeStatusListener(latch);
         mobileEngageWith(mainThreadStatusListener, succeedingManager);

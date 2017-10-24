@@ -1,9 +1,11 @@
 package com.emarsys.mobileengage;
 
 import android.content.Intent;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.emarsys.core.concurrency.CoreSdkHandlerProvider;
 import com.emarsys.core.connection.ConnectionWatchDog;
 import com.emarsys.core.queue.sqlite.SqliteQueue;
 import com.emarsys.core.request.RequestManager;
@@ -55,7 +57,8 @@ public class MobileEngage {
 
         completionHandler = new MobileEngageCoreCompletionHandler(config.getStatusListener());
 
-        RequestManager requestManager = new RequestManager(new ConnectionWatchDog(config.getApplication()), new SqliteQueue(config.getApplication()), completionHandler);
+        Handler handler = new CoreSdkHandlerProvider().provideHandler();
+        RequestManager requestManager = new RequestManager(handler, new ConnectionWatchDog(config.getApplication(), handler), new SqliteQueue(config.getApplication()), completionHandler);
 
         instance = new MobileEngageInternal(config, requestManager, completionHandler);
         inboxInstance = new InboxInternal(config, requestManager);

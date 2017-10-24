@@ -3,10 +3,12 @@ package com.emarsys.mobileengage;
 import android.app.Application;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
 import com.emarsys.core.CoreCompletionHandler;
+import com.emarsys.core.concurrency.CoreSdkHandlerProvider;
 import com.emarsys.core.connection.ConnectionWatchDog;
 import com.emarsys.core.queue.sqlite.SqliteQueue;
 import com.emarsys.core.request.RequestManager;
@@ -153,7 +155,8 @@ public class MobileEngageInternalIdlingResourceTest {
 
             }
         });
-        RequestManager manager = new RequestManager(new ConnectionWatchDog(config.getApplication()), new SqliteQueue(config.getApplication()), completionHandler);
+        Handler handler = new CoreSdkHandlerProvider().provideHandler();
+        RequestManager manager = new RequestManager(handler, new ConnectionWatchDog(config.getApplication(), handler), new SqliteQueue(config.getApplication()), completionHandler);
         return new MobileEngageInternal(config, manager, completionHandler);
     }
 

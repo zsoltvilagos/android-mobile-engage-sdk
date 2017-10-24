@@ -5,8 +5,6 @@ import android.content.Intent;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
-import com.emarsys.core.connection.ConnectionWatchDog;
-import com.emarsys.core.queue.InMemoryQueue;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.fake.FakeRequestManager;
@@ -133,8 +131,6 @@ public class MobileEngageTest {
         RequestManager succeedingManager = new FakeRequestManager(
                 SUCCESS,
                 null,
-                new ConnectionWatchDog(InstrumentationRegistry.getContext()),
-                new InMemoryQueue(),
                 completionHandler);
         MobileEngageInternal internal = new MobileEngageInternal(baseConfig, succeedingManager, completionHandler);
 
