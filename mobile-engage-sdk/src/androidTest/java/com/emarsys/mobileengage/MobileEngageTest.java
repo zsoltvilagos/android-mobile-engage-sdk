@@ -235,12 +235,12 @@ public class MobileEngageTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testTrackCustomEvent_whenEventNameIsNull() {
-        MobileEngage.trackCustomEvent(null, null);
+        MobileEngage.trackCustomEvent(null, new HashMap<String, String>());
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testTrackMessageOpen_intent_whenIntentIsNull() {
-        MobileEngage.trackMessageOpen((Intent) null);
+        MobileEngage.trackMessageOpen(null);
     }
 
     @Test(expected = IllegalArgumentException.class)
