@@ -15,7 +15,7 @@ public class Experimental {
         enabledFeatures.add(feature.getName());
     }
 
-    public static void reset() {
+    static void reset() {
         enabledFeatures.clear();
     }
 
