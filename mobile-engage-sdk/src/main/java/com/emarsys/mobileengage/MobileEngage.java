@@ -8,12 +8,14 @@ import com.emarsys.core.connection.ConnectionWatchDog;
 import com.emarsys.core.queue.sqlite.SqliteQueue;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.util.Assert;
+import com.emarsys.core.util.log.EMSLogger;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.inbox.InboxInternal;
 import com.emarsys.mobileengage.inbox.InboxResultListener;
 import com.emarsys.mobileengage.inbox.ResetBadgeCountResultListener;
 import com.emarsys.mobileengage.inbox.model.Notification;
 import com.emarsys.mobileengage.inbox.model.NotificationInboxStatus;
+import com.emarsys.mobileengage.util.log.MobileEngageTopic;
 
 import java.util.Map;
 
@@ -47,6 +49,7 @@ public class MobileEngage {
 
     public static void setup(@NonNull MobileEngageConfig config) {
         Assert.notNull(config, "Config must not be null!");
+        EMSLogger.log(MobileEngageTopic.MOBILE_ENGAGE, "Argument: %s", config);
         MobileEngage.config = config;
         MobileEngageUtils.setup(config);
 
@@ -89,12 +92,10 @@ public class MobileEngage {
 
     public static String trackCustomEvent(@NonNull String eventName,
                                           @Nullable Map<String, String> eventAttributes) {
-        Assert.notNull(eventName, "EventName must not be null!");
         return instance.trackCustomEvent(eventName, eventAttributes);
     }
 
     public static String trackMessageOpen(@NonNull Intent intent) {
-        Assert.notNull(intent, "Intent must not be null!");
         return instance.trackMessageOpen(intent);
     }
 

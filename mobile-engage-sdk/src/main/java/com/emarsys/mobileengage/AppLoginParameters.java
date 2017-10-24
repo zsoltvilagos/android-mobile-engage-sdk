@@ -42,4 +42,12 @@ public class AppLoginParameters {
         result = 31 * result + (contactFieldValue != null ? contactFieldValue.hashCode() : 0);
         return result;
     }
+
+    @Override
+    public String toString() {
+        return "AppLoginParameters{" +
+                "contactFieldId=" + contactFieldId +
+                ", contactFieldValue='" + contactFieldValue + '\'' +
+                '}';
+    }
 }

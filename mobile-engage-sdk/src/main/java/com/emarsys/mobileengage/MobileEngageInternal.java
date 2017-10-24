@@ -13,8 +13,10 @@ import com.emarsys.core.DeviceInfo;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.request.RequestModel;
 import com.emarsys.core.util.Assert;
+import com.emarsys.core.util.log.EMSLogger;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.util.RequestUtils;
+import com.emarsys.mobileengage.util.log.MobileEngageTopic;
 import com.google.firebase.iid.FirebaseInstanceId;
 
 import org.json.JSONException;
@@ -39,6 +41,7 @@ public class MobileEngageInternal {
         Assert.notNull(config, "Config must not be null!");
         Assert.notNull(manager, "Manager must not be null!");
         Assert.notNull(coreCompletionHandler, "CoreCompletionHandler must not be null!");
+        EMSLogger.log(MobileEngageTopic.MOBILE_ENGAGE, "Arguments: config %s, manager %s, coreCompletionHandler %s");
 
         this.config = config;
         this.application = config.getApplication();
@@ -67,6 +70,8 @@ public class MobileEngageInternal {
     }
 
     void setPushToken(String pushToken) {
+        EMSLogger.log(MobileEngageTopic.MOBILE_ENGAGE, "Argument: %s", pushToken);
+
         this.pushToken = pushToken;
         if (appLoginParameters != null) {
             if (appLoginParameters.hasCredentials()) {
@@ -78,10 +83,14 @@ public class MobileEngageInternal {
     }
 
     void setAppLoginParameters(AppLoginParameters parameters) {
+        EMSLogger.log(MobileEngageTopic.MOBILE_ENGAGE, "Argument: %s", parameters);
+
         this.appLoginParameters = parameters;
     }
 
     String appLogin() {
+        EMSLogger.log(MobileEngageTopic.MOBILE_ENGAGE, "Called");
+
         Map<String, Object> payload = injectLoginPayload(RequestUtils.createBasePayload(config, appLoginParameters));
         RequestModel model = new RequestModel.Builder()
                 .url(RequestUtils.ENDPOINT_LOGIN)
@@ -108,6 +117,8 @@ public class MobileEngageInternal {
     }
 
     String appLogout() {
+        EMSLogger.log(MobileEngageTopic.MOBILE_ENGAGE, "Called");
+
         RequestModel model = new RequestModel.Builder()
                 .url(RequestUtils.ENDPOINT_LOGOUT)
                 .payload(RequestUtils.createBasePayload(config, appLoginParameters))
@@ -120,6 +131,8 @@ public class MobileEngageInternal {
 
     String trackCustomEvent(@NonNull String eventName,
                             @Nullable Map<String, String> eventAttributes) {
+        EMSLogger.log(MobileEngageTopic.MOBILE_ENGAGE, "Arguments: eventName %s, eventAttributes %s", eventName, eventAttributes);
+
         Map<String, Object> payload = RequestUtils.createBasePayload(config, appLoginParameters);
         if (eventAttributes != null && !eventAttributes.isEmpty()) {
             payload.put("attributes", eventAttributes);
@@ -135,7 +148,10 @@ public class MobileEngageInternal {
     }
 
     String trackMessageOpen(Intent intent) {
+        EMSLogger.log(MobileEngageTopic.MOBILE_ENGAGE, "Argument: %s", intent);
+
         String messageId = getMessageId(intent);
+        EMSLogger.log(MobileEngageTopic.MOBILE_ENGAGE, "MessageId %s", messageId);
 
         return handleMessageOpen(messageId);
     }

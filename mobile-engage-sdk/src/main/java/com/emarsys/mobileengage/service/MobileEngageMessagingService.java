@@ -4,7 +4,9 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.Context;
 
+import com.emarsys.core.util.log.EMSLogger;
 import com.emarsys.mobileengage.MobileEngage;
+import com.emarsys.mobileengage.util.log.MobileEngageTopic;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
@@ -18,7 +20,11 @@ public class MobileEngageMessagingService extends FirebaseMessagingService {
 
         Map<String, String> remoteData = remoteMessage.getData();
 
+        EMSLogger.log(MobileEngageTopic.PUSH, "Remote message data %s", remoteData);
+
         if (MessagingServiceUtils.isMobileEngageMessage(remoteData)) {
+
+            EMSLogger.log(MobileEngageTopic.PUSH, "RemoteMessage is ME message");
 
             MessagingServiceUtils.cacheNotification(remoteData);
 

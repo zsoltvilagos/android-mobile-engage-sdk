@@ -2,6 +2,8 @@ package com.emarsys.mobileengage;
 
 import com.emarsys.core.CoreCompletionHandler;
 import com.emarsys.core.response.ResponseModel;
+import com.emarsys.core.util.log.EMSLogger;
+import com.emarsys.mobileengage.util.log.MobileEngageTopic;
 
 import java.lang.ref.WeakReference;
 
@@ -18,14 +20,17 @@ public class MobileEngageCoreCompletionHandler implements CoreCompletionHandler 
     }
 
     void setStatusListener(MobileEngageStatusListener listener) {
+        EMSLogger.log(MobileEngageTopic.MOBILE_ENGAGE, "Argument: %s", listener);
         this.weakStatusListener = new WeakReference<>(listener);
     }
 
     @Override
     public void onSuccess(final String id, final ResponseModel responseModel) {
+        EMSLogger.log(MobileEngageTopic.MOBILE_ENGAGE, "Argument: %s", responseModel);
         MobileEngageUtils.decrementIdlingResource();
         MobileEngageStatusListener listener = getStatusListener();
         if (listener != null) {
+            EMSLogger.log(MobileEngageTopic.MOBILE_ENGAGE, "Notifying statusListener");
             listener.onStatusLog(id, responseModel.getMessage());
         }
     }
@@ -47,8 +52,10 @@ public class MobileEngageCoreCompletionHandler implements CoreCompletionHandler 
     }
 
     private void handleOnError(String id, Exception cause) {
+        EMSLogger.log(MobileEngageTopic.MOBILE_ENGAGE, "Argument: %s", cause);
         MobileEngageStatusListener listener = getStatusListener();
         if (listener != null) {
+            EMSLogger.log(MobileEngageTopic.MOBILE_ENGAGE, "Notifying statusListener");
             listener.onError(id, cause);
         }
     }
