@@ -18,29 +18,25 @@ node('master') {
                 }
             }
 
-            stage("build") {
-                withEnv(['DEVELOPMENT_MODE=true']) {
+            withEnv(['DEVELOPMENT_MODE=true']) {
+                stage("build") {
                     androidBuild andArchive: '**/*.aar'
                 }
-            }
 
-            stage('lint') {
-                withEnv(['DEVELOPMENT_MODE=true']) {
+                stage('lint') {
                     androidLint andArchive: '**/lint-results*.*'
                 }
-            }
 
-            stage("unit-test") {
-                androidTest andArchive: '**/test-results/**/*.xml'
-            }
+                stage("unit-test") {
+                    androidTest andArchive: '**/test-results/**/*.xml'
+                }
 
-            stage("instrumentation-test") {
-                sh './gradlew uninstallDebugAndroidTest'
-                androidInstrumentationTest withScreenOn: true, withLock: env.ANDROID_DEVICE_FARM_LOCK, withRetryCount: 2, andArchive: '**/outputs/androidTest-results/connected/*.xml'
-            }
+                stage("instrumentation-test") {
+                    sh './gradlew uninstallDebugAndroidTest'
+                    androidInstrumentationTest withScreenOn: true, withLock: env.ANDROID_DEVICE_FARM_LOCK, withRetryCount: 2, andArchive: '**/outputs/androidTest-results/connected/*.xml'
+                }
 
-            stage('local-maven-deploy') {
-                withEnv(['DEVELOPMENT_MODE=true']) {
+                stage('local-maven-deploy') {
                     sh './gradlew install'
                 }
             }
