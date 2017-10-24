@@ -25,7 +25,9 @@ node('master') {
             }
 
             stage('lint') {
-                androidLint andArchive: '**/lint-results*.*'
+                withEnv(['DEVELOPMENT_MODE=true']) {
+                    androidLint andArchive: '**/lint-results*.*'
+                }
             }
 
             stage("unit-test") {
