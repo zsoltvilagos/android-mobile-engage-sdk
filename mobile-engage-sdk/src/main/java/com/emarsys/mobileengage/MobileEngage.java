@@ -81,11 +81,11 @@ public class MobileEngage {
         return instance.appLogin();
     }
 
-    public static String appLogin(int contactField,
+    public static String appLogin(int contactFieldId,
                                   @NonNull String contactFieldValue) {
         Assert.notNull(contactFieldValue, "ContactFieldValue must not be null!");
-        setAppLoginParameters(new AppLoginParameters(contactField, contactFieldValue));
-        return instance.appLogin(contactField, contactFieldValue);
+        setAppLoginParameters(new AppLoginParameters(contactFieldId, contactFieldValue));
+        return instance.appLogin(contactFieldId, contactFieldValue);
     }
 
     public static String appLogout() {

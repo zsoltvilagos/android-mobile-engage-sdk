@@ -133,11 +133,11 @@ public class MobileEngageInternalTest {
     }
 
     @Test
-    public void testAppLogin_requestManagerCalledWithCorrectRequestModel() throws Exception {
-        int contactField = 3;
+    public void testAppLogin_withApploginParameters_requestManagerCalledWithCorrectRequestModel() throws Exception {
+        int contactFieldId = 3;
         String contactFieldValue = "value";
         Map<String, Object> payload = injectLoginPayload(createBasePayload());
-        payload.put("contact_field_id", contactField);
+        payload.put("contact_field_id", contactFieldId);
         payload.put("contact_field_value", contactFieldValue);
         RequestModel expected = new RequestModel.Builder()
                 .url(ENDPOINT_LOGIN)
@@ -147,7 +147,8 @@ public class MobileEngageInternalTest {
 
         ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
 
-        mobileEngage.appLogin(contactField, contactFieldValue);
+        mobileEngage.setAppLoginParameters(new AppLoginParameters(contactFieldId, contactFieldValue));
+        mobileEngage.appLogin(contactFieldId, contactFieldValue);
 
         verify(manager).setDefaultHeaders(defaultHeaders);
         verify(manager).submit(captor.capture());
