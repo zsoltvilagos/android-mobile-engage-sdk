@@ -95,10 +95,12 @@ public class MobileEngage {
 
     public static String trackCustomEvent(@NonNull String eventName,
                                           @Nullable Map<String, String> eventAttributes) {
+        Assert.notNull(eventName, "EventName must not be null!");
         return instance.trackCustomEvent(eventName, eventAttributes);
     }
 
     public static String trackMessageOpen(@NonNull Intent intent) {
+        Assert.notNull(intent, "Intent must not be null!");
         return instance.trackMessageOpen(intent);
     }
 
