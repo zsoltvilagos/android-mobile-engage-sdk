@@ -30,7 +30,7 @@ public class MobileEngageUtils {
 
     static void decrementIdlingResource() {
         if(idlingResourceEnabled){
-            EMSLogger.log(MobileEngageTopic.MOBILE_ENGAGE, "Decremented");
+            EMSLogger.log(MobileEngageTopic.IDLING_RESOURCE, "Decremented");
             idlingResource.decrement();
         }
     }
