@@ -41,7 +41,7 @@ public class MobileEngageInternal {
         Assert.notNull(config, "Config must not be null!");
         Assert.notNull(manager, "Manager must not be null!");
         Assert.notNull(coreCompletionHandler, "CoreCompletionHandler must not be null!");
-        EMSLogger.log(MobileEngageTopic.MOBILE_ENGAGE, "Arguments: config %s, manager %s, coreCompletionHandler %s");
+        EMSLogger.log(MobileEngageTopic.MOBILE_ENGAGE, "Arguments: config %s, manager %s, coreCompletionHandler %s", config, manager, coreCompletionHandler);
 
         this.config = config;
         this.application = config.getApplication();
