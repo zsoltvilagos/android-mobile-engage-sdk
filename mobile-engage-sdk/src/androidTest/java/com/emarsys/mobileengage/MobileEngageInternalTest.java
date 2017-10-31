@@ -26,7 +26,6 @@ import static com.emarsys.mobileengage.MobileEngageInternal.MOBILEENGAGE_SDK_VER
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -51,7 +50,7 @@ public class MobileEngageInternalTest {
     private MobileEngageInternal mobileEngage;
 
     @Rule
-    public Timeout globalTimeout = Timeout.seconds(30);
+    public Timeout globalTimeout = Timeout.seconds(300);
 
     @Before
     public void init() {
@@ -148,7 +147,7 @@ public class MobileEngageInternalTest {
         ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
 
         mobileEngage.setAppLoginParameters(new AppLoginParameters(contactFieldId, contactFieldValue));
-        mobileEngage.appLogin(contactFieldId, contactFieldValue);
+        mobileEngage.appLogin();
 
         verify(manager).setDefaultHeaders(defaultHeaders);
         verify(manager).submit(captor.capture());
@@ -161,7 +160,8 @@ public class MobileEngageInternalTest {
     public void testAppLogin_returnsRequestModelId() {
         ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
 
-        String result = mobileEngage.appLogin(5, "value");
+        mobileEngage.setAppLoginParameters(new AppLoginParameters(5, "value"));
+        String result = mobileEngage.appLogin();
 
         verify(manager).submit(captor.capture());
 
@@ -222,6 +222,7 @@ public class MobileEngageInternalTest {
         verify(manager).submit(captor.capture());
 
         RequestModel result = captor.getValue();
+
         assertRequestModels_withPayloadAsString(expected, result);
     }
 
@@ -337,7 +338,7 @@ public class MobileEngageInternalTest {
         spy.setAppLoginParameters(new AppLoginParameters(contactFieldId, contactFieldValue));
         spy.setPushToken("123456789");
 
-        verify(spy, times(1)).appLogin(contactFieldId, contactFieldValue);
+        verify(spy, times(1)).appLogin();
     }
 
     @Test
@@ -348,7 +349,6 @@ public class MobileEngageInternalTest {
         spy.setPushToken("123456789");
 
         verify(spy, times(0)).appLogin();
-        verify(spy, times(0)).appLogin(any(Integer.class), any(String.class));
     }
 
     private Intent getTestIntent() {

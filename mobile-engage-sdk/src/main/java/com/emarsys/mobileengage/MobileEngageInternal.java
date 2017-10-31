@@ -71,14 +71,9 @@ public class MobileEngageInternal {
 
     void setPushToken(String pushToken) {
         EMSLogger.log(MobileEngageTopic.MOBILE_ENGAGE, "Argument: %s", pushToken);
-
         this.pushToken = pushToken;
         if (appLoginParameters != null) {
-            if (appLoginParameters.hasCredentials()) {
-                appLogin(appLoginParameters.getContactFieldId(), appLoginParameters.getContactFieldValue());
-            } else {
-                appLogin();
-            }
+            appLogin();
         }
     }
 
@@ -92,20 +87,6 @@ public class MobileEngageInternal {
         EMSLogger.log(MobileEngageTopic.MOBILE_ENGAGE, "Called");
 
         Map<String, Object> payload = injectLoginPayload(RequestUtils.createBasePayload(config, appLoginParameters));
-        RequestModel model = new RequestModel.Builder()
-                .url(RequestUtils.ENDPOINT_LOGIN)
-                .payload(payload)
-                .build();
-
-        MobileEngageUtils.incrementIdlingResource();
-        manager.submit(model);
-        return model.getId();
-    }
-
-    String appLogin(int contactFieldId, @NonNull String contactFieldValue) {
-
-        Map<String, Object> payload = injectLoginPayload(RequestUtils.createBasePayload(config, appLoginParameters));
-
         RequestModel model = new RequestModel.Builder()
                 .url(RequestUtils.ENDPOINT_LOGIN)
                 .payload(payload)

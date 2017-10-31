@@ -21,6 +21,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -169,7 +170,16 @@ public class MobileEngageTest {
     @Test
     public void testAppLogin_withUser_callsInternalMobileEngage() {
         MobileEngage.appLogin(4, "CONTACT_FIELD_VALUE");
-        verify(mobileEngageInternal).appLogin(4, "CONTACT_FIELD_VALUE");
+
+        ArgumentCaptor<AppLoginParameters> appLoginParametersCaptor = ArgumentCaptor.forClass(AppLoginParameters.class);
+        verify(mobileEngageInternal).setAppLoginParameters(appLoginParametersCaptor.capture());
+
+        AppLoginParameters appLoginParameters = appLoginParametersCaptor.getValue();
+
+        assertEquals(4, appLoginParameters.getContactFieldId());
+        assertEquals("CONTACT_FIELD_VALUE", appLoginParameters.getContactFieldValue());
+
+        verify(mobileEngageInternal).appLogin();
     }
 
     @Test
