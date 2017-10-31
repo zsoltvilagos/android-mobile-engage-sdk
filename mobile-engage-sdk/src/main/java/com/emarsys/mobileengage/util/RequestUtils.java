@@ -15,6 +15,7 @@ public class RequestUtils {
     public static final String ENDPOINT_BASE = "https://push.eservice.emarsys.net/api/mobileengage/v2/";
     public static final String ENDPOINT_LOGIN = ENDPOINT_BASE + "users/login";
     public static final String ENDPOINT_LOGOUT = ENDPOINT_BASE + "users/logout";
+    public static final String ENDPOINT_LAST_MOBILE_ACTIVITY = ENDPOINT_BASE + "events/ems_lastMobileActivity";
 
     private static DeviceInfo deviceInfo;
 

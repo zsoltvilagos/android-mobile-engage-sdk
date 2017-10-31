@@ -37,6 +37,8 @@ public class MobileEngageInternal {
     Handler handler;
     CoreCompletionHandler coreCompletionHandler;
 
+    private Integer lastAppLoginPayloadHashCode;
+
     MobileEngageInternal(MobileEngageConfig config, RequestManager manager, MobileEngageCoreCompletionHandler coreCompletionHandler) {
         Assert.notNull(config, "Config must not be null!");
         Assert.notNull(manager, "Manager must not be null!");
@@ -86,15 +88,29 @@ public class MobileEngageInternal {
     String appLogin() {
         EMSLogger.log(MobileEngageTopic.MOBILE_ENGAGE, "Called");
 
+        RequestModel model;
         Map<String, Object> payload = injectLoginPayload(RequestUtils.createBasePayload(config, appLoginParameters));
-        RequestModel model = new RequestModel.Builder()
-                .url(RequestUtils.ENDPOINT_LOGIN)
-                .payload(payload)
-                .build();
+
+        if (loginIsNeeded(payload)) {
+            model = new RequestModel.Builder()
+                    .url(RequestUtils.ENDPOINT_LOGIN)
+                    .payload(payload)
+                    .build();
+            lastAppLoginPayloadHashCode = payload.hashCode();
+        } else {
+            model = new RequestModel.Builder()
+                    .url(RequestUtils.ENDPOINT_LAST_MOBILE_ACTIVITY)
+                    .payload(payload)
+                    .build();
+        }
 
         MobileEngageUtils.incrementIdlingResource();
         manager.submit(model);
         return model.getId();
+    }
+
+    private boolean loginIsNeeded(Map<String, Object> payload) {
+        return lastAppLoginPayloadHashCode == null || payload.hashCode() != lastAppLoginPayloadHashCode;
     }
 
     String appLogout() {

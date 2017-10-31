@@ -26,6 +26,7 @@ import static com.emarsys.mobileengage.MobileEngageInternal.MOBILEENGAGE_SDK_VER
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -73,17 +74,17 @@ public class MobileEngageInternalTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testConstructor_configShouldNotBeNull(){
+    public void testConstructor_configShouldNotBeNull() {
         new MobileEngageInternal(null, manager, coreCompletionHandler);
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testConstructor_requestManagerShouldNotBeNull(){
+    public void testConstructor_requestManagerShouldNotBeNull() {
         new MobileEngageInternal(baseConfig, null, coreCompletionHandler);
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testConstructor_coreCompletionHandlerShouldNotBeNull(){
+    public void testConstructor_coreCompletionHandlerShouldNotBeNull() {
         new MobileEngageInternal(baseConfig, manager, null);
     }
 
@@ -349,6 +350,44 @@ public class MobileEngageInternalTest {
         spy.setPushToken("123456789");
 
         verify(spy, times(0)).appLogin();
+    }
+
+    @Test
+    public void testAppLogin_shouldNotResultInMultipleAppLoginRequestsEvenIfThePayloadIsTheSame() {
+        ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
+
+        mobileEngage.setAppLoginParameters(new AppLoginParameters(3, "test@test.com"));
+
+        mobileEngage.appLogin();
+        verify(manager).submit(captor.capture());
+        String requestUrl = captor.getValue().getUrl().toString();
+        assertEquals("https://push.eservice.emarsys.net/api/mobileengage/v2/users/login", requestUrl);
+
+        clearInvocations(manager);
+
+        mobileEngage.appLogin();
+        verify(manager).submit(captor.capture());
+        requestUrl = captor.getValue().getUrl().toString();
+        assertEquals("https://push.eservice.emarsys.net/api/mobileengage/v2/events/ems_lastMobileActivity", requestUrl);
+    }
+
+    @Test
+    public void testAppLogin_shouldResultInMultipleAppLoginRequestsIfThePayloadIsNotTheSame() {
+        ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
+
+        mobileEngage.setAppLoginParameters(new AppLoginParameters(3, "test@test.com"));
+        mobileEngage.appLogin();
+        verify(manager).submit(captor.capture());
+        String requestUrl = captor.getValue().getUrl().toString();
+        assertEquals("https://push.eservice.emarsys.net/api/mobileengage/v2/users/login", requestUrl);
+
+        clearInvocations(manager);
+
+        mobileEngage.setAppLoginParameters(new AppLoginParameters(4, "test2@test.com"));
+        mobileEngage.appLogin();
+        verify(manager).submit(captor.capture());
+        requestUrl = captor.getValue().getUrl().toString();
+        assertEquals("https://push.eservice.emarsys.net/api/mobileengage/v2/users/login", requestUrl);
     }
 
     private Intent getTestIntent() {
