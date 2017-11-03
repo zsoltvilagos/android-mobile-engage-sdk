@@ -34,12 +34,13 @@ public class MobileEngageInternal {
     DeviceInfo deviceInfo;
     Application application;
     RequestManager manager;
+    AppLoginStorage storage;
     Handler handler;
     CoreCompletionHandler coreCompletionHandler;
 
     private Integer lastAppLoginPayloadHashCode;
 
-    MobileEngageInternal(MobileEngageConfig config, RequestManager manager, MobileEngageCoreCompletionHandler coreCompletionHandler) {
+    MobileEngageInternal(MobileEngageConfig config, RequestManager manager, AppLoginStorage storage, MobileEngageCoreCompletionHandler coreCompletionHandler) {
         Assert.notNull(config, "Config must not be null!");
         Assert.notNull(manager, "Manager must not be null!");
         Assert.notNull(coreCompletionHandler, "CoreCompletionHandler must not be null!");
@@ -47,6 +48,7 @@ public class MobileEngageInternal {
 
         this.config = config;
         this.application = config.getApplication();
+        this.storage = storage;
         this.coreCompletionHandler = coreCompletionHandler;
 
         this.manager = manager;
@@ -91,26 +93,25 @@ public class MobileEngageInternal {
         RequestModel model;
         Map<String, Object> payload = injectLoginPayload(RequestUtils.createBasePayload(config, appLoginParameters));
 
-        if (loginIsNeeded(payload)) {
+        Integer storedHashCode = storage.getLastAppLoginPayloadHashCode();
+        int currentHashCode = payload.hashCode();
+
+        if (storedHashCode == null || currentHashCode != storedHashCode) {
             model = new RequestModel.Builder()
                     .url(RequestUtils.ENDPOINT_LOGIN)
                     .payload(payload)
                     .build();
-            lastAppLoginPayloadHashCode = payload.hashCode();
+            storage.setLastAppLoginPayloadHashCode(currentHashCode);
         } else {
             model = new RequestModel.Builder()
                     .url(RequestUtils.ENDPOINT_LAST_MOBILE_ACTIVITY)
-                    .payload(payload)
+                    .payload(RequestUtils.createBasePayload(config, appLoginParameters))
                     .build();
         }
 
         MobileEngageUtils.incrementIdlingResource();
         manager.submit(model);
         return model.getId();
-    }
-
-    private boolean loginIsNeeded(Map<String, Object> payload) {
-        return lastAppLoginPayloadHashCode == null || payload.hashCode() != lastAppLoginPayloadHashCode;
     }
 
     String appLogout() {

@@ -56,7 +56,7 @@ public class MobileEngageInternalIdlingResourceTest {
 
         coreCompletionHandler = mobileEngageWithRealRequestManager.coreCompletionHandler;
 
-        mobileEngage = new MobileEngageInternal(config, mock(RequestManager.class), mock(MobileEngageCoreCompletionHandler.class));
+        mobileEngage = new MobileEngageInternal(config, mock(RequestManager.class), mock(AppLoginStorage.class), mock(MobileEngageCoreCompletionHandler.class));
 
         MobileEngageUtils.setup(config);
         idlingResource = mock(MobileEngageIdlingResource.class);
@@ -158,7 +158,7 @@ public class MobileEngageInternalIdlingResourceTest {
         });
         Handler handler = new CoreSdkHandlerProvider().provideHandler();
         RequestManager manager = new RequestManager(handler, new ConnectionWatchDog(config.getApplication(), handler), new SqliteQueue(config.getApplication()), completionHandler);
-        return new MobileEngageInternal(config, manager, completionHandler);
+        return new MobileEngageInternal(config, manager, new AppLoginStorage(config.getApplication().getApplicationContext()), completionHandler);
     }
 
 }

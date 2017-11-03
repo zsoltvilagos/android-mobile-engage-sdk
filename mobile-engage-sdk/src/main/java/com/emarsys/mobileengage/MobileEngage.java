@@ -60,7 +60,7 @@ public class MobileEngage {
         Handler handler = new CoreSdkHandlerProvider().provideHandler();
         RequestManager requestManager = new RequestManager(handler, new ConnectionWatchDog(config.getApplication(), handler), new SqliteQueue(config.getApplication()), completionHandler);
 
-        instance = new MobileEngageInternal(config, requestManager, completionHandler);
+        instance = new MobileEngageInternal(config, requestManager, new AppLoginStorage(config.getApplication().getApplicationContext()), completionHandler);
         inboxInstance = new InboxInternal(config, requestManager);
     }
 

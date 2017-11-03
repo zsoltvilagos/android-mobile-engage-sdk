@@ -133,7 +133,8 @@ public class MobileEngageTest {
                 SUCCESS,
                 null,
                 completionHandler);
-        MobileEngageInternal internal = new MobileEngageInternal(baseConfig, succeedingManager, completionHandler);
+        AppLoginStorage storage = new AppLoginStorage(application);
+        MobileEngageInternal internal = new MobileEngageInternal(baseConfig, succeedingManager, storage, completionHandler);
 
         MobileEngage.completionHandler = completionHandler;
         MobileEngage.instance = internal;

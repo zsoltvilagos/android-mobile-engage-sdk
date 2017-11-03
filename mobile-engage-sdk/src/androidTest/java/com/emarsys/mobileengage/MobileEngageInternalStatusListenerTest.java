@@ -102,7 +102,7 @@ public class MobileEngageInternalStatusListenerTest {
                 .statusListener(statusListener)
                 .disableDefaultChannel()
                 .build();
-        mobileEngage = new MobileEngageInternal(baseConfig, requestManager, completionHandler);
+        mobileEngage = new MobileEngageInternal(baseConfig, requestManager, new AppLoginStorage(context), completionHandler);
     }
 
     @Test

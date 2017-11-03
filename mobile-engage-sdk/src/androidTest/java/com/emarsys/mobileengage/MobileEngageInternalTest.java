@@ -39,6 +39,7 @@ public class MobileEngageInternalTest {
     private static String ENDPOINT_BASE = "https://push.eservice.emarsys.net/api/mobileengage/v2/";
     private static String ENDPOINT_LOGIN = ENDPOINT_BASE + "users/login";
     private static String ENDPOINT_LOGOUT = ENDPOINT_BASE + "users/logout";
+    private static String ENDPOINT_LAST_MOBILE_ACTIVITY = ENDPOINT_BASE + "events/ems_lastMobileActivity";
 
     private MobileEngageStatusListener statusListener;
     private MobileEngageCoreCompletionHandler coreCompletionHandler;
@@ -47,6 +48,7 @@ public class MobileEngageInternalTest {
     private RequestManager manager;
     private Application application;
     private DeviceInfo deviceInfo;
+    private AppLoginStorage persistentStorage;
 
     private MobileEngageInternal mobileEngage;
 
@@ -59,6 +61,7 @@ public class MobileEngageInternalTest {
         coreCompletionHandler = mock(MobileEngageCoreCompletionHandler.class);
         application = (Application) InstrumentationRegistry.getTargetContext().getApplicationContext();
         deviceInfo = new DeviceInfo(application);
+        persistentStorage = new AppLoginStorage(application);
 
         statusListener = mock(MobileEngageStatusListener.class);
         baseConfig = new MobileEngageConfig.Builder()
@@ -70,28 +73,29 @@ public class MobileEngageInternalTest {
 
         defaultHeaders = RequestUtils.createDefaultHeaders(baseConfig);
 
-        mobileEngage = new MobileEngageInternal(baseConfig, manager, coreCompletionHandler);
+        mobileEngage = new MobileEngageInternal(baseConfig, manager, persistentStorage, coreCompletionHandler);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_configShouldNotBeNull() {
-        new MobileEngageInternal(null, manager, coreCompletionHandler);
+        new MobileEngageInternal(null, manager, persistentStorage, coreCompletionHandler);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_requestManagerShouldNotBeNull() {
-        new MobileEngageInternal(baseConfig, null, coreCompletionHandler);
+        new MobileEngageInternal(baseConfig, null, persistentStorage, coreCompletionHandler);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_coreCompletionHandlerShouldNotBeNull() {
-        new MobileEngageInternal(baseConfig, manager, null);
+        new MobileEngageInternal(baseConfig, manager, persistentStorage, null);
     }
 
     @Test
     public void testSetup_constructorInitializesFields() {
-        MobileEngageInternal engage = new MobileEngageInternal(baseConfig, manager, coreCompletionHandler);
+        MobileEngageInternal engage = new MobileEngageInternal(baseConfig, manager, persistentStorage, coreCompletionHandler);
         assertEquals(manager, engage.manager);
+        assertEquals(persistentStorage, engage.storage);
         assertEquals(coreCompletionHandler, engage.coreCompletionHandler);
         assertNotNull(engage.getManager());
     }
@@ -136,14 +140,7 @@ public class MobileEngageInternalTest {
     public void testAppLogin_withApploginParameters_requestManagerCalledWithCorrectRequestModel() throws Exception {
         int contactFieldId = 3;
         String contactFieldValue = "value";
-        Map<String, Object> payload = injectLoginPayload(createBasePayload());
-        payload.put("contact_field_id", contactFieldId);
-        payload.put("contact_field_value", contactFieldValue);
-        RequestModel expected = new RequestModel.Builder()
-                .url(ENDPOINT_LOGIN)
-                .payload(payload)
-                .headers(defaultHeaders)
-                .build();
+        RequestModel expected = createLoginRequestModel(new AppLoginParameters(contactFieldId, contactFieldValue));
 
         ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
 
@@ -167,6 +164,102 @@ public class MobileEngageInternalTest {
         verify(manager).submit(captor.capture());
 
         assertEquals(captor.getValue().getId(), result);
+    }
+
+    @Test
+    public void testAppLogin_shouldNotResultInMultipleAppLoginRequestsEvenIfThePayloadIsTheSame() {
+        AppLoginParameters sameAppLoginParameter = new AppLoginParameters(3, "test@test.com");
+
+        testSequentialApplogins(
+                sameAppLoginParameter,
+                createLoginRequestModel(sameAppLoginParameter),
+                sameAppLoginParameter,
+                createLastMobileActivityRequestModel(sameAppLoginParameter)
+        );
+    }
+
+    public void testSequentialApplogins(AppLoginParameters firstAppLoginParameter, RequestModel firstExpectedRequestModel, AppLoginParameters secondAppLoginParameter, RequestModel secondExpectedRequestModel) {
+        ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
+
+        mobileEngage.setAppLoginParameters(firstAppLoginParameter);
+        mobileEngage.appLogin();
+
+        verify(manager).submit(captor.capture());
+        RequestModel requestModel = captor.getValue();
+        assertRequestModels(firstExpectedRequestModel, requestModel);
+
+        clearInvocations(manager);
+
+        captor = ArgumentCaptor.forClass(RequestModel.class);
+
+        mobileEngage.setAppLoginParameters(secondAppLoginParameter);
+        mobileEngage.appLogin();
+
+        verify(manager).submit(captor.capture());
+        requestModel = captor.getValue();
+        assertRequestModels(secondExpectedRequestModel, requestModel);
+    }
+
+    public void testSequentialApploginsWithReinstantiationOfMobileEngage(AppLoginParameters firstAppLoginParameter, RequestModel firstExpectedRequestModel, AppLoginParameters secondAppLoginParameter, RequestModel secondExpectedRequestModel) {
+        ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
+
+        mobileEngage.setAppLoginParameters(firstAppLoginParameter);
+        mobileEngage.appLogin();
+
+        verify(manager).submit(captor.capture());
+        RequestModel requestModel = captor.getValue();
+        assertRequestModels(firstExpectedRequestModel, requestModel);
+
+        clearInvocations(manager);
+        persistentStorage = new AppLoginStorage(application);
+        mobileEngage = new MobileEngageInternal(baseConfig, manager, persistentStorage, coreCompletionHandler);
+
+        captor = ArgumentCaptor.forClass(RequestModel.class);
+
+        mobileEngage.setAppLoginParameters(secondAppLoginParameter);
+        mobileEngage.appLogin();
+
+        verify(manager).submit(captor.capture());
+        requestModel = captor.getValue();
+        assertRequestModels(secondExpectedRequestModel, requestModel);
+    }
+
+    @Test
+    public void testAppLogin_shouldResultInMultipleAppLoginRequestsIfThePayloadIsNotTheSame() {
+        AppLoginParameters appLoginParameters = new AppLoginParameters(3, "test@test.com");
+        AppLoginParameters otherAppLoginParameter = new AppLoginParameters(3, "test2@test.com");
+
+        testSequentialApplogins(
+                appLoginParameters,
+                createLoginRequestModel(appLoginParameters),
+                otherAppLoginParameter,
+                createLoginRequestModel(otherAppLoginParameter)
+        );
+    }
+
+    @Test
+    public void testAppLogin_shouldNotResultInMultipleAppLoginRequestsIfThePayloadIsTheSameEvenIfMobileEngageIsReInitialized() {
+        AppLoginParameters sameLoginParameters = new AppLoginParameters(3, "test@test.com");
+
+        testSequentialApploginsWithReinstantiationOfMobileEngage(
+                sameLoginParameters,
+                createLoginRequestModel(sameLoginParameters),
+                sameLoginParameters,
+                createLastMobileActivityRequestModel(sameLoginParameters)
+        );
+    }
+
+    @Test
+    public void testAppLogin_shouldResultInMultipleAppLoginRequestsIfThePayloadIsNotTheSameEvenIfMobileEngageIsReInitialized() {
+        AppLoginParameters appLoginParameters = new AppLoginParameters(3, "test@test.com");
+        AppLoginParameters otherAppLoginParameter = new AppLoginParameters(3, "test2@test.com");
+
+        testSequentialApploginsWithReinstantiationOfMobileEngage(
+                appLoginParameters,
+                createLoginRequestModel(appLoginParameters),
+                otherAppLoginParameter,
+                createLoginRequestModel(otherAppLoginParameter)
+        );
     }
 
     @Test
@@ -306,7 +399,6 @@ public class MobileEngageInternalTest {
         assertEquals(payload.get("contact_field_value"), contactFieldValue);
     }
 
-
     @Test
     public void testGetMessageId_shouldReturnNullWithEmptyIntent() {
         String result = mobileEngage.getMessageId(new Intent());
@@ -352,44 +444,6 @@ public class MobileEngageInternalTest {
         verify(spy, times(0)).appLogin();
     }
 
-    @Test
-    public void testAppLogin_shouldNotResultInMultipleAppLoginRequestsEvenIfThePayloadIsTheSame() {
-        ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
-
-        mobileEngage.setAppLoginParameters(new AppLoginParameters(3, "test@test.com"));
-
-        mobileEngage.appLogin();
-        verify(manager).submit(captor.capture());
-        String requestUrl = captor.getValue().getUrl().toString();
-        assertEquals("https://push.eservice.emarsys.net/api/mobileengage/v2/users/login", requestUrl);
-
-        clearInvocations(manager);
-
-        mobileEngage.appLogin();
-        verify(manager).submit(captor.capture());
-        requestUrl = captor.getValue().getUrl().toString();
-        assertEquals("https://push.eservice.emarsys.net/api/mobileengage/v2/events/ems_lastMobileActivity", requestUrl);
-    }
-
-    @Test
-    public void testAppLogin_shouldResultInMultipleAppLoginRequestsIfThePayloadIsNotTheSame() {
-        ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
-
-        mobileEngage.setAppLoginParameters(new AppLoginParameters(3, "test@test.com"));
-        mobileEngage.appLogin();
-        verify(manager).submit(captor.capture());
-        String requestUrl = captor.getValue().getUrl().toString();
-        assertEquals("https://push.eservice.emarsys.net/api/mobileengage/v2/users/login", requestUrl);
-
-        clearInvocations(manager);
-
-        mobileEngage.setAppLoginParameters(new AppLoginParameters(4, "test2@test.com"));
-        mobileEngage.appLogin();
-        verify(manager).submit(captor.capture());
-        requestUrl = captor.getValue().getUrl().toString();
-        assertEquals("https://push.eservice.emarsys.net/api/mobileengage/v2/users/login", requestUrl);
-    }
-
     private Intent getTestIntent() {
         Intent intent = new Intent();
         Bundle bundlePayload = new Bundle();
@@ -424,6 +478,28 @@ public class MobileEngageInternalTest {
         }
 
         return payload;
+    }
+
+    private RequestModel createLoginRequestModel(AppLoginParameters appLoginParameters) {
+        Map<String, Object> payload = injectLoginPayload(createBasePayload());
+        payload.put("contact_field_id", appLoginParameters.getContactFieldId());
+        payload.put("contact_field_value", appLoginParameters.getContactFieldValue());
+        return new RequestModel.Builder()
+                .url(ENDPOINT_LOGIN)
+                .payload(payload)
+                .headers(defaultHeaders)
+                .build();
+    }
+
+    private RequestModel createLastMobileActivityRequestModel(AppLoginParameters appLoginParameters) {
+        Map<String, Object> payload = createBasePayload();
+        payload.put("contact_field_id", appLoginParameters.getContactFieldId());
+        payload.put("contact_field_value", appLoginParameters.getContactFieldValue());
+        return new RequestModel.Builder()
+                .url(ENDPOINT_LAST_MOBILE_ACTIVITY)
+                .payload(payload)
+                .headers(defaultHeaders)
+                .build();
     }
 
     private void assertRequestModels(RequestModel expected, RequestModel result) {
