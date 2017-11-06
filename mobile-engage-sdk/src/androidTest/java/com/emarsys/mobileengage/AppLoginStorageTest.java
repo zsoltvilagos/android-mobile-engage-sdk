@@ -21,7 +21,7 @@ public class AppLoginStorageTest {
     }
 
     @Test
-    public void getLastAppLoginPayloadHashCode_shouldReturnNilIfTheStorageIsEmpty() throws Exception {
+    public void getLastAppLoginPayloadHashCode_shouldReturnNull_ifTheStorageIsEmpty() throws Exception {
         assertNull(storage.getLastAppLoginPayloadHashCode());
     }
 
@@ -32,16 +32,15 @@ public class AppLoginStorageTest {
     }
 
     @Test
-    public void clear_shouldRemovelastAppLoginPayloadHashCodeValue() {
+    public void clear_shouldRemoveLastAppLoginPayloadHashCodeValue() {
         storage.setLastAppLoginPayloadHashCode(42);
         storage.clear();
 
         assertNull(storage.getLastAppLoginPayloadHashCode());
     }
 
-
     @Test
-    public void setLastAppLoginPayloadHashCodeShouldPreserveValues() throws Exception {
+    public void setLastAppLoginPayloadHashCode_shouldPreserveValues() throws Exception {
         storage.setLastAppLoginPayloadHashCode(42);
         storage = new AppLoginStorage(context);
 
