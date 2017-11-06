@@ -1,4 +1,4 @@
-package com.emarsys.mobileengage;
+package com.emarsys.mobileengage.event.applogin;
 
 public class AppLoginParameters {
     private int contactFieldId = -1;

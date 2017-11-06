@@ -5,9 +5,9 @@ import android.support.test.InstrumentationRegistry;
 
 import com.emarsys.core.DeviceInfo;
 import com.emarsys.core.util.HeaderUtils;
-import com.emarsys.mobileengage.AppLoginParameters;
 import com.emarsys.mobileengage.BuildConfig;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
+import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
 import com.emarsys.mobileengage.testUtil.ApplicationTestUtils;
 
 import org.junit.Before;
