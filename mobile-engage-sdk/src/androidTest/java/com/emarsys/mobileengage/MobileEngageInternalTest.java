@@ -48,7 +48,7 @@ public class MobileEngageInternalTest {
     private RequestManager manager;
     private Application application;
     private DeviceInfo deviceInfo;
-    private AppLoginStorage persistentStorage;
+    private AppLoginStorage appLoginStorage;
 
     private MobileEngageInternal mobileEngage;
 
@@ -61,7 +61,7 @@ public class MobileEngageInternalTest {
         coreCompletionHandler = mock(MobileEngageCoreCompletionHandler.class);
         application = (Application) InstrumentationRegistry.getTargetContext().getApplicationContext();
         deviceInfo = new DeviceInfo(application);
-        persistentStorage = new AppLoginStorage(application);
+        appLoginStorage = new AppLoginStorage(application);
 
         statusListener = mock(MobileEngageStatusListener.class);
         baseConfig = new MobileEngageConfig.Builder()
@@ -73,29 +73,34 @@ public class MobileEngageInternalTest {
 
         defaultHeaders = RequestUtils.createDefaultHeaders(baseConfig);
 
-        mobileEngage = new MobileEngageInternal(baseConfig, manager, persistentStorage, coreCompletionHandler);
+        mobileEngage = new MobileEngageInternal(baseConfig, manager, appLoginStorage, coreCompletionHandler);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_configShouldNotBeNull() {
-        new MobileEngageInternal(null, manager, persistentStorage, coreCompletionHandler);
+        new MobileEngageInternal(null, manager, appLoginStorage, coreCompletionHandler);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_requestManagerShouldNotBeNull() {
-        new MobileEngageInternal(baseConfig, null, persistentStorage, coreCompletionHandler);
+        new MobileEngageInternal(baseConfig, null, appLoginStorage, coreCompletionHandler);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructor_apploginStorageShouldNotBeNull() {
+        new MobileEngageInternal(baseConfig, manager, null, coreCompletionHandler);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_coreCompletionHandlerShouldNotBeNull() {
-        new MobileEngageInternal(baseConfig, manager, persistentStorage, null);
+        new MobileEngageInternal(baseConfig, manager, appLoginStorage, null);
     }
 
     @Test
     public void testSetup_constructorInitializesFields() {
-        MobileEngageInternal engage = new MobileEngageInternal(baseConfig, manager, persistentStorage, coreCompletionHandler);
+        MobileEngageInternal engage = new MobileEngageInternal(baseConfig, manager, appLoginStorage, coreCompletionHandler);
         assertEquals(manager, engage.manager);
-        assertEquals(persistentStorage, engage.storage);
+        assertEquals(appLoginStorage, engage.appLoginStorage);
         assertEquals(coreCompletionHandler, engage.coreCompletionHandler);
         assertNotNull(engage.getManager());
     }
@@ -431,8 +436,8 @@ public class MobileEngageInternalTest {
         assertRequestModels(firstExpectedRequestModel, requestModel);
 
         clearInvocations(manager);
-        persistentStorage = new AppLoginStorage(application);
-        mobileEngage = new MobileEngageInternal(baseConfig, manager, persistentStorage, coreCompletionHandler);
+        appLoginStorage = new AppLoginStorage(application);
+        mobileEngage = new MobileEngageInternal(baseConfig, manager, appLoginStorage, coreCompletionHandler);
 
         captor = ArgumentCaptor.forClass(RequestModel.class);
 

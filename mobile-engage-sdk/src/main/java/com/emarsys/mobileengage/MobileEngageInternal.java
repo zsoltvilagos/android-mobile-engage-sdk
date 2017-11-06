@@ -34,19 +34,20 @@ public class MobileEngageInternal {
     DeviceInfo deviceInfo;
     Application application;
     RequestManager manager;
-    AppLoginStorage storage;
+    AppLoginStorage appLoginStorage;
     Handler handler;
     CoreCompletionHandler coreCompletionHandler;
 
-    MobileEngageInternal(MobileEngageConfig config, RequestManager manager, AppLoginStorage storage, MobileEngageCoreCompletionHandler coreCompletionHandler) {
+    MobileEngageInternal(MobileEngageConfig config, RequestManager manager, AppLoginStorage appLoginStorage, MobileEngageCoreCompletionHandler coreCompletionHandler) {
         Assert.notNull(config, "Config must not be null!");
         Assert.notNull(manager, "Manager must not be null!");
         Assert.notNull(coreCompletionHandler, "CoreCompletionHandler must not be null!");
+        Assert.notNull(appLoginStorage, "AppLoginStorage must not be null!");
         EMSLogger.log(MobileEngageTopic.MOBILE_ENGAGE, "Arguments: config %s, manager %s, coreCompletionHandler %s", config, manager, coreCompletionHandler);
 
         this.config = config;
         this.application = config.getApplication();
-        this.storage = storage;
+        this.appLoginStorage = appLoginStorage;
         this.coreCompletionHandler = coreCompletionHandler;
 
         this.manager = manager;
@@ -91,7 +92,7 @@ public class MobileEngageInternal {
         RequestModel model;
         Map<String, Object> payload = injectLoginPayload(RequestUtils.createBasePayload(config, appLoginParameters));
 
-        Integer storedHashCode = storage.getLastAppLoginPayloadHashCode();
+        Integer storedHashCode = appLoginStorage.getLastAppLoginPayloadHashCode();
         int currentHashCode = payload.hashCode();
 
         if (storedHashCode == null || currentHashCode != storedHashCode) {
@@ -99,7 +100,7 @@ public class MobileEngageInternal {
                     .url(RequestUtils.ENDPOINT_LOGIN)
                     .payload(payload)
                     .build();
-            storage.setLastAppLoginPayloadHashCode(currentHashCode);
+            appLoginStorage.setLastAppLoginPayloadHashCode(currentHashCode);
         } else {
             model = new RequestModel.Builder()
                     .url(RequestUtils.ENDPOINT_LAST_MOBILE_ACTIVITY)
