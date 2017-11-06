@@ -38,8 +38,6 @@ public class MobileEngageInternal {
     Handler handler;
     CoreCompletionHandler coreCompletionHandler;
 
-    private Integer lastAppLoginPayloadHashCode;
-
     MobileEngageInternal(MobileEngageConfig config, RequestManager manager, AppLoginStorage storage, MobileEngageCoreCompletionHandler coreCompletionHandler) {
         Assert.notNull(config, "Config must not be null!");
         Assert.notNull(manager, "Manager must not be null!");
