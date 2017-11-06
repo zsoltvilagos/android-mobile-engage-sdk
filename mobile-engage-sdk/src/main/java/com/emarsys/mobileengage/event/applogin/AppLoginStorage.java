@@ -4,12 +4,13 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 public class AppLoginStorage {
+    public static final String SHARED_PREFERENCES_NAMESPACE = "ems_me_apploginstorage";
     public static final String APP_LOGIN_PAYLOAD_HASH_CODE_KEY = "appLoginPayloadHashCode";
+
     private SharedPreferences sharedPreferences;
 
     public AppLoginStorage(Context context) {
-        String sharedPreferencesKey = context.getPackageName() + "_preferences";
-        sharedPreferences = context.getSharedPreferences(sharedPreferencesKey, Context.MODE_PRIVATE);
+        sharedPreferences = context.getSharedPreferences(SHARED_PREFERENCES_NAMESPACE, Context.MODE_PRIVATE);
     }
 
     public Integer getLastAppLoginPayloadHashCode() {
