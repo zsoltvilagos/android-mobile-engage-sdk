@@ -202,7 +202,7 @@ public class MobileEngageInternalTest {
     public void testAppLogin_shouldNotResult_inMultipleAppLoginRequests_ifPayloadIsTheSame_evenIfMobileEngageIsReInitialized() {
         AppLoginParameters sameLoginParameters = new AppLoginParameters(3, "test@test.com");
 
-        testSequentialApploginsWithReinstantiationOfMobileEngage(
+        testSequentialApplogins_withReinstantiationOfMobileEngage(
                 sameLoginParameters,
                 createLoginRequestModel(sameLoginParameters),
                 sameLoginParameters,
@@ -215,7 +215,7 @@ public class MobileEngageInternalTest {
         AppLoginParameters appLoginParameters = new AppLoginParameters(3, "test@test.com");
         AppLoginParameters otherAppLoginParameter = new AppLoginParameters(3, "test2@test.com");
 
-        testSequentialApploginsWithReinstantiationOfMobileEngage(
+        testSequentialApplogins_withReinstantiationOfMobileEngage(
                 appLoginParameters,
                 createLoginRequestModel(appLoginParameters),
                 otherAppLoginParameter,
@@ -405,29 +405,28 @@ public class MobileEngageInternalTest {
         verify(spy, times(0)).appLogin();
     }
 
-    private void testSequentialApplogins(AppLoginParameters firstAppLoginParameter, RequestModel firstExpectedRequestModel, AppLoginParameters secondAppLoginParameter, RequestModel secondExpectedRequestModel) {
-        ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
-
-        mobileEngage.setAppLoginParameters(firstAppLoginParameter);
-        mobileEngage.appLogin();
-
-        verify(manager).submit(captor.capture());
-        RequestModel requestModel = captor.getValue();
-        assertRequestModels(firstExpectedRequestModel, requestModel);
-
-        clearInvocations(manager);
-
-        captor = ArgumentCaptor.forClass(RequestModel.class);
-
-        mobileEngage.setAppLoginParameters(secondAppLoginParameter);
-        mobileEngage.appLogin();
-
-        verify(manager).submit(captor.capture());
-        requestModel = captor.getValue();
-        assertRequestModels(secondExpectedRequestModel, requestModel);
+    private void testSequentialApplogins(
+            AppLoginParameters firstAppLoginParameter,
+            RequestModel firstExpectedRequestModel,
+            AppLoginParameters secondAppLoginParameter,
+            RequestModel secondExpectedRequestModel) {
+        testSequentialApplogins(firstAppLoginParameter, firstExpectedRequestModel, secondAppLoginParameter, secondExpectedRequestModel, false);
     }
 
-    private void testSequentialApploginsWithReinstantiationOfMobileEngage(AppLoginParameters firstAppLoginParameter, RequestModel firstExpectedRequestModel, AppLoginParameters secondAppLoginParameter, RequestModel secondExpectedRequestModel) {
+    private void testSequentialApplogins_withReinstantiationOfMobileEngage(
+            AppLoginParameters firstAppLoginParameter,
+            RequestModel firstExpectedRequestModel,
+            AppLoginParameters secondAppLoginParameter,
+            RequestModel secondExpectedRequestModel) {
+        testSequentialApplogins(firstAppLoginParameter, firstExpectedRequestModel, secondAppLoginParameter, secondExpectedRequestModel, true);
+    }
+
+    private void testSequentialApplogins(
+            AppLoginParameters firstAppLoginParameter,
+            RequestModel firstExpectedRequestModel,
+            AppLoginParameters secondAppLoginParameter,
+            RequestModel secondExpectedRequestModel,
+            boolean shouldReinstantiateMobileEngage) {
         ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
 
         mobileEngage.setAppLoginParameters(firstAppLoginParameter);
@@ -438,8 +437,11 @@ public class MobileEngageInternalTest {
         assertRequestModels(firstExpectedRequestModel, requestModel);
 
         clearInvocations(manager);
-        appLoginStorage = new AppLoginStorage(application);
-        mobileEngage = new MobileEngageInternal(baseConfig, manager, appLoginStorage, coreCompletionHandler);
+
+        if (shouldReinstantiateMobileEngage) {
+            appLoginStorage = new AppLoginStorage(application);
+            mobileEngage = new MobileEngageInternal(baseConfig, manager, appLoginStorage, coreCompletionHandler);
+        }
 
         captor = ArgumentCaptor.forClass(RequestModel.class);
 
