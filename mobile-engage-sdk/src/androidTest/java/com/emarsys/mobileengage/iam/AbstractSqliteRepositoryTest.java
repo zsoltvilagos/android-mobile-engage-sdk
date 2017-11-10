@@ -7,7 +7,9 @@ import com.emarsys.mobileengage.database.CoreSqliteDatabase;
 import com.emarsys.mobileengage.database.MobileEngageDbHelper;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 import org.mockito.Mockito;
 
 import java.util.Arrays;
@@ -26,6 +28,9 @@ public class AbstractSqliteRepositoryTest {
     private AbstractSqliteRepository<Object> repository;
     private MobileEngageDbHelper dbHelperMock;
     private CoreSqliteDatabase dbMock;
+
+    @Rule
+    public Timeout globalTimeout = Timeout.seconds(30);
 
     @Before
     @SuppressWarnings("unchecked")

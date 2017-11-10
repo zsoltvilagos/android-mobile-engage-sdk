@@ -4,7 +4,9 @@ import android.content.Context;
 import android.support.test.InstrumentationRegistry;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -12,6 +14,9 @@ import static org.junit.Assert.assertNull;
 public class AppLoginStorageTest {
     private AppLoginStorage storage;
     private Context context;
+
+    @Rule
+    public Timeout globalTimeout = Timeout.seconds(30);
 
     @Before
     public void init() {

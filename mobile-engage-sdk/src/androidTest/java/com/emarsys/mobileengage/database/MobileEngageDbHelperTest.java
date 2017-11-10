@@ -8,12 +8,17 @@ import android.support.test.InstrumentationRegistry;
 import junit.framework.Assert;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 
 public class MobileEngageDbHelperTest {
 
     public static final String SQL_QUERY_IAM_TABLE_EXISTS = "SELECT name FROM sqlite_master WHERE type='table' AND name='displayed_iam';";
     private MobileEngageDbHelper dbHelper;
+
+    @Rule
+    public Timeout globalTimeout = Timeout.seconds(30);
 
     @Before
     public void init() {

@@ -8,7 +8,9 @@ import android.support.test.InstrumentationRegistry;
 import junit.framework.Assert;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 
 import java.util.Date;
 
@@ -23,6 +25,9 @@ public class DisplayedIamRepositoryTest {
     private DisplayedIamRepository iamRepository;
     private DisplayedIam displayedIam1;
     private DisplayedIam displayedIam2;
+
+    @Rule
+    public Timeout globalTimeout = Timeout.seconds(30);
 
     @Before
     public void init() {

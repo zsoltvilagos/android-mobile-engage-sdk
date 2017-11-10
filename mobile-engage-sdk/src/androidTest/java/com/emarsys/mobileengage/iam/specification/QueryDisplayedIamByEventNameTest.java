@@ -7,7 +7,9 @@ import com.emarsys.mobileengage.iam.DisplayedIam;
 import com.emarsys.mobileengage.iam.DisplayedIamRepository;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 
 import java.util.Arrays;
 import java.util.List;
@@ -20,6 +22,9 @@ public class QueryDisplayedIamByEventNameTest {
     String eventName;
     QueryDisplayedIamByEventName specification;
     private Context context;
+
+    @Rule
+    public Timeout globalTimeout = Timeout.seconds(30);
 
     @Before
     public void init() {
