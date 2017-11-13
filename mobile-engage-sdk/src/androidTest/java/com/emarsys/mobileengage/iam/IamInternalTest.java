@@ -6,7 +6,9 @@ import android.content.pm.ApplicationInfo;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 
 import static junit.framework.Assert.assertNotNull;
 import static org.mockito.Mockito.mock;
@@ -17,6 +19,9 @@ public class IamInternalTest {
     Application application;
     MobileEngageConfig config;
     IamInternal iam;
+
+    @Rule
+    public Timeout globalTimeout = Timeout.seconds(30);
 
     @Before
     public void init() {

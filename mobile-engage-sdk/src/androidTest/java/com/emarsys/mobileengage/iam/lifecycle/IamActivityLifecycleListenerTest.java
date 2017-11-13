@@ -4,7 +4,9 @@ import android.app.Activity;
 import android.os.Bundle;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNull;
@@ -15,6 +17,9 @@ public class IamActivityLifecycleListenerTest {
     private IamActivityLifecycleListener listener;
     private Activity activity;
     private Activity nextActivity;
+
+    @Rule
+    public Timeout globalTimeout = Timeout.seconds(30);
 
     @Before
     public void init() {
