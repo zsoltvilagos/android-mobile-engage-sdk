@@ -83,6 +83,14 @@ public class MobileEngageTest {
     }
 
     @Test
+    public void testSetup_initializesIamInstance() {
+        MobileEngage.iamInstance = null;
+        MobileEngage.setup(baseConfig);
+
+        assertNotNull(MobileEngage.iamInstance);
+    }
+
+    @Test
     public void testSetup_initializesWithConfig() {
         MobileEngage.config = null;
         MobileEngage.setup(baseConfig);
