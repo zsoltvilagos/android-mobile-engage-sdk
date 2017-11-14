@@ -1,4 +1,4 @@
-package com.emarsys.mobileengage.iam;
+package com.emarsys.mobileengage.iam.model;
 
 public class DisplayedIam {
     private String campaignId;

@@ -1,7 +1,7 @@
 package com.emarsys.mobileengage.iam.specification;
 
-import com.emarsys.mobileengage.iam.DisplayedIamContract;
 import com.emarsys.mobileengage.iam.SqlSpecification;
+import com.emarsys.mobileengage.iam.model.DisplayedIamContract;
 
 public class QueryDisplayedIamByEventName implements SqlSpecification {
 

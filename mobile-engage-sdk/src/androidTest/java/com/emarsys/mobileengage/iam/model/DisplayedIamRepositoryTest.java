@@ -1,4 +1,4 @@
-package com.emarsys.mobileengage.iam;
+package com.emarsys.mobileengage.iam.model;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -14,9 +14,9 @@ import org.junit.rules.Timeout;
 
 import java.util.Date;
 
-import static com.emarsys.mobileengage.iam.DisplayedIamContract.COLUMN_NAME_CAMPAIGN_ID;
-import static com.emarsys.mobileengage.iam.DisplayedIamContract.COLUMN_NAME_EVENT_NAME;
-import static com.emarsys.mobileengage.iam.DisplayedIamContract.COLUMN_NAME_TIMESTAMP;
+import static com.emarsys.mobileengage.iam.model.DisplayedIamContract.COLUMN_NAME_CAMPAIGN_ID;
+import static com.emarsys.mobileengage.iam.model.DisplayedIamContract.COLUMN_NAME_EVENT_NAME;
+import static com.emarsys.mobileengage.iam.model.DisplayedIamContract.COLUMN_NAME_TIMESTAMP;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
