@@ -6,6 +6,7 @@ import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.emarsys.core.activity.CurrentActivityWatchdog;
 import com.emarsys.core.concurrency.CoreSdkHandlerProvider;
 import com.emarsys.core.connection.ConnectionWatchDog;
 import com.emarsys.core.queue.sqlite.SqliteQueue;
@@ -15,7 +16,6 @@ import com.emarsys.core.util.log.EMSLogger;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
 import com.emarsys.mobileengage.event.applogin.AppLoginStorage;
-import com.emarsys.mobileengage.iam.IamInternal;
 import com.emarsys.mobileengage.inbox.InboxInternal;
 import com.emarsys.mobileengage.inbox.InboxResultListener;
 import com.emarsys.mobileengage.inbox.ResetBadgeCountResultListener;
@@ -29,7 +29,6 @@ public class MobileEngage {
     private static final String TAG = "MobileEngage";
     static MobileEngageInternal instance;
     static InboxInternal inboxInstance;
-    static IamInternal iamInstance;
     static MobileEngageConfig config;
     static MobileEngageCoreCompletionHandler completionHandler;
 
@@ -57,19 +56,20 @@ public class MobileEngage {
     public static void setup(@NonNull MobileEngageConfig config) {
         Assert.notNull(config, "Config must not be null!");
         EMSLogger.log(MobileEngageTopic.MOBILE_ENGAGE, "Argument: %s", config);
+
         MobileEngage.config = config;
         MobileEngageUtils.setup(config);
 
-        completionHandler = new MobileEngageCoreCompletionHandler(config.getStatusListener());
-
         Application application = config.getApplication();
+        CurrentActivityWatchdog.registerApplication(application);
+
+        completionHandler = new MobileEngageCoreCompletionHandler(config.getStatusListener());
 
         Handler handler = new CoreSdkHandlerProvider().provideHandler();
         RequestManager requestManager = new RequestManager(handler, new ConnectionWatchDog(application, handler), new SqliteQueue(application), completionHandler);
 
         instance = new MobileEngageInternal(config, requestManager, new AppLoginStorage(application), completionHandler);
         inboxInstance = new InboxInternal(config, requestManager);
-        iamInstance = new IamInternal(config);
     }
 
     public static MobileEngageConfig getConfig() {

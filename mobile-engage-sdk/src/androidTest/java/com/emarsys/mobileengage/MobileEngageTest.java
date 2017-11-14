@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
+import com.emarsys.core.activity.CurrentActivityWatchdog;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
@@ -24,6 +25,8 @@ import org.junit.Test;
 import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -33,6 +36,7 @@ import static com.emarsys.mobileengage.fake.FakeRequestManager.ResponseType.SUCC
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -51,7 +55,7 @@ public class MobileEngageTest {
     public Timeout globalTimeout = Timeout.seconds(30);
 
     @Before
-    public void init() {
+    public void init() throws Exception {
         application = (Application) InstrumentationRegistry.getTargetContext().getApplicationContext();
         coreCompletionHandler = mock(MobileEngageCoreCompletionHandler.class);
         mobileEngageInternal = mock(MobileEngageInternal.class);
@@ -64,6 +68,8 @@ public class MobileEngageTest {
         MobileEngage.inboxInstance = inboxInternal;
         MobileEngage.instance = mobileEngageInternal;
         MobileEngage.completionHandler = coreCompletionHandler;
+
+        resetCurrentActivityWatchdog();
     }
 
     @Test
@@ -83,11 +89,16 @@ public class MobileEngageTest {
     }
 
     @Test
-    public void testSetup_initializesIamInstance() {
-        MobileEngage.iamInstance = null;
+    public void testSetup_registersCurrentActivityWatchDog() throws Exception {
+        resetCurrentActivityWatchdog();
+
         MobileEngage.setup(baseConfig);
 
-        assertNotNull(MobileEngage.iamInstance);
+        try {
+            CurrentActivityWatchdog.getCurrentActivity();
+        } catch (Exception e) {
+            fail("getCurrentActivity should not fail: " + e.getMessage());
+        }
     }
 
     @Test
@@ -279,5 +290,11 @@ public class MobileEngageTest {
     public void testResetBadgeCount_zeroArgs_callsInternal_withNullListener() {
         MobileEngage.Inbox.resetBadgeCount();
         verify(inboxInternal).resetBadgeCount(null);
+    }
+
+    private void resetCurrentActivityWatchdog() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        Method method = CurrentActivityWatchdog.class.getDeclaredMethod("reset");
+        method.setAccessible(true);
+        method.invoke(null);
     }
 }
