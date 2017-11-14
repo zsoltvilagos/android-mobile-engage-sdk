@@ -1,4 +1,4 @@
-package com.emarsys.mobileengage.iam.specification;
+package com.emarsys.mobileengage.iam.model.specification;
 
 import com.emarsys.mobileengage.iam.SqlSpecification;
 
