@@ -5,6 +5,7 @@ import android.support.test.InstrumentationRegistry;
 
 import com.emarsys.mobileengage.iam.model.DisplayedIam;
 import com.emarsys.mobileengage.iam.model.DisplayedIamRepository;
+import com.emarsys.mobileengage.testUtil.DatabaseTestUtils;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -27,8 +28,9 @@ public class QueryAllTest {
 
     @Before
     public void init() {
+        DatabaseTestUtils.deleteMobileEngageDatabase();
+
         context = InstrumentationRegistry.getContext();
-        context.deleteDatabase("EmarsysMobileEngage.db");
 
         specification = new QueryAll("displayed_iam");
     }

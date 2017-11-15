@@ -5,6 +5,8 @@ import android.content.Context;
 import android.database.Cursor;
 import android.support.test.InstrumentationRegistry;
 
+import com.emarsys.mobileengage.testUtil.DatabaseTestUtils;
+
 import junit.framework.Assert;
 
 import org.junit.Before;
@@ -31,8 +33,9 @@ public class DisplayedIamRepositoryTest {
 
     @Before
     public void init() {
+        DatabaseTestUtils.deleteMobileEngageDatabase();
+
         Context context = InstrumentationRegistry.getContext();
-        context.deleteDatabase("EmarsysMobileEngage.db");
         iamRepository = new DisplayedIamRepository(context);
         displayedIam1 = new DisplayedIam("campaign1", new Date().getTime(), "event1");
         displayedIam2 = new DisplayedIam("campaign2", new Date().getTime() + 1000, "event2");

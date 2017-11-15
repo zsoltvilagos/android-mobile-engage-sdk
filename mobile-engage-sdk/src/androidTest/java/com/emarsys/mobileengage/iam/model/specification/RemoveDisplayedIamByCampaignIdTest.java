@@ -6,6 +6,7 @@ import android.support.test.InstrumentationRegistry;
 import com.emarsys.mobileengage.database.QueryAll;
 import com.emarsys.mobileengage.iam.model.DisplayedIam;
 import com.emarsys.mobileengage.iam.model.DisplayedIamRepository;
+import com.emarsys.mobileengage.testUtil.DatabaseTestUtils;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -29,10 +30,11 @@ public class RemoveDisplayedIamByCampaignIdTest {
 
     @Before
     public void init() {
+        DatabaseTestUtils.deleteMobileEngageDatabase();
+
         campaignId = "campaign2";
         specification = new RemoveDisplayedIamByCampaignId(campaignId);
         context = InstrumentationRegistry.getContext();
-        context.deleteDatabase("EmarsysMobileEngage.db");
     }
 
     @Test

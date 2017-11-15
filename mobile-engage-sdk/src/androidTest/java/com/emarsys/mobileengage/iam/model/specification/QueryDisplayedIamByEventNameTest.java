@@ -5,6 +5,7 @@ import android.support.test.InstrumentationRegistry;
 
 import com.emarsys.mobileengage.iam.model.DisplayedIam;
 import com.emarsys.mobileengage.iam.model.DisplayedIamRepository;
+import com.emarsys.mobileengage.testUtil.DatabaseTestUtils;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -28,10 +29,11 @@ public class QueryDisplayedIamByEventNameTest {
 
     @Before
     public void init() {
+        DatabaseTestUtils.deleteMobileEngageDatabase();
+
         eventName = "event2";
         specification = new QueryDisplayedIamByEventName(eventName);
         context = InstrumentationRegistry.getContext();
-        context.deleteDatabase("EmarsysMobileEngage.db");
     }
 
     @Test

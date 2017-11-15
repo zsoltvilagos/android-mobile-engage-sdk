@@ -5,6 +5,8 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.test.InstrumentationRegistry;
 
+import com.emarsys.mobileengage.testUtil.DatabaseTestUtils;
+
 import junit.framework.Assert;
 
 import org.junit.Before;
@@ -22,8 +24,9 @@ public class MobileEngageDbHelperTest {
 
     @Before
     public void init() {
+        DatabaseTestUtils.deleteMobileEngageDatabase();
+
         Context context = InstrumentationRegistry.getContext();
-        context.deleteDatabase("EmarsysMobileEngage.db");
         dbHelper = new MobileEngageDbHelper(context);
     }
 
