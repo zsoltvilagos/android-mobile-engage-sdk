@@ -20,6 +20,7 @@ import com.emarsys.mobileengage.testUtil.TestDbHelper;
 import com.emarsys.mobileengage.util.RequestUtils;
 
 import org.json.JSONObject;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -39,6 +40,7 @@ public class MobileEngageIntegrationTest {
     private FakeStatusListener listener;
 
     private Application context;
+    private Handler coreSdkHandler;
 
     @Rule
     public Timeout globalTimeout = Timeout.seconds(30);
@@ -61,8 +63,8 @@ public class MobileEngageIntegrationTest {
         SqliteQueue queue = new SqliteQueue(context);
         queue.setHelper(new TestDbHelper(context));
 
-        Handler handler = new CoreSdkHandlerProvider().provideHandler();
-        MobileEngage.instance.manager = new RequestManager(handler, new ConnectionWatchDog(context, handler), queue, new CoreCompletionHandler() {
+        coreSdkHandler = new CoreSdkHandlerProvider().provideHandler();
+        MobileEngage.instance.manager = new RequestManager(coreSdkHandler, new ConnectionWatchDog(context, coreSdkHandler), queue, new CoreCompletionHandler() {
             @Override
             public void onSuccess(String id, ResponseModel responseModel) {
                 listener.onStatusLog(id, "");
@@ -79,6 +81,11 @@ public class MobileEngageIntegrationTest {
             }
         });
         MobileEngage.instance.manager.setDefaultHeaders(RequestUtils.createDefaultHeaders(config));
+    }
+
+    @After
+    public void tearDown() {
+        coreSdkHandler.getLooper().quit();
     }
 
     @Test
