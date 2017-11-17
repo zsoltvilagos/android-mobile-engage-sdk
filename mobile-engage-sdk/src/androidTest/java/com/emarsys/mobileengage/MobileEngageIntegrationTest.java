@@ -16,6 +16,7 @@ import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.fake.FakeStatusListener;
 import com.emarsys.mobileengage.inbox.model.Notification;
 import com.emarsys.mobileengage.testUtil.ConnectionTestUtils;
+import com.emarsys.mobileengage.testUtil.DatabaseTestUtils;
 import com.emarsys.mobileengage.testUtil.TestDbHelper;
 import com.emarsys.mobileengage.util.RequestUtils;
 
@@ -47,6 +48,8 @@ public class MobileEngageIntegrationTest {
 
     @Before
     public void setup() {
+        DatabaseTestUtils.deleteCoreDatabase();
+
         context = (Application) InstrumentationRegistry.getTargetContext().getApplicationContext();
 
         ConnectionTestUtils.checkConnection(context);
