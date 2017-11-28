@@ -15,6 +15,8 @@ import com.emarsys.mobileengage.inbox.InboxInternal;
 import com.emarsys.mobileengage.inbox.InboxResultListener;
 import com.emarsys.mobileengage.inbox.ResetBadgeCountResultListener;
 import com.emarsys.mobileengage.inbox.model.Notification;
+import com.emarsys.mobileengage.responsehandler.AbstractResponseHandler;
+import com.emarsys.mobileengage.responsehandler.MeIdResponseHandler;
 import com.emarsys.mobileengage.storage.AppLoginStorage;
 
 import org.json.JSONException;
@@ -27,8 +29,10 @@ import org.junit.runner.RunWith;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
@@ -78,6 +82,16 @@ public class MobileEngageTest {
         MobileEngage.setup(baseConfig);
 
         assertNotNull(MobileEngage.instance);
+    }
+
+    @Test
+    public void testSetup_initializesCoreCompletionHandler_withCorrectResponseHandlers() {
+        MobileEngage.completionHandler = null;
+        MobileEngage.setup(baseConfig);
+
+        MobileEngageCoreCompletionHandler coreCompletionHandler = MobileEngage.completionHandler;
+        assertNotNull(coreCompletionHandler);
+        assertEquals(1, numberOfElementsIn(coreCompletionHandler.responseHandlers, MeIdResponseHandler.class));
     }
 
     @Test
@@ -148,7 +162,7 @@ public class MobileEngageTest {
         FakeStatusListener originalListener = new FakeStatusListener();
         FakeStatusListener newListener = new FakeStatusListener(latch);
 
-        MobileEngageCoreCompletionHandler completionHandler = new MobileEngageCoreCompletionHandler(originalListener);
+        MobileEngageCoreCompletionHandler completionHandler = new MobileEngageCoreCompletionHandler(new ArrayList<AbstractResponseHandler>(), originalListener);
         RequestManager succeedingManager = new FakeRequestManager(
                 SUCCESS,
                 null,
@@ -296,5 +310,17 @@ public class MobileEngageTest {
         Method method = CurrentActivityWatchdog.class.getDeclaredMethod("reset");
         method.setAccessible(true);
         method.invoke(null);
+    }
+
+    private int numberOfElementsIn(List list, Class klass) {
+        int count = 0;
+
+        for (Object object : list) {
+            if (object.getClass().equals(klass)) {
+                count++;
+            }
+        }
+
+        return count;
     }
 }

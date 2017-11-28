@@ -2,6 +2,7 @@ package com.emarsys.mobileengage;
 
 import com.emarsys.core.CoreCompletionHandler;
 import com.emarsys.core.response.ResponseModel;
+import com.emarsys.core.util.Assert;
 import com.emarsys.core.util.log.EMSLogger;
 import com.emarsys.mobileengage.responsehandler.AbstractResponseHandler;
 import com.emarsys.mobileengage.util.log.MobileEngageTopic;
@@ -14,12 +15,10 @@ public class MobileEngageCoreCompletionHandler implements CoreCompletionHandler 
     WeakReference<MobileEngageStatusListener> weakStatusListener;
     List<AbstractResponseHandler> responseHandlers;
 
-    public MobileEngageCoreCompletionHandler(MobileEngageStatusListener listener) {
-        this.weakStatusListener = new WeakReference<>(listener);
-    }
-
-    public void setResponseHandlers(List<AbstractResponseHandler> responseHandlers) {
+    public MobileEngageCoreCompletionHandler(List<AbstractResponseHandler> responseHandlers, MobileEngageStatusListener listener) {
+        Assert.notNull(responseHandlers, "ResponseHandlers must not be null!");
         this.responseHandlers = responseHandlers;
+        this.weakStatusListener = new WeakReference<>(listener);
     }
 
     MobileEngageStatusListener getStatusListener() {

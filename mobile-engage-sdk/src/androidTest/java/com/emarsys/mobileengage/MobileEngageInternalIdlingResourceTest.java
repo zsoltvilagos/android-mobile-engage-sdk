@@ -15,6 +15,7 @@ import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.response.ResponseModel;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
+import com.emarsys.mobileengage.responsehandler.AbstractResponseHandler;
 import com.emarsys.mobileengage.storage.AppLoginStorage;
 import com.emarsys.mobileengage.util.MobileEngageIdlingResource;
 
@@ -25,6 +26,7 @@ import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -147,7 +149,7 @@ public class MobileEngageInternalIdlingResourceTest {
     }
 
     private MobileEngageInternal mobileEngageWithRealRequestManager(MobileEngageConfig config) {
-        MobileEngageCoreCompletionHandler completionHandler = new MobileEngageCoreCompletionHandler(new MobileEngageStatusListener() {
+        MobileEngageCoreCompletionHandler completionHandler = new MobileEngageCoreCompletionHandler(new ArrayList<AbstractResponseHandler>(), new MobileEngageStatusListener() {
             @Override
             public void onError(String id, Exception cause) {
 

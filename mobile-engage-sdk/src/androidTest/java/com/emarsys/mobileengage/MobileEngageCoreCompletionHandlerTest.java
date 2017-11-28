@@ -12,14 +12,19 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 public class MobileEngageCoreCompletionHandlerTest {
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructor_handlersShouldNotBeNull() {
+        new MobileEngageCoreCompletionHandler(null, null);
+    }
+
     @Test
     public void testOnSuccess_shouldCallProcessResponseOnTheHandlers() throws Exception {
         AbstractResponseHandler abstractResponseHandler1 = mock(AbstractResponseHandler.class);
         AbstractResponseHandler abstractResponseHandler2 = mock(AbstractResponseHandler.class);
         List<AbstractResponseHandler> handlers = Arrays.asList(abstractResponseHandler1, abstractResponseHandler2);
 
-        MobileEngageCoreCompletionHandler coreCompletionHandler = new MobileEngageCoreCompletionHandler(null);
-        coreCompletionHandler.setResponseHandlers(handlers);
+        MobileEngageCoreCompletionHandler coreCompletionHandler = new MobileEngageCoreCompletionHandler(handlers, null);
         ResponseModel responseModel = mock(ResponseModel.class);
 
         coreCompletionHandler.onSuccess("", responseModel);

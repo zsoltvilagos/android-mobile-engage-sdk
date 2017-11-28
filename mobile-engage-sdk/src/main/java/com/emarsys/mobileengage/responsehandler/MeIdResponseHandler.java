@@ -1,7 +1,7 @@
 package com.emarsys.mobileengage.responsehandler;
 
 import com.emarsys.core.response.ResponseModel;
-import com.emarsys.mobileengage.MobileEngageInternal;
+import com.emarsys.mobileengage.storage.MeIdStorage;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -9,10 +9,10 @@ import org.json.JSONObject;
 
 public class MeIdResponseHandler extends AbstractResponseHandler {
 
-    MobileEngageInternal mobileEngageInternal;
+    MeIdStorage meIdStorage;
 
-    public MeIdResponseHandler(MobileEngageInternal mobileEngageInternal) {
-        this.mobileEngageInternal = mobileEngageInternal;
+    public MeIdResponseHandler(MeIdStorage meIdStorage) {
+        this.meIdStorage = meIdStorage;
     }
 
     @Override
@@ -25,7 +25,7 @@ public class MeIdResponseHandler extends AbstractResponseHandler {
     protected void handleResponse(ResponseModel responseModel) {
         JSONObject body = responseModel.getParsedBody();
         try {
-            mobileEngageInternal.setMeId(body.getString("api_me_id"));
+            meIdStorage.set(body.getString("api_me_id"));
         } catch (JSONException ignore) {
         }
     }

@@ -11,8 +11,6 @@ import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.request.RequestModel;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
-import com.emarsys.mobileengage.responsehandler.AbstractResponseHandler;
-import com.emarsys.mobileengage.responsehandler.MeIdResponseHandler;
 import com.emarsys.mobileengage.storage.AppLoginStorage;
 import com.emarsys.mobileengage.util.RequestUtils;
 
@@ -24,7 +22,6 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static com.emarsys.mobileengage.MobileEngageInternal.MOBILEENGAGE_SDK_VERSION;
@@ -109,32 +106,6 @@ public class MobileEngageInternalTest {
         assertEquals(appLoginStorage, engage.appLoginStorage);
         assertEquals(coreCompletionHandler, engage.coreCompletionHandler);
         assertNotNull(engage.getManager());
-    }
-
-    @Test
-    public void testSetup_constructorSetsResponseHandlers_onCoreCompletionHandler() {
-        ArgumentCaptor<List<AbstractResponseHandler>> captor = ArgumentCaptor.forClass(List.class);
-        MobileEngageCoreCompletionHandler coreCompletionHandler = mock(MobileEngageCoreCompletionHandler.class);
-
-        new MobileEngageInternal(baseConfig, manager, appLoginStorage, coreCompletionHandler);
-
-        verify(coreCompletionHandler).setResponseHandlers(captor.capture());
-
-        List<AbstractResponseHandler> handlers = captor.getValue();
-        assertEquals(1, handlers.size());
-        assertEquals(1, numberOfElementsIn(handlers, MeIdResponseHandler.class));
-    }
-
-    private int numberOfElementsIn(List list, Class klass) {
-        int count = 0;
-
-        for (Object object : list) {
-            if (object.getClass().equals(klass)) {
-                count++;
-            }
-        }
-
-        return count;
     }
 
     @Test

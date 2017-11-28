@@ -20,9 +20,14 @@ import com.emarsys.mobileengage.inbox.InboxResultListener;
 import com.emarsys.mobileengage.inbox.ResetBadgeCountResultListener;
 import com.emarsys.mobileengage.inbox.model.Notification;
 import com.emarsys.mobileengage.inbox.model.NotificationInboxStatus;
+import com.emarsys.mobileengage.responsehandler.AbstractResponseHandler;
+import com.emarsys.mobileengage.responsehandler.MeIdResponseHandler;
 import com.emarsys.mobileengage.storage.AppLoginStorage;
+import com.emarsys.mobileengage.storage.MeIdStorage;
 import com.emarsys.mobileengage.util.log.MobileEngageTopic;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class MobileEngage {
@@ -63,7 +68,9 @@ public class MobileEngage {
         Application application = config.getApplication();
         CurrentActivityWatchdog.registerApplication(application);
 
-        completionHandler = new MobileEngageCoreCompletionHandler(config.getStatusListener());
+        List<AbstractResponseHandler> responseHandlers = new ArrayList<>();
+        responseHandlers.add(new MeIdResponseHandler(new MeIdStorage(application)));
+        completionHandler = new MobileEngageCoreCompletionHandler(responseHandlers, config.getStatusListener());
 
         Handler handler = new CoreSdkHandlerProvider().provideHandler();
         RequestManager requestManager = new RequestManager(handler, new ConnectionWatchDog(application, handler), new SqliteQueue(application), completionHandler);

@@ -12,6 +12,7 @@ import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
 import com.emarsys.mobileengage.fake.FakeRequestManager;
 import com.emarsys.mobileengage.fake.FakeStatusListener;
+import com.emarsys.mobileengage.responsehandler.AbstractResponseHandler;
 import com.emarsys.mobileengage.storage.AppLoginStorage;
 
 import org.junit.Before;
@@ -19,6 +20,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.Timeout;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -70,7 +72,7 @@ public class MobileEngageInternalStatusListenerTest {
         manager = mock(RequestManager.class);
         latch = new CountDownLatch(1);
         statusListener = mock(MobileEngageStatusListener.class);
-        completionHandler = new MobileEngageCoreCompletionHandler(statusListener) {
+        completionHandler = new MobileEngageCoreCompletionHandler(new ArrayList<AbstractResponseHandler>(), statusListener) {
             @Override
             public void onSuccess(String id, ResponseModel responseModel) {
                 mainThreadStatusListener.onStatusLog(id, responseModel.getMessage());

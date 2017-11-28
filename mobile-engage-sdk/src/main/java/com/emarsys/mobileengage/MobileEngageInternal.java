@@ -15,8 +15,6 @@ import com.emarsys.core.util.Assert;
 import com.emarsys.core.util.log.EMSLogger;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
-import com.emarsys.mobileengage.responsehandler.AbstractResponseHandler;
-import com.emarsys.mobileengage.responsehandler.MeIdResponseHandler;
 import com.emarsys.mobileengage.storage.AppLoginStorage;
 import com.emarsys.mobileengage.util.RequestUtils;
 import com.emarsys.mobileengage.util.log.MobileEngageTopic;
@@ -25,8 +23,6 @@ import com.google.firebase.iid.FirebaseInstanceId;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 public class MobileEngageInternal {
@@ -55,10 +51,6 @@ public class MobileEngageInternal {
         this.application = config.getApplication();
         this.appLoginStorage = appLoginStorage;
         this.coreCompletionHandler = coreCompletionHandler;
-
-        List<AbstractResponseHandler> responseHandlers = new ArrayList<>();
-        responseHandlers.add(new MeIdResponseHandler(this));
-        this.coreCompletionHandler.setResponseHandlers(responseHandlers);
 
         this.manager = manager;
         manager.setDefaultHeaders(RequestUtils.createDefaultHeaders(config));

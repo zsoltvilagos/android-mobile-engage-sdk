@@ -1,7 +1,7 @@
 package com.emarsys.mobileengage.responsehandler;
 
 import com.emarsys.core.response.ResponseModel;
-import com.emarsys.mobileengage.MobileEngageInternal;
+import com.emarsys.mobileengage.storage.MeIdStorage;
 
 import junit.framework.Assert;
 
@@ -18,7 +18,7 @@ public class MeIdResponseHandlerTest {
 
     private String meId;
     private MeIdResponseHandler handler;
-    private MobileEngageInternal internal;
+    private MeIdStorage meIdStorage;
 
     @Rule
     public Timeout globalTimeout = Timeout.seconds(30);
@@ -27,8 +27,8 @@ public class MeIdResponseHandlerTest {
     @Before
     public void init() {
         meId = "123";
-        internal = mock(MobileEngageInternal.class);
-        handler = new MeIdResponseHandler(internal);
+        meIdStorage = mock(MeIdStorage.class);
+        handler = new MeIdResponseHandler(meIdStorage);
 
         responseModelWithMeId = new ResponseModel.Builder()
                 .statusCode(200)
@@ -39,10 +39,10 @@ public class MeIdResponseHandlerTest {
 
     @Test
     public void testConstructor_initializesField() {
-        internal = mock(MobileEngageInternal.class);
-        handler = new MeIdResponseHandler(internal);
+        meIdStorage = mock(MeIdStorage.class);
+        handler = new MeIdResponseHandler(meIdStorage);
 
-        assertEquals(internal, handler.mobileEngageInternal);
+        assertEquals(meIdStorage, handler.meIdStorage);
     }
 
     @Test
@@ -69,7 +69,7 @@ public class MeIdResponseHandlerTest {
     public void testHandleResponse_shouldSetMeIdInMobileEngageInternal() {
         handler.handleResponse(responseModelWithMeId);
 
-        verify(internal).setMeId(meId);
+        verify(meIdStorage).set(meId);
     }
 
 }
