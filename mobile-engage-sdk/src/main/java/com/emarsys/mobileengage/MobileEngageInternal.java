@@ -8,7 +8,6 @@ import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.emarsys.core.CoreCompletionHandler;
 import com.emarsys.core.DeviceInfo;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.request.RequestModel;
@@ -17,6 +16,8 @@ import com.emarsys.core.util.log.EMSLogger;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
 import com.emarsys.mobileengage.event.applogin.AppLoginStorage;
+import com.emarsys.mobileengage.responsehandler.AbstractResponseHandler;
+import com.emarsys.mobileengage.responsehandler.MeIdResponseHandler;
 import com.emarsys.mobileengage.util.RequestUtils;
 import com.emarsys.mobileengage.util.log.MobileEngageTopic;
 import com.google.firebase.iid.FirebaseInstanceId;
@@ -24,6 +25,8 @@ import com.google.firebase.iid.FirebaseInstanceId;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class MobileEngageInternal {
@@ -38,7 +41,8 @@ public class MobileEngageInternal {
     RequestManager manager;
     AppLoginStorage appLoginStorage;
     Handler handler;
-    CoreCompletionHandler coreCompletionHandler;
+    MobileEngageCoreCompletionHandler coreCompletionHandler;
+    String meId;
 
     MobileEngageInternal(MobileEngageConfig config, RequestManager manager, AppLoginStorage appLoginStorage, MobileEngageCoreCompletionHandler coreCompletionHandler) {
         Assert.notNull(config, "Config must not be null!");
@@ -51,6 +55,10 @@ public class MobileEngageInternal {
         this.application = config.getApplication();
         this.appLoginStorage = appLoginStorage;
         this.coreCompletionHandler = coreCompletionHandler;
+
+        List<AbstractResponseHandler> responseHandlers = new ArrayList<>();
+        responseHandlers.add(new MeIdResponseHandler(this));
+        this.coreCompletionHandler.setResponseHandlers(responseHandlers);
 
         this.manager = manager;
         manager.setDefaultHeaders(RequestUtils.createDefaultHeaders(config));
@@ -80,6 +88,10 @@ public class MobileEngageInternal {
         if (appLoginParameters != null) {
             appLogin();
         }
+    }
+
+    public void setMeId(String meId) {
+        this.meId = meId;
     }
 
     void setAppLoginParameters(AppLoginParameters parameters) {

@@ -153,11 +153,11 @@ public class MobileEngageIntegrationTest {
 
     private void eventuallyAssertSuccess(String id) throws Exception {
         latch.await();
+        assertNull(listener.errorCause);
+        assertEquals(id, listener.successId);
         assertEquals(1, listener.onStatusLogCount);
         assertEquals(0, listener.onErrorCount);
-        assertEquals(id, listener.successId);
         assertNotNull(listener.successLog);
         assertNull(listener.errorId);
-        assertNull(listener.errorCause);
     }
 }
