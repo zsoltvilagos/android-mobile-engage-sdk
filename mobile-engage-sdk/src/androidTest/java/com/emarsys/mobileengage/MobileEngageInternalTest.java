@@ -67,7 +67,7 @@ public class MobileEngageInternalTest {
         application = (Application) InstrumentationRegistry.getTargetContext().getApplicationContext();
         deviceInfo = new DeviceInfo(application);
         appLoginStorage = new AppLoginStorage(application);
-        appLoginStorage.clear();
+        appLoginStorage.remove();
 
         statusListener = mock(MobileEngageStatusListener.class);
         baseConfig = new MobileEngageConfig.Builder()

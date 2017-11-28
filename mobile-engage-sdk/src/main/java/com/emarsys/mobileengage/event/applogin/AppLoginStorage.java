@@ -3,8 +3,9 @@ package com.emarsys.mobileengage.event.applogin;
 import android.content.Context;
 import android.content.SharedPreferences;
 
-public class AppLoginStorage {
-    public static final String SHARED_PREFERENCES_NAMESPACE = "ems_me_apploginstorage";
+import com.emarsys.mobileengage.storage.Storage;
+
+public class AppLoginStorage implements Storage<Integer> {
     public static final String APP_LOGIN_PAYLOAD_HASH_CODE_KEY = "appLoginPayloadHashCode";
 
     private SharedPreferences sharedPreferences;
@@ -13,20 +14,22 @@ public class AppLoginStorage {
         sharedPreferences = context.getSharedPreferences(SHARED_PREFERENCES_NAMESPACE, Context.MODE_PRIVATE);
     }
 
-    public Integer getLastAppLoginPayloadHashCode() {
+    @Override
+    public Integer get() {
         if (sharedPreferences.contains(APP_LOGIN_PAYLOAD_HASH_CODE_KEY)) {
             return sharedPreferences.getInt(APP_LOGIN_PAYLOAD_HASH_CODE_KEY, 0);
         }
         return null;
     }
 
-    public void setLastAppLoginPayloadHashCode(Integer hashCode) {
+    @Override
+    public void set(Integer hashCode) {
         sharedPreferences.edit().putInt(APP_LOGIN_PAYLOAD_HASH_CODE_KEY, hashCode).commit();
     }
 
-    public void clear() {
-        sharedPreferences.edit().clear().commit();
+    @Override
+    public void remove() {
+        sharedPreferences.edit().remove(APP_LOGIN_PAYLOAD_HASH_CODE_KEY).commit();
     }
-
 
 }

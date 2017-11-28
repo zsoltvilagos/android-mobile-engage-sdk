@@ -106,7 +106,7 @@ public class MobileEngageInternal {
         RequestModel model;
         Map<String, Object> payload = injectLoginPayload(RequestUtils.createBasePayload(config, appLoginParameters));
 
-        Integer storedHashCode = appLoginStorage.getLastAppLoginPayloadHashCode();
+        Integer storedHashCode = appLoginStorage.get();
         int currentHashCode = payload.hashCode();
 
         if (storedHashCode == null || currentHashCode != storedHashCode) {
@@ -114,7 +114,7 @@ public class MobileEngageInternal {
                     .url(RequestUtils.ENDPOINT_LOGIN)
                     .payload(payload)
                     .build();
-            appLoginStorage.setLastAppLoginPayloadHashCode(currentHashCode);
+            appLoginStorage.set(currentHashCode);
         } else {
             model = new RequestModel.Builder()
                     .url(RequestUtils.ENDPOINT_LAST_MOBILE_ACTIVITY)

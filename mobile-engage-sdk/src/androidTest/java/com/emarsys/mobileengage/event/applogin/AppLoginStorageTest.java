@@ -22,34 +22,34 @@ public class AppLoginStorageTest {
     public void init() {
         context = InstrumentationRegistry.getTargetContext().getApplicationContext();
         storage = new AppLoginStorage(context);
-        storage.clear();
+        storage.remove();
     }
 
     @Test
     public void getLastAppLoginPayloadHashCode_shouldReturnNull_ifTheStorageIsEmpty() throws Exception {
-        assertNull(storage.getLastAppLoginPayloadHashCode());
+        assertNull(storage.get());
     }
 
     @Test
-    public void setLastAppLoginPayloadHashCode() throws Exception {
-        storage.setLastAppLoginPayloadHashCode(42);
-        assertEquals((Integer) 42, storage.getLastAppLoginPayloadHashCode());
+    public void set() throws Exception {
+        storage.set(42);
+        assertEquals((Integer) 42, storage.get());
     }
 
     @Test
     public void clear_shouldRemoveLastAppLoginPayloadHashCodeValue() {
-        storage.setLastAppLoginPayloadHashCode(42);
-        storage.clear();
+        storage.set(42);
+        storage.remove();
 
-        assertNull(storage.getLastAppLoginPayloadHashCode());
+        assertNull(storage.get());
     }
 
     @Test
     public void setLastAppLoginPayloadHashCode_shouldPreserveValues() throws Exception {
-        storage.setLastAppLoginPayloadHashCode(42);
+        storage.set(42);
         storage = new AppLoginStorage(context);
 
-        assertEquals((Integer) 42, storage.getLastAppLoginPayloadHashCode());
+        assertEquals((Integer) 42, storage.get());
     }
 
 }
