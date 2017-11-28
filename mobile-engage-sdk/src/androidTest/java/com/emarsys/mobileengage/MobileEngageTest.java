@@ -9,13 +9,13 @@ import com.emarsys.core.activity.CurrentActivityWatchdog;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
-import com.emarsys.mobileengage.event.applogin.AppLoginStorage;
 import com.emarsys.mobileengage.fake.FakeRequestManager;
 import com.emarsys.mobileengage.fake.FakeStatusListener;
 import com.emarsys.mobileengage.inbox.InboxInternal;
 import com.emarsys.mobileengage.inbox.InboxResultListener;
 import com.emarsys.mobileengage.inbox.ResetBadgeCountResultListener;
 import com.emarsys.mobileengage.inbox.model.Notification;
+import com.emarsys.mobileengage.storage.AppLoginStorage;
 
 import org.json.JSONException;
 import org.json.JSONObject;

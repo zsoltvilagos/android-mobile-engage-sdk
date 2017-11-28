@@ -10,9 +10,9 @@ import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.response.ResponseModel;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
-import com.emarsys.mobileengage.event.applogin.AppLoginStorage;
 import com.emarsys.mobileengage.fake.FakeRequestManager;
 import com.emarsys.mobileengage.fake.FakeStatusListener;
+import com.emarsys.mobileengage.storage.AppLoginStorage;
 
 import org.junit.Before;
 import org.junit.Rule;

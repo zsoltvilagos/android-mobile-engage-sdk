@@ -15,12 +15,12 @@ import com.emarsys.core.util.Assert;
 import com.emarsys.core.util.log.EMSLogger;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
-import com.emarsys.mobileengage.event.applogin.AppLoginStorage;
 import com.emarsys.mobileengage.inbox.InboxInternal;
 import com.emarsys.mobileengage.inbox.InboxResultListener;
 import com.emarsys.mobileengage.inbox.ResetBadgeCountResultListener;
 import com.emarsys.mobileengage.inbox.model.Notification;
 import com.emarsys.mobileengage.inbox.model.NotificationInboxStatus;
+import com.emarsys.mobileengage.storage.AppLoginStorage;
 import com.emarsys.mobileengage.util.log.MobileEngageTopic;
 
 import java.util.Map;

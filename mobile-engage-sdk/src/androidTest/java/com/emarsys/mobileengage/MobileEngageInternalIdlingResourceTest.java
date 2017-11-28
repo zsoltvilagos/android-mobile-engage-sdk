@@ -15,7 +15,7 @@ import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.response.ResponseModel;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
-import com.emarsys.mobileengage.event.applogin.AppLoginStorage;
+import com.emarsys.mobileengage.storage.AppLoginStorage;
 import com.emarsys.mobileengage.util.MobileEngageIdlingResource;
 
 import org.junit.Before;

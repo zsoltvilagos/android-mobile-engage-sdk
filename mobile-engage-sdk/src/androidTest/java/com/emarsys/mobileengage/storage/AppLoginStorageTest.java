@@ -1,4 +1,4 @@
-package com.emarsys.mobileengage.event.applogin;
+package com.emarsys.mobileengage.storage;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
