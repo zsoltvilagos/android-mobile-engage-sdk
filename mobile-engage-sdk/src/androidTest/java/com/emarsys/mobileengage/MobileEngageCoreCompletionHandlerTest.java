@@ -3,7 +3,9 @@ package com.emarsys.mobileengage;
 import com.emarsys.core.response.ResponseModel;
 import com.emarsys.mobileengage.responsehandler.AbstractResponseHandler;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 
 import java.util.Arrays;
 import java.util.List;
@@ -12,6 +14,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 public class MobileEngageCoreCompletionHandlerTest {
+
+    @Rule
+    public Timeout globalTimeout = Timeout.seconds(30);
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_handlersShouldNotBeNull() {
