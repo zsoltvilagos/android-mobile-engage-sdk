@@ -4,16 +4,19 @@ import android.app.Application;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.test.InstrumentationRegistry;
+import android.support.test.rule.DisableOnAndroidDebug;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 
 import com.emarsys.mobileengage.MobileEngage;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.fake.FakeMessageLoadedListener;
+import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.rules.Timeout;
 
 import java.lang.reflect.Field;
@@ -53,7 +56,7 @@ public class IamWebViewProviderTest {
             "</html>", "onPageLoaded");
 
     @Rule
-    public Timeout globalTimeout = Timeout.seconds(30);
+    public TestRule timeout = new DisableOnAndroidDebug(Timeout.seconds(TimeoutUtils.getTimeout()));
 
     @Before
     public void init() throws NoSuchFieldException, IllegalAccessException {

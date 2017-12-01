@@ -8,17 +8,20 @@ import android.content.pm.ApplicationInfo;
 import android.os.Build;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SdkSuppress;
+import android.support.test.rule.DisableOnAndroidDebug;
 import android.support.test.runner.AndroidJUnit4;
 import android.support.v4.app.NotificationCompat;
 
 import com.emarsys.mobileengage.config.OreoConfig;
 import com.emarsys.mobileengage.inbox.model.Notification;
 import com.emarsys.mobileengage.inbox.model.NotificationCache;
+import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 
@@ -48,7 +51,7 @@ public class MessagingServiceUtilsTest {
     private OreoConfig disabledOreoConfig;
 
     @Rule
-    public Timeout globalTimeout = Timeout.seconds(30);
+    public TestRule timeout = new DisableOnAndroidDebug(Timeout.seconds(TimeoutUtils.getTimeout()));
 
     @Before
     @SuppressWarnings("unchecked")

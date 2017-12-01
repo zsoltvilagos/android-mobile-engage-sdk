@@ -1,6 +1,9 @@
 package com.emarsys.mobileengage.inbox.model;
 
+import android.support.test.rule.DisableOnAndroidDebug;
 import android.support.test.runner.AndroidJUnit4;
+
+import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
 import junit.framework.Assert;
 
@@ -8,6 +11,7 @@ import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 
@@ -22,7 +26,7 @@ import static org.mockito.Mockito.mock;
 public class NotificationCacheTest {
 
     @Rule
-    public Timeout globalTimeout = Timeout.seconds(30);
+    public TestRule timeout = new DisableOnAndroidDebug(Timeout.seconds(TimeoutUtils.getTimeout()));
 
     private NotificationCache notificationCache;
 

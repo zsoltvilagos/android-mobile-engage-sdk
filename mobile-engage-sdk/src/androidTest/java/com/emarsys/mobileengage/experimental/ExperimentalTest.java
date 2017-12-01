@@ -1,8 +1,13 @@
 package com.emarsys.mobileengage.experimental;
 
+import android.support.test.rule.DisableOnAndroidDebug;
+
+import com.emarsys.mobileengage.testUtil.TimeoutUtils;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.rules.Timeout;
 
 import static org.junit.Assert.assertEquals;
@@ -12,7 +17,7 @@ import static org.junit.Assert.assertTrue;
 public class ExperimentalTest {
 
     @Rule
-    public Timeout globalTimeout = Timeout.seconds(30);
+    public TestRule timeout = new DisableOnAndroidDebug(Timeout.seconds(TimeoutUtils.getTimeout()));
 
     @Before
     public void setUp() {

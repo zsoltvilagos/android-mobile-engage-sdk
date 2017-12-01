@@ -1,7 +1,10 @@
 package com.emarsys.mobileengage.inbox;
 
+import android.support.test.rule.DisableOnAndroidDebug;
+
 import com.emarsys.mobileengage.inbox.model.Notification;
 import com.emarsys.mobileengage.inbox.model.NotificationInboxStatus;
+import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -9,6 +12,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.rules.Timeout;
 
 import java.util.ArrayList;
@@ -18,9 +22,6 @@ import java.util.List;
 import java.util.Map;
 
 public class InboxParseUtilsTest {
-
-    @Rule
-    public Timeout globalTimeout = Timeout.seconds(30);
 
     public static final String NOTIFICATION_STRING_1 = "{" +
             "\"id\":\"id1\", " +
@@ -37,6 +38,7 @@ public class InboxParseUtilsTest {
             "\"expiration_time\": 300, " +
             "\"received_at\":10000000" +
             "}";
+
     public static final String NOTIFICATION_STRING_2 = "{" +
             "\"id\":\"id2\", " +
             "\"sid\":\"sid2\", " +
@@ -83,13 +85,15 @@ public class InboxParseUtilsTest {
             "\"expiration_time\": 100, " +
             "\"received_at\":25000000" +
             "}";
-
     private Notification notification1;
+
     private Notification notification2;
     private Notification notification3;
     private Notification notification4;
-
     private List<Notification> notifications;
+
+    @Rule
+    public TestRule timeout = new DisableOnAndroidDebug(Timeout.seconds(TimeoutUtils.getTimeout()));
 
     @Before
     public void setup() throws JSONException {

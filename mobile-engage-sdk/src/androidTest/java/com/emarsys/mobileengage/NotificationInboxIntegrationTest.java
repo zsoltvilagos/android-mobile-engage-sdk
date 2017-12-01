@@ -3,6 +3,7 @@ package com.emarsys.mobileengage;
 import android.app.Application;
 import android.os.Handler;
 import android.support.test.InstrumentationRegistry;
+import android.support.test.rule.DisableOnAndroidDebug;
 
 import com.emarsys.core.CoreCompletionHandler;
 import com.emarsys.core.concurrency.CoreSdkHandlerProvider;
@@ -16,11 +17,13 @@ import com.emarsys.mobileengage.fake.FakeResetBadgeCountResultListener;
 import com.emarsys.mobileengage.fake.FakeStatusListener;
 import com.emarsys.mobileengage.testUtil.ConnectionTestUtils;
 import com.emarsys.mobileengage.testUtil.TestDbHelper;
+import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 import com.emarsys.mobileengage.util.RequestUtils;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.rules.Timeout;
 
 import java.util.concurrent.CountDownLatch;
@@ -40,7 +43,7 @@ public class NotificationInboxIntegrationTest {
     private FakeResetBadgeCountResultListener resetListener;
 
     @Rule
-    public Timeout globalTimeout = Timeout.seconds(30);
+    public TestRule timeout = new DisableOnAndroidDebug(Timeout.seconds(TimeoutUtils.getTimeout()));
 
     private Application context;
 

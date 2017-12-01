@@ -1,10 +1,14 @@
 package com.emarsys.mobileengage;
 
+import android.support.test.rule.DisableOnAndroidDebug;
+
 import com.emarsys.core.response.ResponseModel;
 import com.emarsys.mobileengage.responsehandler.AbstractResponseHandler;
+import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.rules.Timeout;
 
 import java.util.Arrays;
@@ -16,7 +20,7 @@ import static org.mockito.Mockito.verify;
 public class MobileEngageCoreCompletionHandlerTest {
 
     @Rule
-    public Timeout globalTimeout = Timeout.seconds(30);
+    public TestRule timeout = new DisableOnAndroidDebug(Timeout.seconds(TimeoutUtils.getTimeout()));
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_handlersShouldNotBeNull() {
