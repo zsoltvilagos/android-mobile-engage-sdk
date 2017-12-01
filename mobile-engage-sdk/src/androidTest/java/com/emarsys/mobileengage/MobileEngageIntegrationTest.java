@@ -3,28 +3,23 @@ package com.emarsys.mobileengage;
 import android.app.Application;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.test.InstrumentationRegistry;
+import android.support.test.rule.DisableOnAndroidDebug;
 
-import com.emarsys.core.CoreCompletionHandler;
-import com.emarsys.core.concurrency.CoreSdkHandlerProvider;
-import com.emarsys.core.connection.ConnectionWatchDog;
-import com.emarsys.core.queue.sqlite.SqliteQueue;
-import com.emarsys.core.request.RequestManager;
-import com.emarsys.core.response.ResponseModel;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.fake.FakeStatusListener;
 import com.emarsys.mobileengage.inbox.model.Notification;
+import com.emarsys.mobileengage.storage.AppLoginStorage;
+import com.emarsys.mobileengage.storage.MeIdStorage;
 import com.emarsys.mobileengage.testUtil.ConnectionTestUtils;
 import com.emarsys.mobileengage.testUtil.DatabaseTestUtils;
-import com.emarsys.mobileengage.testUtil.TestDbHelper;
-import com.emarsys.mobileengage.util.RequestUtils;
 
 import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.rules.Timeout;
 
 import java.util.Date;
@@ -41,16 +36,15 @@ public class MobileEngageIntegrationTest {
     private FakeStatusListener listener;
 
     private Application context;
-    private Handler coreSdkHandler;
 
     @Rule
-    public Timeout globalTimeout = Timeout.seconds(30);
+    public TestRule timeout = new DisableOnAndroidDebug(Timeout.seconds(30));
 
     @Before
     public void setup() {
         DatabaseTestUtils.deleteCoreDatabase();
-
         context = (Application) InstrumentationRegistry.getTargetContext().getApplicationContext();
+        clearStorages();
 
         ConnectionTestUtils.checkConnection(context);
 
@@ -63,32 +57,12 @@ public class MobileEngageIntegrationTest {
                 .disableDefaultChannel()
                 .build();
         MobileEngage.setup(config);
-        SqliteQueue queue = new SqliteQueue(context);
-        queue.setHelper(new TestDbHelper(context));
-
-        coreSdkHandler = new CoreSdkHandlerProvider().provideHandler();
-        MobileEngage.instance.manager = new RequestManager(coreSdkHandler, new ConnectionWatchDog(context, coreSdkHandler), queue, new CoreCompletionHandler() {
-            @Override
-            public void onSuccess(String id, ResponseModel responseModel) {
-                listener.onStatusLog(id, "");
-            }
-
-            @Override
-            public void onError(String id, ResponseModel responseModel) {
-                listener.onError(id, new MobileEngageException(responseModel));
-            }
-
-            @Override
-            public void onError(String id, Exception cause) {
-                listener.onError(id, cause);
-            }
-        });
-        MobileEngage.instance.manager.setDefaultHeaders(RequestUtils.createDefaultHeaders(config));
     }
 
     @After
     public void tearDown() {
-        coreSdkHandler.getLooper().quit();
+        MobileEngage.handler.getLooper().quit();
+        clearStorages();
     }
 
     @Test
@@ -108,16 +82,22 @@ public class MobileEngageIntegrationTest {
 
     @Test
     public void testTrackCustomEvent_noAttributes() throws Exception {
+        doAppLogin();
+
         eventuallyAssertSuccess(MobileEngage.trackCustomEvent("customEvent", null));
     }
 
     @Test
     public void testTrackCustomEvent_emptyAttributes() throws Exception {
+        doAppLogin();
+
         eventuallyAssertSuccess(MobileEngage.trackCustomEvent("customEvent", new HashMap<String, String>()));
     }
 
     @Test
     public void testTrackCustomEvent_withAttributes() throws Exception {
+        doAppLogin();
+
         Map<String, String> attributes = new HashMap<>();
         attributes.put("key1", "value1");
         attributes.put("key2", "value2");
@@ -151,6 +131,15 @@ public class MobileEngageIntegrationTest {
         eventuallyAssertSuccess(MobileEngage.Inbox.trackMessageOpen(notification));
     }
 
+    private void doAppLogin() throws InterruptedException {
+        MobileEngage.appLogin();
+        latch.await();
+
+        latch = new CountDownLatch(1);
+        listener.latch = latch;
+        listener.onStatusLogCount = 0;
+    }
+
     private void eventuallyAssertSuccess(String id) throws Exception {
         latch.await();
         assertNull(listener.errorCause);
@@ -159,5 +148,10 @@ public class MobileEngageIntegrationTest {
         assertEquals(0, listener.onErrorCount);
         assertNotNull(listener.successLog);
         assertNull(listener.errorId);
+    }
+
+    private void clearStorages() {
+        new MeIdStorage(context).remove();
+        new AppLoginStorage(context).remove();
     }
 }

@@ -1,6 +1,7 @@
 package com.emarsys.mobileengage;
 
 import android.app.Application;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.test.InstrumentationRegistry;
@@ -9,11 +10,14 @@ import android.support.test.runner.AndroidJUnit4;
 import com.emarsys.core.DeviceInfo;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.request.RequestModel;
+import com.emarsys.core.timestamp.TimestampProvider;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
 import com.emarsys.mobileengage.storage.AppLoginStorage;
+import com.emarsys.mobileengage.storage.MeIdStorage;
 import com.emarsys.mobileengage.util.RequestUtils;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -21,6 +25,8 @@ import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,15 +39,18 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(AndroidJUnit4.class)
 public class MobileEngageInternalTest {
     private static String APPLICATION_ID = "user";
     private static String APPLICATION_SECRET = "pass";
-    private static String ENDPOINT_BASE = "https://push.eservice.emarsys.net/api/mobileengage/v2/";
-    private static String ENDPOINT_LOGIN = ENDPOINT_BASE + "users/login";
-    private static String ENDPOINT_LOGOUT = ENDPOINT_BASE + "users/logout";
-    private static String ENDPOINT_LAST_MOBILE_ACTIVITY = ENDPOINT_BASE + "events/ems_lastMobileActivity";
+    private static String ENDPOINT_BASE_V2 = "https://push.eservice.emarsys.net/api/mobileengage/v2/";
+    private static String ENDPOINT_BASE_V3 = "https://ems-me-deviceevent.herokuapp.com/v3/devices/";
+    private static String ENDPOINT_LOGIN = ENDPOINT_BASE_V2 + "users/login";
+    private static String ENDPOINT_LOGOUT = ENDPOINT_BASE_V2 + "users/logout";
+    private static String ENDPOINT_LAST_MOBILE_ACTIVITY = ENDPOINT_BASE_V2 + "events/ems_lastMobileActivity";
+    private static String ME_ID = "ASD123";
 
     private MobileEngageStatusListener statusListener;
     private MobileEngageCoreCompletionHandler coreCompletionHandler;
@@ -51,7 +60,7 @@ public class MobileEngageInternalTest {
     private Application application;
     private DeviceInfo deviceInfo;
     private AppLoginStorage appLoginStorage;
-
+    private Context context;
     private MobileEngageInternal mobileEngage;
 
     @Rule
@@ -77,6 +86,14 @@ public class MobileEngageInternalTest {
         defaultHeaders = RequestUtils.createDefaultHeaders(baseConfig);
 
         mobileEngage = new MobileEngageInternal(baseConfig, manager, appLoginStorage, coreCompletionHandler);
+
+        context = InstrumentationRegistry.getContext();
+        new MeIdStorage(context).set(ME_ID);
+    }
+
+    @After
+    public void tearDown() {
+        new MeIdStorage(context).remove();
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -106,6 +123,7 @@ public class MobileEngageInternalTest {
         assertEquals(appLoginStorage, engage.appLoginStorage);
         assertEquals(coreCompletionHandler, engage.coreCompletionHandler);
         assertNotNull(engage.getManager());
+        assertNotNull(engage.meIdStorage);
     }
 
     @Test
@@ -257,15 +275,28 @@ public class MobileEngageInternalTest {
 
     @Test
     public void testTrackCustomEvent_requestManagerCalledWithCorrectRequestModel() {
+        long timestamp = 123;
+        TimestampProvider fakeProvider = mock(TimestampProvider.class);
+        when(fakeProvider.provideTimestamp()).thenReturn(timestamp);
+        mobileEngage.timestampProvider = fakeProvider;
+
         String eventName = "cartoon";
         Map<String, String> eventAttributes = new HashMap<>();
         eventAttributes.put("tom", "jerry");
 
-        Map<String, Object> payload = createBasePayload();
-        payload.put("attributes", eventAttributes);
+        Map<String, Object> event = new HashMap<>();
+        event.put("type", "custom");
+        event.put("id", eventName);
+        event.put("timestamp", timestamp);
+        event.put("attributes", eventAttributes);
+
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("clicks", new ArrayList<>());
+        payload.put("viewed_messages", new ArrayList<>());
+        payload.put("events", Collections.singletonList(event));
 
         RequestModel expected = new RequestModel.Builder()
-                .url(ENDPOINT_BASE + "events/" + eventName)
+                .url(ENDPOINT_BASE_V3 + ME_ID + "/events")
                 .payload(payload)
                 .headers(defaultHeaders)
                 .build();
@@ -294,21 +325,6 @@ public class MobileEngageInternalTest {
     }
 
     @Test
-    public void testCustomEvent_containsCredentials_fromApploginParameters() {
-        int contactFieldId = 3;
-        String contactFieldValue = "test@test.com";
-        mobileEngage.setAppLoginParameters(new AppLoginParameters(contactFieldId, contactFieldValue));
-        ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
-
-        mobileEngage.trackCustomEvent("customEvent", null);
-        verify(manager).submit(captor.capture());
-
-        Map<String, Object> payload = captor.getValue().getPayload();
-        assertEquals(payload.get("contact_field_id"), contactFieldId);
-        assertEquals(payload.get("contact_field_value"), contactFieldValue);
-    }
-
-    @Test
     public void testTrackMessageOpen_requestManagerCalledWithCorrectRequestModel() throws Exception {
         Intent intent = getTestIntent();
 
@@ -316,7 +332,7 @@ public class MobileEngageInternalTest {
         payload.put("sid", "+43c_lODSmXqCvdOz");
 
         RequestModel expected = new RequestModel.Builder()
-                .url(ENDPOINT_BASE + "events/message_open")
+                .url(ENDPOINT_BASE_V2 + "events/message_open")
                 .payload(payload)
                 .headers(defaultHeaders)
                 .build();

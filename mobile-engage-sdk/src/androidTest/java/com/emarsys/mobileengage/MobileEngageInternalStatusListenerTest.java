@@ -14,7 +14,9 @@ import com.emarsys.mobileengage.fake.FakeRequestManager;
 import com.emarsys.mobileengage.fake.FakeStatusListener;
 import com.emarsys.mobileengage.responsehandler.AbstractResponseHandler;
 import com.emarsys.mobileengage.storage.AppLoginStorage;
+import com.emarsys.mobileengage.storage.MeIdStorage;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -97,6 +99,12 @@ public class MobileEngageInternalStatusListenerTest {
         statusListener = mock(MobileEngageStatusListener.class);
         mainThreadStatusListener = new FakeStatusListener(latch);
         mobileEngageWith(mainThreadStatusListener, succeedingManager);
+        new MeIdStorage(InstrumentationRegistry.getContext()).set("test_me_id");
+    }
+
+    @After
+    public void tearDown() {
+        new MeIdStorage(InstrumentationRegistry.getContext()).remove();
     }
 
     private void mobileEngageWith(MobileEngageStatusListener statusListener, RequestManager requestManager) {

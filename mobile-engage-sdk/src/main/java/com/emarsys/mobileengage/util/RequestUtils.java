@@ -13,6 +13,7 @@ import java.util.Map;
 
 public class RequestUtils {
     public static final String ENDPOINT_BASE = "https://push.eservice.emarsys.net/api/mobileengage/v2/";
+    public static final String ENDPOINT_BASE_V3 = "https://ems-me-deviceevent.herokuapp.com/v3/devices/";
     public static final String ENDPOINT_LOGIN = ENDPOINT_BASE + "users/login";
     public static final String ENDPOINT_LOGOUT = ENDPOINT_BASE + "users/logout";
     public static final String ENDPOINT_LAST_MOBILE_ACTIVITY = ENDPOINT_BASE + "events/ems_lastMobileActivity";
@@ -22,6 +23,12 @@ public class RequestUtils {
     public static String createEventUrl(String eventName) {
         Assert.notNull(eventName, "EventName must not be null!");
         return ENDPOINT_BASE + "events/" + eventName;
+    }
+
+    public static String createEventUrl_V3(String meId) {
+        Assert.notNull(meId, "MEID must not be null!");
+
+        return ENDPOINT_BASE_V3 + meId + "/events";
     }
 
     public static Map<String, String> createDefaultHeaders(MobileEngageConfig config) {

@@ -17,8 +17,10 @@ import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
 import com.emarsys.mobileengage.responsehandler.AbstractResponseHandler;
 import com.emarsys.mobileengage.storage.AppLoginStorage;
+import com.emarsys.mobileengage.storage.MeIdStorage;
 import com.emarsys.mobileengage.util.MobileEngageIdlingResource;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -67,6 +69,12 @@ public class MobileEngageInternalIdlingResourceTest {
         Field idlingResourceField = MobileEngageUtils.class.getDeclaredField("idlingResource");
         idlingResourceField.setAccessible(true);
         idlingResourceField.set(null, idlingResource);
+        new MeIdStorage(InstrumentationRegistry.getContext()).set("test_me_id");
+    }
+
+    @After
+    public void tearDown() {
+        new MeIdStorage(InstrumentationRegistry.getContext()).remove();
     }
 
     @Test

@@ -36,6 +36,7 @@ public class MobileEngage {
     static InboxInternal inboxInstance;
     static MobileEngageConfig config;
     static MobileEngageCoreCompletionHandler completionHandler;
+    static Handler handler;
 
     public static class Inbox {
 
@@ -72,7 +73,7 @@ public class MobileEngage {
         responseHandlers.add(new MeIdResponseHandler(new MeIdStorage(application)));
         completionHandler = new MobileEngageCoreCompletionHandler(responseHandlers, config.getStatusListener());
 
-        Handler handler = new CoreSdkHandlerProvider().provideHandler();
+        handler = new CoreSdkHandlerProvider().provideHandler();
         RequestManager requestManager = new RequestManager(handler, new ConnectionWatchDog(application, handler), new SqliteQueue(application), completionHandler);
 
         instance = new MobileEngageInternal(config, requestManager, new AppLoginStorage(application), completionHandler);

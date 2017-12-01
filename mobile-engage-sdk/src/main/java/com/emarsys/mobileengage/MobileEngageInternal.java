@@ -11,11 +11,13 @@ import android.support.annotation.Nullable;
 import com.emarsys.core.DeviceInfo;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.request.RequestModel;
+import com.emarsys.core.timestamp.TimestampProvider;
 import com.emarsys.core.util.Assert;
 import com.emarsys.core.util.log.EMSLogger;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
 import com.emarsys.mobileengage.storage.AppLoginStorage;
+import com.emarsys.mobileengage.storage.MeIdStorage;
 import com.emarsys.mobileengage.util.RequestUtils;
 import com.emarsys.mobileengage.util.log.MobileEngageTopic;
 import com.google.firebase.iid.FirebaseInstanceId;
@@ -23,6 +25,9 @@ import com.google.firebase.iid.FirebaseInstanceId;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 public class MobileEngageInternal {
@@ -38,7 +43,8 @@ public class MobileEngageInternal {
     AppLoginStorage appLoginStorage;
     Handler handler;
     MobileEngageCoreCompletionHandler coreCompletionHandler;
-    String meId;
+    MeIdStorage meIdStorage;
+    TimestampProvider timestampProvider;
 
     MobileEngageInternal(MobileEngageConfig config, RequestManager manager, AppLoginStorage appLoginStorage, MobileEngageCoreCompletionHandler coreCompletionHandler) {
         Assert.notNull(config, "Config must not be null!");
@@ -64,6 +70,8 @@ public class MobileEngageInternal {
         }
 
         this.handler = new Handler(Looper.getMainLooper());
+        this.meIdStorage = new MeIdStorage(application);
+        this.timestampProvider = new TimestampProvider();
     }
 
     RequestManager getManager() {
@@ -80,10 +88,6 @@ public class MobileEngageInternal {
         if (appLoginParameters != null) {
             appLogin();
         }
-    }
-
-    public void setMeId(String meId) {
-        this.meId = meId;
     }
 
     void setAppLoginParameters(AppLoginParameters parameters) {
@@ -136,12 +140,21 @@ public class MobileEngageInternal {
                             @Nullable Map<String, String> eventAttributes) {
         EMSLogger.log(MobileEngageTopic.MOBILE_ENGAGE, "Arguments: eventName %s, eventAttributes %s", eventName, eventAttributes);
 
-        Map<String, Object> payload = RequestUtils.createBasePayload(config, appLoginParameters);
+        Map<String, Object> event = new HashMap<>();
+        event.put("type", "custom");
+        event.put("id", eventName);
+        event.put("timestamp", timestampProvider.provideTimestamp());
         if (eventAttributes != null && !eventAttributes.isEmpty()) {
-            payload.put("attributes", eventAttributes);
+            event.put("attributes", eventAttributes);
         }
+
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("clicks", new ArrayList<>());
+        payload.put("viewed_messages", new ArrayList<>());
+        payload.put("events", Collections.singletonList(event));
+
         RequestModel model = new RequestModel.Builder()
-                .url(RequestUtils.createEventUrl(eventName))
+                .url(RequestUtils.createEventUrl_V3(meIdStorage.get()))
                 .payload(payload)
                 .build();
 

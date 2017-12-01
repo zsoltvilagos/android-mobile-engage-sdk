@@ -69,6 +69,18 @@ public class RequestUtilsTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
+    public void testCreateEventUrl_V3_meIdShouldNotBeNull() {
+        RequestUtils.createEventUrl_V3(null);
+    }
+
+    @Test
+    public void testCreateEventUrl_V3_shouldReturnTheCorrectEventUrl() {
+        String url = RequestUtils.createEventUrl_V3("meId");
+        String expected = "https://ems-me-deviceevent.herokuapp.com/v3/devices/meId/events";
+        assertEquals(expected, url);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
     public void testCreateDefaultHeaders_configShouldNotBeNull() {
         RequestUtils.createDefaultHeaders(null);
     }
