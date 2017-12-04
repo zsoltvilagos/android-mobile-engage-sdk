@@ -1,7 +1,5 @@
 package com.emarsys.mobileengage.responsehandler;
 
-import android.support.test.rule.DisableOnAndroidDebug;
-
 import com.emarsys.core.response.ResponseModel;
 import com.emarsys.mobileengage.storage.MeIdStorage;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
@@ -12,7 +10,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
-import org.junit.rules.Timeout;
 
 import static junit.framework.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
@@ -25,7 +22,7 @@ public class MeIdResponseHandlerTest {
     private MeIdStorage meIdStorage;
 
     @Rule
-    public TestRule timeout = new DisableOnAndroidDebug(Timeout.seconds(TimeoutUtils.getTimeout()));
+    public TestRule timeout = TimeoutUtils.getTimeoutRule();
     private ResponseModel responseModelWithMeId;
 
     @Before

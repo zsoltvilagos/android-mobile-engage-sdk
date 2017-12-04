@@ -3,7 +3,6 @@ package com.emarsys.mobileengage.iam.ui;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.rule.DisableOnAndroidDebug;
 import android.webkit.WebView;
 
 import com.emarsys.mobileengage.fake.FakeMessageLoadedListener;
@@ -13,7 +12,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
-import org.junit.rules.Timeout;
 
 import java.util.concurrent.CountDownLatch;
 
@@ -25,7 +23,7 @@ public class IamWebViewClientTest {
     private Handler handler;
 
     @Rule
-    public TestRule timeout = new DisableOnAndroidDebug(Timeout.seconds(TimeoutUtils.getTimeout()));
+    public TestRule timeout = TimeoutUtils.getTimeoutRule();
 
     @Before
     public void init() {

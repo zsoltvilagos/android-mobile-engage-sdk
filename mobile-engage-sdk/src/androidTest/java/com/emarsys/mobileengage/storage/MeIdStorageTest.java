@@ -2,7 +2,6 @@ package com.emarsys.mobileengage.storage;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.rule.DisableOnAndroidDebug;
 
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
@@ -10,7 +9,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
-import org.junit.rules.Timeout;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNull;
@@ -20,7 +18,7 @@ public class MeIdStorageTest {
     private Context context;
 
     @Rule
-    public TestRule timeout = new DisableOnAndroidDebug(Timeout.seconds(TimeoutUtils.getTimeout()));
+    public TestRule timeout = TimeoutUtils.getTimeoutRule();
 
     @Before
     public void init() {

@@ -4,7 +4,6 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.rule.DisableOnAndroidDebug;
 
 import com.emarsys.mobileengage.testUtil.DatabaseTestUtils;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
@@ -15,7 +14,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
-import org.junit.rules.Timeout;
 
 import java.util.Date;
 
@@ -32,7 +30,7 @@ public class DisplayedIamRepositoryTest {
     private DisplayedIam displayedIam2;
 
     @Rule
-    public TestRule timeout = new DisableOnAndroidDebug(Timeout.seconds(TimeoutUtils.getTimeout()));
+    public TestRule timeout = TimeoutUtils.getTimeoutRule();
 
     @Before
     public void init() {

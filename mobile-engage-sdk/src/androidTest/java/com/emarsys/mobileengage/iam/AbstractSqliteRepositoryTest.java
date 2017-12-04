@@ -2,7 +2,6 @@ package com.emarsys.mobileengage.iam;
 
 import android.content.ContentValues;
 import android.database.Cursor;
-import android.support.test.rule.DisableOnAndroidDebug;
 
 import com.emarsys.mobileengage.database.CoreSqliteDatabase;
 import com.emarsys.mobileengage.database.MobileEngageDbHelper;
@@ -12,7 +11,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
-import org.junit.rules.Timeout;
 import org.mockito.Mockito;
 
 import java.util.Arrays;
@@ -33,7 +31,7 @@ public class AbstractSqliteRepositoryTest {
     private CoreSqliteDatabase dbMock;
 
     @Rule
-    public TestRule timeout = new DisableOnAndroidDebug(Timeout.seconds(TimeoutUtils.getTimeout()));
+    public TestRule timeout = TimeoutUtils.getTimeoutRule();
 
     @Before
     @SuppressWarnings("unchecked")

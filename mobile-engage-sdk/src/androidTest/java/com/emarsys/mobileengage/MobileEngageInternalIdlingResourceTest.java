@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.rule.DisableOnAndroidDebug;
 import android.support.test.runner.AndroidJUnit4;
 
 import com.emarsys.core.CoreCompletionHandler;
@@ -27,7 +26,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
-import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 
 import java.lang.reflect.Field;
@@ -48,7 +46,7 @@ public class MobileEngageInternalIdlingResourceTest {
     private MobileEngageIdlingResource idlingResource;
 
     @Rule
-    public TestRule timeout = new DisableOnAndroidDebug(Timeout.seconds(TimeoutUtils.getTimeout()));
+    public TestRule timeout = TimeoutUtils.getTimeoutRule();
 
     @Before
     public void init() throws Exception {

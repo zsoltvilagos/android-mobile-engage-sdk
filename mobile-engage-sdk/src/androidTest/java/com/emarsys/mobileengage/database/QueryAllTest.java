@@ -2,7 +2,6 @@ package com.emarsys.mobileengage.database;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.rule.DisableOnAndroidDebug;
 
 import com.emarsys.mobileengage.iam.model.DisplayedIam;
 import com.emarsys.mobileengage.iam.model.DisplayedIamRepository;
@@ -13,7 +12,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
-import org.junit.rules.Timeout;
 
 import java.util.Arrays;
 import java.util.List;
@@ -27,7 +25,7 @@ public class QueryAllTest {
     private Context context;
 
     @Rule
-    public TestRule timeout = new DisableOnAndroidDebug(Timeout.seconds(TimeoutUtils.getTimeout()));
+    public TestRule timeout = TimeoutUtils.getTimeoutRule();
 
     @Before
     public void init() {

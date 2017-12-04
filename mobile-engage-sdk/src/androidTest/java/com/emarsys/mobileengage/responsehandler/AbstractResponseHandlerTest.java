@@ -1,7 +1,5 @@
 package com.emarsys.mobileengage.responsehandler;
 
-import android.support.test.rule.DisableOnAndroidDebug;
-
 import com.emarsys.core.response.ResponseModel;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
@@ -9,7 +7,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
-import org.junit.rules.Timeout;
 import org.mockito.Mockito;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -23,7 +20,7 @@ public class AbstractResponseHandlerTest {
     private AbstractResponseHandler abstractResponseHandler;
 
     @Rule
-    public TestRule timeout = new DisableOnAndroidDebug(Timeout.seconds(TimeoutUtils.getTimeout()));
+    public TestRule timeout = TimeoutUtils.getTimeoutRule();
 
     @Before
     public void init() {

@@ -2,7 +2,6 @@ package com.emarsys.mobileengage.util;
 
 import android.app.Application;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.rule.DisableOnAndroidDebug;
 
 import com.emarsys.core.DeviceInfo;
 import com.emarsys.core.util.HeaderUtils;
@@ -16,7 +15,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
-import org.junit.rules.Timeout;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -34,7 +32,7 @@ public class RequestUtilsTest {
     private DeviceInfo deviceInfo;
 
     @Rule
-    public TestRule timeout = new DisableOnAndroidDebug(Timeout.seconds(TimeoutUtils.getTimeout()));
+    public TestRule timeout = TimeoutUtils.getTimeoutRule();
 
     @Before
     public void setup() {

@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.rule.DisableOnAndroidDebug;
 
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.response.ResponseModel;
@@ -23,7 +22,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
-import org.junit.rules.Timeout;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -59,7 +57,7 @@ public class MobileEngageInternalStatusListenerTest {
     private Intent intent;
 
     @Rule
-    public TestRule timeout = new DisableOnAndroidDebug(Timeout.seconds(TimeoutUtils.getTimeout()));
+    public TestRule timeout = TimeoutUtils.getTimeoutRule();
 
     @Before
     public void init() throws Exception {

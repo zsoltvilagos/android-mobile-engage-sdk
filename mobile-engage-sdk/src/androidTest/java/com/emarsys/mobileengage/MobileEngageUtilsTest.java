@@ -2,7 +2,6 @@ package com.emarsys.mobileengage;
 
 import android.app.Application;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.rule.DisableOnAndroidDebug;
 
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
@@ -12,7 +11,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
-import org.junit.rules.Timeout;
 
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNotNull;
@@ -28,7 +26,7 @@ public class MobileEngageUtilsTest {
     private MobileEngageConfig enabledConfig;
 
     @Rule
-    public TestRule timeout = new DisableOnAndroidDebug(Timeout.seconds(TimeoutUtils.getTimeout()));
+    public TestRule timeout = TimeoutUtils.getTimeoutRule();
 
     @Before
     public void init() {

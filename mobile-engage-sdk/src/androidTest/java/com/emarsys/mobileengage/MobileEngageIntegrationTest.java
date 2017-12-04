@@ -4,7 +4,6 @@ import android.app.Application;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.rule.DisableOnAndroidDebug;
 
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.fake.FakeStatusListener;
@@ -13,6 +12,7 @@ import com.emarsys.mobileengage.storage.AppLoginStorage;
 import com.emarsys.mobileengage.storage.MeIdStorage;
 import com.emarsys.mobileengage.testUtil.ConnectionTestUtils;
 import com.emarsys.mobileengage.testUtil.DatabaseTestUtils;
+import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
 import org.json.JSONObject;
 import org.junit.After;
@@ -20,7 +20,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
-import org.junit.rules.Timeout;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -38,7 +37,7 @@ public class MobileEngageIntegrationTest {
     private Application context;
 
     @Rule
-    public TestRule timeout = new DisableOnAndroidDebug(Timeout.seconds(30));
+    public TestRule timeout = TimeoutUtils.getTimeoutRule();
 
     @Before
     public void setup() {

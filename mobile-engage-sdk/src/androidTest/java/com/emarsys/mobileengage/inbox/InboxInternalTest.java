@@ -2,7 +2,6 @@ package com.emarsys.mobileengage.inbox;
 
 import android.app.Application;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.rule.DisableOnAndroidDebug;
 
 import com.emarsys.core.CoreCompletionHandler;
 import com.emarsys.core.DeviceInfo;
@@ -31,7 +30,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
-import org.junit.rules.Timeout;
 import org.mockito.ArgumentCaptor;
 
 import java.lang.reflect.Field;
@@ -71,7 +69,7 @@ public class InboxInternalTest {
     private NotificationCache cache;
 
     @Rule
-    public TestRule timeout = new DisableOnAndroidDebug(Timeout.seconds(TimeoutUtils.getTimeout()));
+    public TestRule timeout = TimeoutUtils.getTimeoutRule();
 
     @Before
     @SuppressWarnings("unchecked")

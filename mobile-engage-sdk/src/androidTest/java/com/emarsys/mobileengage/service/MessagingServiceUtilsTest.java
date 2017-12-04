@@ -8,7 +8,6 @@ import android.content.pm.ApplicationInfo;
 import android.os.Build;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SdkSuppress;
-import android.support.test.rule.DisableOnAndroidDebug;
 import android.support.test.runner.AndroidJUnit4;
 import android.support.v4.app.NotificationCompat;
 
@@ -22,7 +21,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
-import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 
 import java.lang.reflect.Field;
@@ -51,7 +49,7 @@ public class MessagingServiceUtilsTest {
     private OreoConfig disabledOreoConfig;
 
     @Rule
-    public TestRule timeout = new DisableOnAndroidDebug(Timeout.seconds(TimeoutUtils.getTimeout()));
+    public TestRule timeout = TimeoutUtils.getTimeoutRule();
 
     @Before
     @SuppressWarnings("unchecked")
