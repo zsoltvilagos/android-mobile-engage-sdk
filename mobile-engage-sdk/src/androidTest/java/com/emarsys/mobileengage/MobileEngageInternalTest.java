@@ -13,8 +13,11 @@ import com.emarsys.core.request.RequestModel;
 import com.emarsys.core.timestamp.TimestampProvider;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
+import com.emarsys.mobileengage.experimental.Experimental;
+import com.emarsys.mobileengage.experimental.MobileEngageFeature;
 import com.emarsys.mobileengage.storage.AppLoginStorage;
 import com.emarsys.mobileengage.storage.MeIdStorage;
+import com.emarsys.mobileengage.testUtil.ExperimentalTestUtils;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 import com.emarsys.mobileengage.util.RequestUtils;
 
@@ -69,6 +72,8 @@ public class MobileEngageInternalTest {
 
     @Before
     public void init() {
+        Experimental.enableFeature(MobileEngageFeature.IN_APP_MESSAGING);
+
         manager = mock(RequestManager.class);
         coreCompletionHandler = mock(MobileEngageCoreCompletionHandler.class);
         application = (Application) InstrumentationRegistry.getTargetContext().getApplicationContext();
@@ -275,7 +280,7 @@ public class MobileEngageInternalTest {
     }
 
     @Test
-    public void testTrackCustomEvent_requestManagerCalledWithCorrectRequestModel() {
+    public void testTrackCustomEvent_V3_requestManagerCalledWithCorrectRequestModel() {
         long timestamp = 123;
         TimestampProvider fakeProvider = mock(TimestampProvider.class);
         when(fakeProvider.provideTimestamp()).thenReturn(timestamp);
@@ -312,6 +317,52 @@ public class MobileEngageInternalTest {
         RequestModel result = captor.getValue();
 
         assertRequestModels_withPayloadAsString(expected, result);
+    }
+
+    @Test
+    public void testTrackCustomEvent_V2_requestManagerCalledWithCorrectRequestModel() throws NoSuchFieldException, IllegalAccessException {
+        ExperimentalTestUtils.resetExperimentalFeatures();
+
+        String eventName = "cartoon";
+        Map<String, String> eventAttributes = new HashMap<>();
+        eventAttributes.put("tom", "jerry");
+
+        Map<String, Object> payload = createBasePayload();
+        payload.put("attributes", eventAttributes);
+
+        RequestModel expected = new RequestModel.Builder()
+                .url(ENDPOINT_BASE_V2 + "events/" + eventName)
+                .payload(payload)
+                .headers(defaultHeaders)
+                .build();
+
+        ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
+
+        mobileEngage.trackCustomEvent(eventName, eventAttributes);
+
+        verify(manager).setDefaultHeaders(defaultHeaders);
+        verify(manager).submit(captor.capture());
+
+        RequestModel result = captor.getValue();
+
+        assertRequestModels_withPayloadAsString(expected, result);
+    }
+
+    @Test
+    public void testCustomEvent_V2_containsCredentials_fromApploginParameters() throws NoSuchFieldException, IllegalAccessException {
+        ExperimentalTestUtils.resetExperimentalFeatures();
+
+        int contactFieldId = 3;
+        String contactFieldValue = "test@test.com";
+        mobileEngage.setAppLoginParameters(new AppLoginParameters(contactFieldId, contactFieldValue));
+        ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
+
+        mobileEngage.trackCustomEvent("customEvent", null);
+        verify(manager).submit(captor.capture());
+
+        Map<String, Object> payload = captor.getValue().getPayload();
+        assertEquals(payload.get("contact_field_id"), contactFieldId);
+        assertEquals(payload.get("contact_field_value"), contactFieldValue);
     }
 
     @Test

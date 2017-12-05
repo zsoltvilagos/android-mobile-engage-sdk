@@ -6,12 +6,14 @@ import android.os.Bundle;
 import android.support.test.InstrumentationRegistry;
 
 import com.emarsys.mobileengage.config.MobileEngageConfig;
+import com.emarsys.mobileengage.experimental.MobileEngageFeature;
 import com.emarsys.mobileengage.fake.FakeStatusListener;
 import com.emarsys.mobileengage.inbox.model.Notification;
 import com.emarsys.mobileengage.storage.AppLoginStorage;
 import com.emarsys.mobileengage.storage.MeIdStorage;
 import com.emarsys.mobileengage.testUtil.ConnectionTestUtils;
 import com.emarsys.mobileengage.testUtil.DatabaseTestUtils;
+import com.emarsys.mobileengage.testUtil.ExperimentalTestUtils;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
 import org.json.JSONObject;
@@ -42,6 +44,7 @@ public class MobileEngageIntegrationTest {
     @Before
     public void setup() {
         DatabaseTestUtils.deleteCoreDatabase();
+
         context = (Application) InstrumentationRegistry.getTargetContext().getApplicationContext();
         clearStorages();
 
@@ -54,6 +57,7 @@ public class MobileEngageIntegrationTest {
                 .credentials("14C19-A121F", "PaNkfOD90AVpYimMBuZopCpm8OWCrREu")
                 .statusListener(listener)
                 .disableDefaultChannel()
+                .enableExperimentalFeatures(MobileEngageFeature.IN_APP_MESSAGING)
                 .build();
         MobileEngage.setup(config);
     }
@@ -80,21 +84,52 @@ public class MobileEngageIntegrationTest {
     }
 
     @Test
-    public void testTrackCustomEvent_noAttributes() throws Exception {
+    public void testTrackCustomEvent_V3_noAttributes() throws Exception {
         doAppLogin();
 
         eventuallyAssertSuccess(MobileEngage.trackCustomEvent("customEvent", null));
     }
 
     @Test
-    public void testTrackCustomEvent_emptyAttributes() throws Exception {
+    public void testTrackCustomEvent_V3_emptyAttributes() throws Exception {
         doAppLogin();
 
         eventuallyAssertSuccess(MobileEngage.trackCustomEvent("customEvent", new HashMap<String, String>()));
     }
 
     @Test
-    public void testTrackCustomEvent_withAttributes() throws Exception {
+    public void testTrackCustomEvent_V3_withAttributes() throws Exception {
+        doAppLogin();
+
+        Map<String, String> attributes = new HashMap<>();
+        attributes.put("key1", "value1");
+        attributes.put("key2", "value2");
+
+        eventuallyAssertSuccess(MobileEngage.trackCustomEvent("customEvent", attributes));
+    }
+
+    @Test
+    public void testTrackCustomEvent_V2_noAttributes() throws Exception {
+        ExperimentalTestUtils.resetExperimentalFeatures();
+
+        doAppLogin();
+
+        eventuallyAssertSuccess(MobileEngage.trackCustomEvent("customEvent", null));
+    }
+
+    @Test
+    public void testTrackCustomEvent_V2_emptyAttributes() throws Exception {
+        ExperimentalTestUtils.resetExperimentalFeatures();
+
+        doAppLogin();
+
+        eventuallyAssertSuccess(MobileEngage.trackCustomEvent("customEvent", new HashMap<String, String>()));
+    }
+
+    @Test
+    public void testTrackCustomEvent_V2_withAttributes() throws Exception {
+        ExperimentalTestUtils.resetExperimentalFeatures();
+
         doAppLogin();
 
         Map<String, String> attributes = new HashMap<>();
@@ -131,7 +166,7 @@ public class MobileEngageIntegrationTest {
     }
 
     private void doAppLogin() throws InterruptedException {
-        MobileEngage.appLogin();
+        MobileEngage.appLogin(3, "test@test.com");
         latch.await();
 
         latch = new CountDownLatch(1);

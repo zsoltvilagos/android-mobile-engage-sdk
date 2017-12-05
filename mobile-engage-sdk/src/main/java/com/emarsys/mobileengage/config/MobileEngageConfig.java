@@ -6,6 +6,9 @@ import android.support.annotation.NonNull;
 
 import com.emarsys.core.util.Assert;
 import com.emarsys.mobileengage.MobileEngageStatusListener;
+import com.emarsys.mobileengage.experimental.FlipperFeature;
+
+import java.util.Arrays;
 
 public class MobileEngageConfig {
 
@@ -16,6 +19,7 @@ public class MobileEngageConfig {
     private final boolean isDebugMode;
     private final boolean idlingResourceEnabled;
     private final OreoConfig oreoConfig;
+    private final FlipperFeature[] flipperFeatures;
 
     MobileEngageConfig(Application application,
                        String applicationCode,
@@ -23,12 +27,14 @@ public class MobileEngageConfig {
                        MobileEngageStatusListener statusListener,
                        boolean isDebugMode,
                        boolean idlingResourceEnabled,
-                       OreoConfig oreoConfig) {
+                       OreoConfig oreoConfig,
+                       FlipperFeature[] enabledFeatures) {
         Assert.notNull(application, "Application must not be null");
         Assert.notNull(applicationCode, "ApplicationCode must not be null");
         Assert.notNull(applicationPassword, "ApplicationPassword must not be null");
         Assert.notNull(oreoConfig, "OreoConfig must not be null");
         validate(oreoConfig);
+        Assert.notNull(enabledFeatures, "EnabledFeatures must not be null");
         this.application = application;
         this.applicationCode = applicationCode;
         this.applicationPassword = applicationPassword;
@@ -36,6 +42,7 @@ public class MobileEngageConfig {
         this.isDebugMode = isDebugMode;
         this.idlingResourceEnabled = idlingResourceEnabled;
         this.oreoConfig = oreoConfig;
+        this.flipperFeatures = enabledFeatures;
     }
 
     public Application getApplication() {
@@ -66,6 +73,10 @@ public class MobileEngageConfig {
         return oreoConfig;
     }
 
+    public FlipperFeature[] getExperimentalFeatures() {
+        return flipperFeatures;
+    }
+
     private void validate(OreoConfig oreoConfig) {
         if (oreoConfig.isDefaultChannelEnabled()) {
             Assert.notNull(oreoConfig.getDefaultChannelName(), "DefaultChannelName must not be null");
@@ -90,8 +101,9 @@ public class MobileEngageConfig {
             return false;
         if (statusListener != null ? !statusListener.equals(that.statusListener) : that.statusListener != null)
             return false;
-        return oreoConfig != null ? oreoConfig.equals(that.oreoConfig) : that.oreoConfig == null;
-
+        if (oreoConfig != null ? !oreoConfig.equals(that.oreoConfig) : that.oreoConfig != null)
+            return false;
+        return flipperFeatures != null ? Arrays.equals(flipperFeatures, that.flipperFeatures) : that.flipperFeatures == null;
     }
 
     @Override
@@ -103,6 +115,7 @@ public class MobileEngageConfig {
         result = 31 * result + (isDebugMode ? 1 : 0);
         result = 31 * result + (idlingResourceEnabled ? 1 : 0);
         result = 31 * result + (oreoConfig != null ? oreoConfig.hashCode() : 0);
+        result = 31 * result + (flipperFeatures != null ? flipperFeatures.hashCode() : 0);
         return result;
     }
 
@@ -116,6 +129,7 @@ public class MobileEngageConfig {
                 ", isDebugMode=" + isDebugMode +
                 ", idlingResourceEnabled=" + idlingResourceEnabled +
                 ", oreoConfig=" + oreoConfig +
+                ", flipperFeatures=" + flipperFeatures +
                 '}';
     }
 
@@ -126,6 +140,7 @@ public class MobileEngageConfig {
         private MobileEngageStatusListener statusListener;
         private boolean idlingResourceEnabled;
         private OreoConfig oreoConfig;
+        private FlipperFeature[] experimentalFeatures;
 
         public Builder from(MobileEngageConfig baseConfig) {
             Assert.notNull(baseConfig, "BaseConfig must not be null");
@@ -135,6 +150,7 @@ public class MobileEngageConfig {
             statusListener = baseConfig.getStatusListener();
             idlingResourceEnabled = baseConfig.isIdlingResourceEnabled();
             oreoConfig = baseConfig.getOreoConfig();
+            experimentalFeatures = baseConfig.getExperimentalFeatures();
             return this;
         }
 
@@ -170,8 +186,15 @@ public class MobileEngageConfig {
             return this;
         }
 
+        public Builder enableExperimentalFeatures(FlipperFeature... experimentalFeatures) {
+            this.experimentalFeatures = experimentalFeatures;
+            return this;
+        }
+
         public MobileEngageConfig build() {
             boolean isDebuggable = (0 != (application.getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE));
+
+            experimentalFeatures = experimentalFeatures == null ? new FlipperFeature[]{} : experimentalFeatures;
 
             return new MobileEngageConfig(
                     application,
@@ -180,7 +203,8 @@ public class MobileEngageConfig {
                     statusListener,
                     isDebuggable,
                     idlingResourceEnabled,
-                    oreoConfig);
+                    oreoConfig,
+                    experimentalFeatures);
         }
     }
 }

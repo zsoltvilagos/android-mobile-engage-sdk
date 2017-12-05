@@ -16,6 +16,8 @@ import com.emarsys.core.util.Assert;
 import com.emarsys.core.util.log.EMSLogger;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
+import com.emarsys.mobileengage.experimental.Experimental;
+import com.emarsys.mobileengage.experimental.MobileEngageFeature;
 import com.emarsys.mobileengage.storage.AppLoginStorage;
 import com.emarsys.mobileengage.storage.MeIdStorage;
 import com.emarsys.mobileengage.util.RequestUtils;
@@ -138,6 +140,33 @@ public class MobileEngageInternal {
 
     String trackCustomEvent(@NonNull String eventName,
                             @Nullable Map<String, String> eventAttributes) {
+        if (Experimental.isFeatureEnabled(MobileEngageFeature.IN_APP_MESSAGING)) {
+            return trackCustomEvent_V3(eventName, eventAttributes);
+        } else {
+            return trackCustomEvent_V2(eventName, eventAttributes);
+        }
+    }
+
+    String trackCustomEvent_V2(@NonNull String eventName,
+                               @Nullable Map<String, String> eventAttributes) {
+        EMSLogger.log(MobileEngageTopic.MOBILE_ENGAGE, "Arguments: eventName %s, eventAttributes %s", eventName, eventAttributes);
+
+        Map<String, Object> payload = RequestUtils.createBasePayload(config, appLoginParameters);
+        if (eventAttributes != null && !eventAttributes.isEmpty()) {
+            payload.put("attributes", eventAttributes);
+        }
+        RequestModel model = new RequestModel.Builder()
+                .url(RequestUtils.createEventUrl(eventName))
+                .payload(payload)
+                .build();
+
+        MobileEngageUtils.incrementIdlingResource();
+        manager.submit(model);
+        return model.getId();
+    }
+
+    String trackCustomEvent_V3(@NonNull String eventName,
+                               @Nullable Map<String, String> eventAttributes) {
         EMSLogger.log(MobileEngageTopic.MOBILE_ENGAGE, "Arguments: eventName %s, eventAttributes %s", eventName, eventAttributes);
 
         Map<String, Object> event = new HashMap<>();
