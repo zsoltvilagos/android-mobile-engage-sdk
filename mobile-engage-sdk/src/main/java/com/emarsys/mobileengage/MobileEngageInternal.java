@@ -16,7 +16,7 @@ import com.emarsys.core.util.Assert;
 import com.emarsys.core.util.log.EMSLogger;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
-import com.emarsys.mobileengage.experimental.Experimental;
+import com.emarsys.mobileengage.experimental.MobileEngageExperimental;
 import com.emarsys.mobileengage.experimental.MobileEngageFeature;
 import com.emarsys.mobileengage.storage.AppLoginStorage;
 import com.emarsys.mobileengage.storage.MeIdStorage;
@@ -140,7 +140,7 @@ public class MobileEngageInternal {
 
     String trackCustomEvent(@NonNull String eventName,
                             @Nullable Map<String, String> eventAttributes) {
-        if (Experimental.isFeatureEnabled(MobileEngageFeature.IN_APP_MESSAGING)) {
+        if (MobileEngageExperimental.isFeatureEnabled(MobileEngageFeature.IN_APP_MESSAGING)) {
             return trackCustomEvent_V3(eventName, eventAttributes);
         } else {
             return trackCustomEvent_V2(eventName, eventAttributes);

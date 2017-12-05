@@ -3,7 +3,7 @@ package com.emarsys.mobileengage.experimental;
 import java.util.HashSet;
 import java.util.Set;
 
-public class Experimental {
+public class MobileEngageExperimental {
 
     static Set<String> enabledFeatures = new HashSet<>();
 

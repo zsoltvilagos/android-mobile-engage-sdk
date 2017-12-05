@@ -15,8 +15,8 @@ import com.emarsys.core.util.Assert;
 import com.emarsys.core.util.log.EMSLogger;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
-import com.emarsys.mobileengage.experimental.Experimental;
 import com.emarsys.mobileengage.experimental.FlipperFeature;
+import com.emarsys.mobileengage.experimental.MobileEngageExperimental;
 import com.emarsys.mobileengage.experimental.MobileEngageFeature;
 import com.emarsys.mobileengage.inbox.InboxInternal;
 import com.emarsys.mobileengage.inbox.InboxResultListener;
@@ -67,7 +67,7 @@ public class MobileEngage {
         EMSLogger.log(MobileEngageTopic.MOBILE_ENGAGE, "Argument: %s", config);
 
         for (FlipperFeature feature : config.getExperimentalFeatures()) {
-            Experimental.enableFeature(feature);
+            MobileEngageExperimental.enableFeature(feature);
         }
 
         MobileEngage.config = config;
@@ -77,7 +77,7 @@ public class MobileEngage {
         CurrentActivityWatchdog.registerApplication(application);
 
         List<AbstractResponseHandler> responseHandlers = new ArrayList<>();
-        if (Experimental.isFeatureEnabled(MobileEngageFeature.IN_APP_MESSAGING)) {
+        if (MobileEngageExperimental.isFeatureEnabled(MobileEngageFeature.IN_APP_MESSAGING)) {
             responseHandlers.add(new MeIdResponseHandler(new MeIdStorage(application)));
         }
 

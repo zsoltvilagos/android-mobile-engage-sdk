@@ -13,7 +13,7 @@ import com.emarsys.core.request.RequestModel;
 import com.emarsys.core.timestamp.TimestampProvider;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
-import com.emarsys.mobileengage.experimental.Experimental;
+import com.emarsys.mobileengage.experimental.MobileEngageExperimental;
 import com.emarsys.mobileengage.experimental.MobileEngageFeature;
 import com.emarsys.mobileengage.storage.AppLoginStorage;
 import com.emarsys.mobileengage.storage.MeIdStorage;
@@ -72,7 +72,7 @@ public class MobileEngageInternalTest {
 
     @Before
     public void init() {
-        Experimental.enableFeature(MobileEngageFeature.IN_APP_MESSAGING);
+        MobileEngageExperimental.enableFeature(MobileEngageFeature.IN_APP_MESSAGING);
 
         manager = mock(RequestManager.class);
         coreCompletionHandler = mock(MobileEngageCoreCompletionHandler.class);
