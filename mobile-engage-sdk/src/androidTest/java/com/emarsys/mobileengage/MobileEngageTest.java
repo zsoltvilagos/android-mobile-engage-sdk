@@ -9,6 +9,8 @@ import com.emarsys.core.activity.CurrentActivityWatchdog;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
+import com.emarsys.mobileengage.experimental.MobileEngageExperimental;
+import com.emarsys.mobileengage.experimental.MobileEngageFeature;
 import com.emarsys.mobileengage.fake.FakeRequestManager;
 import com.emarsys.mobileengage.fake.FakeStatusListener;
 import com.emarsys.mobileengage.inbox.InboxInternal;
@@ -16,8 +18,10 @@ import com.emarsys.mobileengage.inbox.InboxResultListener;
 import com.emarsys.mobileengage.inbox.ResetBadgeCountResultListener;
 import com.emarsys.mobileengage.inbox.model.Notification;
 import com.emarsys.mobileengage.responsehandler.AbstractResponseHandler;
+import com.emarsys.mobileengage.responsehandler.InAppMessageResponseHandler;
 import com.emarsys.mobileengage.responsehandler.MeIdResponseHandler;
 import com.emarsys.mobileengage.storage.AppLoginStorage;
+import com.emarsys.mobileengage.testUtil.ExperimentalTestUtils;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
 import org.json.JSONException;
@@ -61,6 +65,8 @@ public class MobileEngageTest {
 
     @Before
     public void init() throws Exception {
+        MobileEngageExperimental.enableFeature(MobileEngageFeature.IN_APP_MESSAGING);
+
         application = (Application) InstrumentationRegistry.getTargetContext().getApplicationContext();
         coreCompletionHandler = mock(MobileEngageCoreCompletionHandler.class);
         mobileEngageInternal = mock(MobileEngageInternal.class);
@@ -86,13 +92,47 @@ public class MobileEngageTest {
     }
 
     @Test
-    public void testSetup_initializesCoreCompletionHandler_withCorrectResponseHandlers() {
+    public void testSetup_initializesCoreCompletionHandler_withMeIdResponseHandler() {
         MobileEngage.completionHandler = null;
         MobileEngage.setup(baseConfig);
 
         MobileEngageCoreCompletionHandler coreCompletionHandler = MobileEngage.completionHandler;
         assertNotNull(coreCompletionHandler);
         assertEquals(1, numberOfElementsIn(coreCompletionHandler.responseHandlers, MeIdResponseHandler.class));
+    }
+
+    @Test
+    public void testSetup_whenInAppMessagingFlipperIsOff_initializesCoreCompletionHandler_withoutMeIdResponseHandler() throws NoSuchFieldException, IllegalAccessException {
+        ExperimentalTestUtils.resetExperimentalFeatures();
+
+        MobileEngage.completionHandler = null;
+        MobileEngage.setup(baseConfig);
+
+        MobileEngageCoreCompletionHandler coreCompletionHandler = MobileEngage.completionHandler;
+        assertNotNull(coreCompletionHandler);
+        assertEquals(0, numberOfElementsIn(coreCompletionHandler.responseHandlers, MeIdResponseHandler.class));
+    }
+
+    @Test
+    public void testSetup_initializesCoreCompletionHandler_withInAppMessageResponseHandler() {
+        MobileEngage.completionHandler = null;
+        MobileEngage.setup(baseConfig);
+
+        MobileEngageCoreCompletionHandler coreCompletionHandler = MobileEngage.completionHandler;
+        assertNotNull(coreCompletionHandler);
+        assertEquals(1, numberOfElementsIn(coreCompletionHandler.responseHandlers, InAppMessageResponseHandler.class));
+    }
+
+    @Test
+    public void testSetup_whenInAppMessagingFlipperIsOff_initializesCoreCompletionHandler_withoutInAppMessageResponseHandler() throws NoSuchFieldException, IllegalAccessException {
+        ExperimentalTestUtils.resetExperimentalFeatures();
+
+        MobileEngage.completionHandler = null;
+        MobileEngage.setup(baseConfig);
+
+        MobileEngageCoreCompletionHandler coreCompletionHandler = MobileEngage.completionHandler;
+        assertNotNull(coreCompletionHandler);
+        assertEquals(0, numberOfElementsIn(coreCompletionHandler.responseHandlers, InAppMessageResponseHandler.class));
     }
 
     @Test
