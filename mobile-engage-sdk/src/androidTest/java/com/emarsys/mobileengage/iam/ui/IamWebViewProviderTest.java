@@ -26,7 +26,7 @@ import static junit.framework.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-class TestJSInterface {
+class TestJSInterface extends IamJsBridge{
 
     @JavascriptInterface
     public void onPageLoaded(String json) {
@@ -41,7 +41,7 @@ public class IamWebViewProviderTest {
     private MessageLoadedListener listener;
     private Handler handler;
     private CountDownLatch latch;
-    private Object dummyJsBridge;
+    private IamJsBridge dummyJsBridge;
 
     String html = String.format("<!DOCTYPE html>\n" +
             "<html lang=\"en\">\n" +
@@ -69,7 +69,7 @@ public class IamWebViewProviderTest {
 
         handler = new Handler(Looper.getMainLooper());
         latch = new CountDownLatch(1);
-        dummyJsBridge = new Object();
+        dummyJsBridge = new IamJsBridge();
     }
 
     @Test(expected = IllegalArgumentException.class)

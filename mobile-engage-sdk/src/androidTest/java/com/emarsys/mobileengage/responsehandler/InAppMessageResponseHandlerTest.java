@@ -1,7 +1,9 @@
 package com.emarsys.mobileengage.responsehandler;
 
 import com.emarsys.core.response.ResponseModel;
+import com.emarsys.mobileengage.iam.ui.IamJsBridge;
 import com.emarsys.mobileengage.iam.ui.IamWebViewProvider;
+import com.emarsys.mobileengage.iam.ui.MessageLoadedListener;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
 import org.junit.Assert;
@@ -10,7 +12,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 public class InAppMessageResponseHandlerTest {
     private InAppMessageResponseHandler handler;
@@ -68,5 +73,20 @@ public class InAppMessageResponseHandlerTest {
                 .body(responseBody)
                 .build();
         Assert.assertFalse(handler.shouldHandleResponse(response));
+    }
+
+    @Test
+    public void testHandleResponse_shouldCallloadMessageAsyncWithCorrectArguments(){
+        String html = "<p>hello</p>";
+        String responseBody = String.format("{'message': {'html':'%s'}}", html);
+        ResponseModel response = new ResponseModel.Builder()
+                .statusCode(200)
+                .message("OK")
+                .body(responseBody)
+                .build();
+
+        handler.handleResponse(response);
+
+        verify(webViewProvider).loadMessageAsync(eq(html), any(IamJsBridge.class), any(MessageLoadedListener.class));
     }
 }

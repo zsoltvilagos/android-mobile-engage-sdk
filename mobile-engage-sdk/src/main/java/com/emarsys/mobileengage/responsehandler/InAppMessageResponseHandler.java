@@ -2,7 +2,9 @@ package com.emarsys.mobileengage.responsehandler;
 
 import com.emarsys.core.response.ResponseModel;
 import com.emarsys.core.util.Assert;
+import com.emarsys.mobileengage.iam.ui.IamJsBridge;
 import com.emarsys.mobileengage.iam.ui.IamWebViewProvider;
+import com.emarsys.mobileengage.iam.ui.MessageLoadedListener;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -33,5 +35,18 @@ public class InAppMessageResponseHandler extends AbstractResponseHandler {
     @Override
     protected void handleResponse(ResponseModel responseModel) {
 
+        JSONObject responseBody = responseModel.getParsedBody();
+        try {
+            JSONObject message = responseBody.getJSONObject("message");
+            String html = message.getString("html");
+
+            webViewProvider.loadMessageAsync(html, new IamJsBridge(), new MessageLoadedListener() {
+                @Override
+                public void onMessageLoaded() {
+
+                }
+            });
+        } catch (JSONException ignore) {
+        }
     }
 }
