@@ -35,7 +35,7 @@ class TestJSInterface {
 
 @SdkSuppress(minSdkVersion = KITKAT)
 public class IamWebViewProviderTest {
-    public static final String BASIC_HTML = "<html><head></head><body>webview content</body></html>";
+    private static final String BASIC_HTML = "<html><head></head><body>webview content</body></html>";
 
     private IamWebViewProvider provider;
     private MessageLoadedListener listener;
