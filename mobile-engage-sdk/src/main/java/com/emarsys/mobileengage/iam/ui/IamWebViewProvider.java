@@ -13,7 +13,7 @@ public class IamWebViewProvider {
 
     static WebView webView;
 
-    public void loadMessageAsync(final String html, final MessageLoadedListener messageLoadedListener, final Object jsBridge) {
+    public void loadMessageAsync(final String html, final Object jsBridge, final MessageLoadedListener messageLoadedListener) {
         Assert.notNull(html, "Html must not be null!");
         Assert.notNull(messageLoadedListener, "MessageLoadedListener must not be null!");
         Assert.notNull(jsBridge, "JsBridge must not be null!");

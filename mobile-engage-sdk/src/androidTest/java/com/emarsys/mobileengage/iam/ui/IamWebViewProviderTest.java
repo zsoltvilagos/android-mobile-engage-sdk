@@ -74,23 +74,23 @@ public class IamWebViewProviderTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testLoadMessageAsync_htmlShouldNotBeNull() {
-        provider.loadMessageAsync(null, listener, dummyJsBridge);
+        provider.loadMessageAsync(null, dummyJsBridge, listener);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testLoadMessageAsync_listenerShouldNotBeNull() {
-        provider.loadMessageAsync(BASIC_HTML, null, dummyJsBridge);
+        provider.loadMessageAsync(BASIC_HTML, dummyJsBridge, null);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testLoadMessageAsync_jsBridgeShouldNotBeNull() {
-        provider.loadMessageAsync(BASIC_HTML, listener, null);
+        provider.loadMessageAsync(BASIC_HTML, null, listener);
     }
 
     @Test
     public void testLoadMessageAsync_shouldInvokeJsBridge_whenPageIsLoaded() throws InterruptedException {
         TestJSInterface jsInterface = mock(TestJSInterface.class);
-        provider.loadMessageAsync(html, new FakeMessageLoadedListener(latch), jsInterface);
+        provider.loadMessageAsync(html, jsInterface, new FakeMessageLoadedListener(latch));
         latch.await();
         verify(jsInterface).onPageLoaded("{success:true}");
     }
