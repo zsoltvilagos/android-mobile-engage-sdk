@@ -4,6 +4,7 @@ import android.app.Application;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.test.InstrumentationRegistry;
+import android.support.test.filters.SdkSuppress;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 
@@ -20,6 +21,7 @@ import org.junit.rules.TestRule;
 import java.lang.reflect.Field;
 import java.util.concurrent.CountDownLatch;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static junit.framework.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -31,6 +33,7 @@ class TestJSInterface {
     }
 }
 
+@SdkSuppress(minSdkVersion = KITKAT)
 public class IamWebViewProviderTest {
     public static final String BASIC_HTML = "<html><head></head><body>webview content</body></html>";
 
