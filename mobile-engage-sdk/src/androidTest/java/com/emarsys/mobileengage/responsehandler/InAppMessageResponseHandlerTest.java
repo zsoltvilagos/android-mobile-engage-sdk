@@ -1,6 +1,7 @@
 package com.emarsys.mobileengage.responsehandler;
 
 import com.emarsys.core.response.ResponseModel;
+import com.emarsys.mobileengage.iam.ui.IamWebViewProvider;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
 import org.junit.Assert;
@@ -9,15 +10,19 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 
+import static org.mockito.Mockito.mock;
+
 public class InAppMessageResponseHandlerTest {
     private InAppMessageResponseHandler handler;
+    private IamWebViewProvider webViewProvider;
 
     @Rule
     public TestRule timeout = TimeoutUtils.getTimeoutRule();
 
     @Before
     public void init() {
-        handler = new InAppMessageResponseHandler();
+        webViewProvider = mock(IamWebViewProvider.class);
+        handler = new InAppMessageResponseHandler(webViewProvider);
     }
 
     @Test(expected = IllegalArgumentException.class)

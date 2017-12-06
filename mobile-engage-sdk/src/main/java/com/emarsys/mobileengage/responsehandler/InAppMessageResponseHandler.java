@@ -2,11 +2,18 @@ package com.emarsys.mobileengage.responsehandler;
 
 import com.emarsys.core.response.ResponseModel;
 import com.emarsys.core.util.Assert;
+import com.emarsys.mobileengage.iam.ui.IamWebViewProvider;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 public class InAppMessageResponseHandler extends AbstractResponseHandler {
+
+    private IamWebViewProvider webViewProvider;
+
+    public InAppMessageResponseHandler(IamWebViewProvider webViewProvider) {
+        this.webViewProvider = webViewProvider;
+    }
 
     @Override
     protected boolean shouldHandleResponse(ResponseModel responseModel) {
