@@ -11,6 +11,7 @@ import com.emarsys.core.DeviceInfo;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.request.RequestModel;
 import com.emarsys.core.timestamp.TimestampProvider;
+import com.emarsys.core.util.TimestampUtils;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
 import com.emarsys.mobileengage.experimental.MobileEngageExperimental;
@@ -282,6 +283,7 @@ public class MobileEngageInternalTest {
     @Test
     public void testTrackCustomEvent_V3_requestManagerCalledWithCorrectRequestModel() {
         long timestamp = 123;
+        String dateStringWithTimeZone = TimestampUtils.formatTimestampWithTimezone(timestamp, deviceInfo);
 
         TimestampProvider fakeProvider = mock(TimestampProvider.class);
         when(fakeProvider.provideTimestamp()).thenReturn(timestamp);
@@ -294,7 +296,7 @@ public class MobileEngageInternalTest {
         Map<String, Object> event = new HashMap<>();
         event.put("type", "custom");
         event.put("name", eventName);
-        event.put("timestamp", timestamp);
+        event.put("timestamp", dateStringWithTimeZone);
         event.put("attributes", eventAttributes);
 
         Map<String, Object> payload = new HashMap<>();

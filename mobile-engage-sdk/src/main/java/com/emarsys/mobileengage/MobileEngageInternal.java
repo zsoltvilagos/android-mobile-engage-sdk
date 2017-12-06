@@ -13,6 +13,7 @@ import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.request.RequestModel;
 import com.emarsys.core.timestamp.TimestampProvider;
 import com.emarsys.core.util.Assert;
+import com.emarsys.core.util.TimestampUtils;
 import com.emarsys.core.util.log.EMSLogger;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
@@ -172,7 +173,7 @@ public class MobileEngageInternal {
         Map<String, Object> event = new HashMap<>();
         event.put("type", "custom");
         event.put("name", eventName);
-        event.put("timestamp", timestampProvider.provideTimestamp());
+        event.put("timestamp", TimestampUtils.formatTimestampWithTimezone(timestampProvider.provideTimestamp(), deviceInfo));
         if (eventAttributes != null && !eventAttributes.isEmpty()) {
             event.put("attributes", eventAttributes);
         }
