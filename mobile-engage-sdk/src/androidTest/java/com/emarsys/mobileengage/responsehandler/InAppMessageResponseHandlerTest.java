@@ -32,61 +32,45 @@ public class InAppMessageResponseHandlerTest {
 
     @Test
     public void testShouldHandleResponse_shouldReturnTrueWhenTheResponseHasHtmlAttribute() {
-        String responseBody = "{'message': {'html':'some html'}}";
-        ResponseModel response = new ResponseModel.Builder()
-                .statusCode(200)
-                .message("OK")
-                .body(responseBody)
-                .build();
+        ResponseModel response = buildResponseModel("{'message': {'html':'some html'}}");
         Assert.assertTrue(handler.shouldHandleResponse(response));
     }
 
     @Test
     public void testShouldHandleResponse_shouldReturnFalseWhenTheResponseHasANonJsonBody() {
-        String responseBody = "Created";
-        ResponseModel response = new ResponseModel.Builder()
-                .statusCode(200)
-                .message("OK")
-                .body(responseBody)
-                .build();
+        ResponseModel response = buildResponseModel("Created");
         Assert.assertFalse(handler.shouldHandleResponse(response));
     }
 
     @Test
     public void testShouldHandleResponse_shouldReturnFalseWhenTheResponseHasNoMessageAttribute() {
-        String responseBody = "{'not_a_message': {'html':'some html'}}";
-        ResponseModel response = new ResponseModel.Builder()
-                .statusCode(200)
-                .message("OK")
-                .body(responseBody)
-                .build();
+        ResponseModel response = buildResponseModel("{'not_a_message': {'html':'some html'}}");
         Assert.assertFalse(handler.shouldHandleResponse(response));
     }
-
 
     @Test
     public void testShouldHandleResponse_shouldReturnFalseWhenTheResponseHasNoHtmlAttribute() {
-        String responseBody = "{'message': {'not_html':'some html'}}";
-        ResponseModel response = new ResponseModel.Builder()
-                .statusCode(200)
-                .message("OK")
-                .body(responseBody)
-                .build();
+        ResponseModel response = buildResponseModel("{'message': {'not_html':'some html'}}");
         Assert.assertFalse(handler.shouldHandleResponse(response));
     }
+
 
     @Test
     public void testHandleResponse_shouldCallloadMessageAsyncWithCorrectArguments(){
         String html = "<p>hello</p>";
         String responseBody = String.format("{'message': {'html':'%s'}}", html);
-        ResponseModel response = new ResponseModel.Builder()
-                .statusCode(200)
-                .message("OK")
-                .body(responseBody)
-                .build();
+        ResponseModel response = buildResponseModel(responseBody);
 
         handler.handleResponse(response);
 
         verify(webViewProvider).loadMessageAsync(eq(html), any(IamJsBridge.class), any(MessageLoadedListener.class));
+    }
+
+    private ResponseModel buildResponseModel(String responseBody) {
+        return new ResponseModel.Builder()
+                .statusCode(200)
+                .message("OK")
+                .body(responseBody)
+                .build();
     }
 }
