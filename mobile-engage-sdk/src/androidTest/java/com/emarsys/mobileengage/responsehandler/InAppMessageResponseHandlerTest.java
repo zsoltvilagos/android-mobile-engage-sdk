@@ -25,11 +25,6 @@ public class InAppMessageResponseHandlerTest {
         handler = new InAppMessageResponseHandler(webViewProvider);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testShouldHandleResponse_shouldNotAcceptNull(){
-        handler.shouldHandleResponse(null);
-    }
-
     @Test
     public void testShouldHandleResponse_shouldReturnTrueWhenTheResponseHasHtmlAttribute() {
         String responseBody = "{'message': {'html':'some html'}}";
@@ -39,6 +34,17 @@ public class InAppMessageResponseHandlerTest {
                 .body(responseBody)
                 .build();
         Assert.assertTrue(handler.shouldHandleResponse(response));
+    }
+
+    @Test
+    public void testShouldHandleResponse_shouldReturnFalseWhenTheResponseHasANonJsonBody() {
+        String responseBody = "Created";
+        ResponseModel response = new ResponseModel.Builder()
+                .statusCode(200)
+                .message("OK")
+                .body(responseBody)
+                .build();
+        Assert.assertFalse(handler.shouldHandleResponse(response));
     }
 
     @Test

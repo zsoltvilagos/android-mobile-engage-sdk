@@ -17,9 +17,11 @@ public class InAppMessageResponseHandler extends AbstractResponseHandler {
 
     @Override
     protected boolean shouldHandleResponse(ResponseModel responseModel) {
-        Assert.notNull(responseModel, "ResponseModel must not be null!");
-
         JSONObject responseBody = responseModel.getParsedBody();
+        if (responseBody == null) {
+            return false;
+        }
+
         try {
             JSONObject message = responseBody.getJSONObject("message");
             return message.has("html");
