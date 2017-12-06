@@ -282,6 +282,7 @@ public class MobileEngageInternalTest {
     @Test
     public void testTrackCustomEvent_V3_requestManagerCalledWithCorrectRequestModel() {
         long timestamp = 123;
+
         TimestampProvider fakeProvider = mock(TimestampProvider.class);
         when(fakeProvider.provideTimestamp()).thenReturn(timestamp);
         mobileEngage.timestampProvider = fakeProvider;
@@ -292,7 +293,7 @@ public class MobileEngageInternalTest {
 
         Map<String, Object> event = new HashMap<>();
         event.put("type", "custom");
-        event.put("id", eventName);
+        event.put("name", eventName);
         event.put("timestamp", timestamp);
         event.put("attributes", eventAttributes);
 
@@ -300,6 +301,7 @@ public class MobileEngageInternalTest {
         payload.put("clicks", new ArrayList<>());
         payload.put("viewed_messages", new ArrayList<>());
         payload.put("events", Collections.singletonList(event));
+        payload.put("hardware_id", deviceInfo.getHwid());
 
         RequestModel expected = new RequestModel.Builder()
                 .url(ENDPOINT_BASE_V3 + ME_ID + "/events")

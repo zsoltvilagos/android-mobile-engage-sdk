@@ -171,7 +171,7 @@ public class MobileEngageInternal {
 
         Map<String, Object> event = new HashMap<>();
         event.put("type", "custom");
-        event.put("id", eventName);
+        event.put("name", eventName);
         event.put("timestamp", timestampProvider.provideTimestamp());
         if (eventAttributes != null && !eventAttributes.isEmpty()) {
             event.put("attributes", eventAttributes);
@@ -181,6 +181,7 @@ public class MobileEngageInternal {
         payload.put("clicks", new ArrayList<>());
         payload.put("viewed_messages", new ArrayList<>());
         payload.put("events", Collections.singletonList(event));
+        payload.put("hardware_id", deviceInfo.getHwid());
 
         RequestModel model = new RequestModel.Builder()
                 .url(RequestUtils.createEventUrl_V3(meIdStorage.get()))
