@@ -173,7 +173,7 @@ public class MobileEngageInternal {
         Map<String, Object> event = new HashMap<>();
         event.put("type", "custom");
         event.put("name", eventName);
-        event.put("timestamp", TimestampUtils.formatTimestampWithTimezone(timestampProvider.provideTimestamp(), deviceInfo));
+        event.put("timestamp", TimestampUtils.formatTimestampWithUTC(timestampProvider.provideTimestamp()));
         if (eventAttributes != null && !eventAttributes.isEmpty()) {
             event.put("attributes", eventAttributes);
         }

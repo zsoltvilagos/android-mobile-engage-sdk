@@ -283,7 +283,7 @@ public class MobileEngageInternalTest {
     @Test
     public void testTrackCustomEvent_V3_requestManagerCalledWithCorrectRequestModel() {
         long timestamp = 123;
-        String dateStringWithTimeZone = TimestampUtils.formatTimestampWithTimezone(timestamp, deviceInfo);
+        String dateStringWithTimeZone = TimestampUtils.formatTimestampWithUTC(timestamp);
 
         TimestampProvider fakeProvider = mock(TimestampProvider.class);
         when(fakeProvider.provideTimestamp()).thenReturn(timestamp);
