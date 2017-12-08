@@ -1,9 +1,9 @@
 package com.emarsys.mobileengage.responsehandler;
 
 import com.emarsys.core.response.ResponseModel;
+import com.emarsys.mobileengage.iam.ui.DefaultMessageLoadedListener;
 import com.emarsys.mobileengage.iam.ui.IamJsBridge;
 import com.emarsys.mobileengage.iam.ui.IamWebViewProvider;
-import com.emarsys.mobileengage.iam.ui.MessageLoadedListener;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
 import org.junit.Assert;
@@ -63,7 +63,7 @@ public class InAppMessageResponseHandlerTest {
 
         handler.handleResponse(response);
 
-        verify(webViewProvider).loadMessageAsync(eq(html), any(IamJsBridge.class), any(MessageLoadedListener.class));
+        verify(webViewProvider).loadMessageAsync(eq(html), any(IamJsBridge.class), any(DefaultMessageLoadedListener.class));
     }
 
     private ResponseModel buildResponseModel(String responseBody) {
