@@ -8,6 +8,7 @@ import android.support.test.InstrumentationRegistry;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.experimental.MobileEngageFeature;
 import com.emarsys.mobileengage.fake.FakeStatusListener;
+import com.emarsys.mobileengage.iam.InAppMessageHandler;
 import com.emarsys.mobileengage.inbox.model.Notification;
 import com.emarsys.mobileengage.storage.AppLoginStorage;
 import com.emarsys.mobileengage.storage.MeIdStorage;
@@ -31,6 +32,7 @@ import java.util.concurrent.CountDownLatch;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.mockito.Mockito.mock;
 
 public class MobileEngageIntegrationTest {
     private CountDownLatch latch;
@@ -58,7 +60,7 @@ public class MobileEngageIntegrationTest {
                 .statusListener(listener)
                 .disableDefaultChannel()
                 .enableExperimentalFeatures(MobileEngageFeature.IN_APP_MESSAGING)
-                .setDefaultInAppMessageHandler(new Object())
+                .setDefaultInAppMessageHandler(mock(InAppMessageHandler.class))
                 .build();
         MobileEngage.setup(config);
     }

@@ -6,6 +6,7 @@ import android.support.test.InstrumentationRegistry;
 import com.emarsys.mobileengage.MobileEngageStatusListener;
 import com.emarsys.mobileengage.experimental.FlipperFeature;
 import com.emarsys.mobileengage.experimental.MobileEngageFeature;
+import com.emarsys.mobileengage.iam.InAppMessageHandler;
 import com.emarsys.mobileengage.testUtil.ApplicationTestUtils;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
@@ -28,7 +29,7 @@ public class MobileEngageConfigTest {
     private Application applicationDebug;
     private Application applicationRelease;
     private OreoConfig mockOreoConfig;
-    private Object defaultInAppMessageHandler;
+    private InAppMessageHandler defaultInAppMessageHandler;
     private FlipperFeature[] features;
 
     @Rule
@@ -45,7 +46,7 @@ public class MobileEngageConfigTest {
         applicationRelease = ApplicationTestUtils.applicationRelease();
         statusListenerMock = mock(MobileEngageStatusListener.class);
         mockOreoConfig = mock(OreoConfig.class);
-        defaultInAppMessageHandler = new Object();
+        defaultInAppMessageHandler = mock(InAppMessageHandler.class);
         features = new FlipperFeature[]{
                 mock(FlipperFeature.class),
                 mock(FlipperFeature.class)

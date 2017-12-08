@@ -8,6 +8,7 @@ import com.emarsys.core.util.Assert;
 import com.emarsys.mobileengage.MobileEngageStatusListener;
 import com.emarsys.mobileengage.experimental.FlipperFeature;
 import com.emarsys.mobileengage.experimental.MobileEngageFeature;
+import com.emarsys.mobileengage.iam.InAppMessageHandler;
 
 import java.util.Arrays;
 
@@ -20,7 +21,7 @@ public class MobileEngageConfig {
     private final boolean isDebugMode;
     private final boolean idlingResourceEnabled;
     private final OreoConfig oreoConfig;
-    private final Object defaultInAppMessageHandler;
+    private final InAppMessageHandler defaultInAppMessageHandler;
     private final FlipperFeature[] flipperFeatures;
 
     MobileEngageConfig(Application application,
@@ -30,7 +31,7 @@ public class MobileEngageConfig {
                        boolean isDebugMode,
                        boolean idlingResourceEnabled,
                        OreoConfig oreoConfig,
-                       Object defaultInAppMessageHandler,
+                       InAppMessageHandler defaultInAppMessageHandler,
                        FlipperFeature[] enabledFeatures) {
         Assert.notNull(application, "Application must not be null");
         Assert.notNull(applicationCode, "ApplicationCode must not be null");
@@ -82,7 +83,7 @@ public class MobileEngageConfig {
         return oreoConfig;
     }
 
-    public Object getDefaultInAppMessageHandler() {
+    public InAppMessageHandler getDefaultInAppMessageHandler() {
         return defaultInAppMessageHandler;
     }
 
@@ -156,7 +157,7 @@ public class MobileEngageConfig {
         private MobileEngageStatusListener statusListener;
         private boolean idlingResourceEnabled;
         private OreoConfig oreoConfig;
-        private Object defaultInAppMessageHandler;
+        private InAppMessageHandler defaultInAppMessageHandler;
         private FlipperFeature[] experimentalFeatures;
 
         public Builder from(MobileEngageConfig baseConfig) {
@@ -227,7 +228,7 @@ public class MobileEngageConfig {
             );
         }
 
-        public Builder setDefaultInAppMessageHandler(Object inAppMessageHandler) {
+        public Builder setDefaultInAppMessageHandler(InAppMessageHandler inAppMessageHandler) {
             this.defaultInAppMessageHandler = inAppMessageHandler;
             return this;
         }
