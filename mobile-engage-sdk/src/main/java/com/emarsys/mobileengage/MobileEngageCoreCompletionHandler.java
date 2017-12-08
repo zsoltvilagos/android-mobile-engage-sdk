@@ -33,7 +33,6 @@ public class MobileEngageCoreCompletionHandler implements CoreCompletionHandler 
     @Override
     public void onSuccess(final String id, final ResponseModel responseModel) {
         EMSLogger.log(MobileEngageTopic.MOBILE_ENGAGE, "Argument: %s", responseModel);
-        MobileEngageUtils.decrementIdlingResource();
 
         for (AbstractResponseHandler responseHandler : responseHandlers) {
             responseHandler.processResponse(responseModel);
@@ -44,17 +43,17 @@ public class MobileEngageCoreCompletionHandler implements CoreCompletionHandler 
             EMSLogger.log(MobileEngageTopic.MOBILE_ENGAGE, "Notifying statusListener");
             listener.onStatusLog(id, responseModel.getMessage());
         }
+
+        MobileEngageUtils.decrementIdlingResource();
     }
 
     @Override
     public void onError(final String id, final Exception cause) {
-        MobileEngageUtils.decrementIdlingResource();
         handleOnError(id, cause);
     }
 
     @Override
     public void onError(final String id, final ResponseModel responseModel) {
-        MobileEngageUtils.decrementIdlingResource();
         Exception exception = new MobileEngageException(
                 responseModel.getStatusCode(),
                 responseModel.getMessage(),
@@ -69,5 +68,6 @@ public class MobileEngageCoreCompletionHandler implements CoreCompletionHandler 
             EMSLogger.log(MobileEngageTopic.MOBILE_ENGAGE, "Notifying statusListener");
             listener.onError(id, cause);
         }
+        MobileEngageUtils.decrementIdlingResource();
     }
 }
