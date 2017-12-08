@@ -2,6 +2,7 @@ package com.emarsys.mobileengage.iam.ui;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Handler;
 import android.os.Looper;
 import android.webkit.WebView;
@@ -27,7 +28,7 @@ public class IamWebViewProvider {
 
                 webView.getSettings().setJavaScriptEnabled(true);
                 webView.addJavascriptInterface(jsBridge, "Android");
-
+                webView.setBackgroundColor(Color.TRANSPARENT);
                 webView.setWebViewClient(new IamWebViewClient(messageLoadedListener));
 
                 webView.loadData(html, "text/html", "UTF-8");
