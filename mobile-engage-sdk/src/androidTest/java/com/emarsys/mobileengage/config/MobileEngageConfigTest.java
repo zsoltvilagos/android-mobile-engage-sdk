@@ -54,6 +54,7 @@ public class MobileEngageConfigTest {
                 true,
                 false,
                 mockOreoConfig,
+                null,
                 features);
     }
 
@@ -67,6 +68,7 @@ public class MobileEngageConfigTest {
                 true,
                 false,
                 mockOreoConfig,
+                null,
                 features);
     }
 
@@ -80,6 +82,7 @@ public class MobileEngageConfigTest {
                 true,
                 false,
                 mockOreoConfig,
+                null,
                 features);
     }
 
@@ -92,6 +95,7 @@ public class MobileEngageConfigTest {
                 statusListenerMock,
                 true,
                 false,
+                null,
                 null,
                 features);
     }
@@ -106,6 +110,7 @@ public class MobileEngageConfigTest {
                 true,
                 false,
                 mockOreoConfig,
+                null,
                 null);
     }
 
@@ -118,6 +123,7 @@ public class MobileEngageConfigTest {
                 true,
                 false,
                 new OreoConfig(true, null, "description"),
+                null,
                 features);
     }
 
@@ -131,11 +137,12 @@ public class MobileEngageConfigTest {
                 true,
                 false,
                 new OreoConfig(true, "name", null),
+                null,
                 features);
     }
 
     @Test
-    public void testBuilder_withMandatoryArguments() {
+    public void testBuilder_withCorrectSetup() {
         MobileEngageConfig expected = new MobileEngageConfig(
                 applicationDebug,
                 APP_ID,
@@ -144,6 +151,7 @@ public class MobileEngageConfigTest {
                 true,
                 false,
                 new OreoConfig(false),
+                null,
                 new FlipperFeature[]{});
 
         MobileEngageConfig result = new MobileEngageConfig.Builder()
@@ -157,6 +165,7 @@ public class MobileEngageConfigTest {
 
     @Test
     public void testBuilder_withAllArguments() {
+        Object inAppMessageHandler = new Object();
         MobileEngageConfig expected = new MobileEngageConfig(
                 applicationDebug,
                 APP_ID,
@@ -165,7 +174,9 @@ public class MobileEngageConfigTest {
                 true,
                 true,
                 new OreoConfig(true, "defaultChannelName", "defaultChannelDescription"),
-                features);
+                inAppMessageHandler,
+                features
+        );
 
         MobileEngageConfig result = new MobileEngageConfig.Builder()
                 .application(applicationDebug)
@@ -174,6 +185,7 @@ public class MobileEngageConfigTest {
                 .enableIdlingResource(true)
                 .enableDefaultChannel("defaultChannelName", "defaultChannelDescription")
                 .enableExperimentalFeatures(features)
+                .setDefaultInAppMessageHandler(inAppMessageHandler)
                 .build();
 
         assertEquals(expected, result);
@@ -194,6 +206,7 @@ public class MobileEngageConfigTest {
                 true,
                 true,
                 new OreoConfig(false),
+                null,
                 features);
 
         MobileEngageConfig result = new MobileEngageConfig.Builder()
