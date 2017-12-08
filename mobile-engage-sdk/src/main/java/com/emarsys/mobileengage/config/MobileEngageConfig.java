@@ -167,6 +167,7 @@ public class MobileEngageConfig {
             statusListener = baseConfig.getStatusListener();
             idlingResourceEnabled = baseConfig.isIdlingResourceEnabled();
             oreoConfig = baseConfig.getOreoConfig();
+            defaultInAppMessageHandler = baseConfig.getDefaultInAppMessageHandler();
             experimentalFeatures = baseConfig.getExperimentalFeatures();
             return this;
         }

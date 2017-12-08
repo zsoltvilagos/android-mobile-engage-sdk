@@ -28,6 +28,7 @@ public class MobileEngageConfigTest {
     private Application applicationDebug;
     private Application applicationRelease;
     private OreoConfig mockOreoConfig;
+    private Object defaultInAppMessageHandler;
     private FlipperFeature[] features;
 
     @Rule
@@ -44,6 +45,7 @@ public class MobileEngageConfigTest {
         applicationRelease = ApplicationTestUtils.applicationRelease();
         statusListenerMock = mock(MobileEngageStatusListener.class);
         mockOreoConfig = mock(OreoConfig.class);
+        defaultInAppMessageHandler = new Object();
         features = new FlipperFeature[]{
                 mock(FlipperFeature.class),
                 mock(FlipperFeature.class)
@@ -193,7 +195,6 @@ public class MobileEngageConfigTest {
 
     @Test
     public void testBuilder_withAllArguments() {
-        Object inAppMessageHandler = new Object();
         MobileEngageConfig expected = new MobileEngageConfig(
                 applicationDebug,
                 APP_ID,
@@ -202,7 +203,7 @@ public class MobileEngageConfigTest {
                 true,
                 true,
                 new OreoConfig(true, "defaultChannelName", "defaultChannelDescription"),
-                inAppMessageHandler,
+                defaultInAppMessageHandler,
                 features
         );
 
@@ -213,7 +214,7 @@ public class MobileEngageConfigTest {
                 .enableIdlingResource(true)
                 .enableDefaultChannel("defaultChannelName", "defaultChannelDescription")
                 .enableExperimentalFeatures(features)
-                .setDefaultInAppMessageHandler(inAppMessageHandler)
+                .setDefaultInAppMessageHandler(defaultInAppMessageHandler)
                 .build();
 
         assertEquals(expected, result);
@@ -234,7 +235,7 @@ public class MobileEngageConfigTest {
                 true,
                 true,
                 new OreoConfig(false),
-                null,
+                defaultInAppMessageHandler,
                 features);
 
         MobileEngageConfig result = new MobileEngageConfig.Builder()
