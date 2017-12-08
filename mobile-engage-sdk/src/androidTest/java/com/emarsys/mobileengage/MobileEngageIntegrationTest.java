@@ -58,6 +58,7 @@ public class MobileEngageIntegrationTest {
                 .statusListener(listener)
                 .disableDefaultChannel()
                 .enableExperimentalFeatures(MobileEngageFeature.IN_APP_MESSAGING)
+                .setDefaultInAppMessageHandler(new Object())
                 .build();
         MobileEngage.setup(config);
     }

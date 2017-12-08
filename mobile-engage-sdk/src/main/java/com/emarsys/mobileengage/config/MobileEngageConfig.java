@@ -7,6 +7,7 @@ import android.support.annotation.NonNull;
 import com.emarsys.core.util.Assert;
 import com.emarsys.mobileengage.MobileEngageStatusListener;
 import com.emarsys.mobileengage.experimental.FlipperFeature;
+import com.emarsys.mobileengage.experimental.MobileEngageFeature;
 
 import java.util.Arrays;
 
@@ -37,6 +38,11 @@ public class MobileEngageConfig {
         Assert.notNull(oreoConfig, "OreoConfig must not be null");
         validate(oreoConfig);
         Assert.notNull(enabledFeatures, "EnabledFeatures must not be null");
+
+        if(Arrays.asList(enabledFeatures).contains(MobileEngageFeature.IN_APP_MESSAGING)) {
+            Assert.notNull(defaultInAppMessageHandler, "DefaultInAppMessageHandler must not be null");
+        }
+
         this.application = application;
         this.applicationCode = applicationCode;
         this.applicationPassword = applicationPassword;

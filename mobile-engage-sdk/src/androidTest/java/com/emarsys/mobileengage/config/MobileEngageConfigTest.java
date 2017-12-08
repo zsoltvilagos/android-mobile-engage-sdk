@@ -5,12 +5,14 @@ import android.support.test.InstrumentationRegistry;
 
 import com.emarsys.mobileengage.MobileEngageStatusListener;
 import com.emarsys.mobileengage.experimental.FlipperFeature;
+import com.emarsys.mobileengage.experimental.MobileEngageFeature;
 import com.emarsys.mobileengage.testUtil.ApplicationTestUtils;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.rules.TestRule;
 
 import static junit.framework.Assert.assertFalse;
@@ -30,6 +32,10 @@ public class MobileEngageConfigTest {
 
     @Rule
     public TestRule timeout = TimeoutUtils.getTimeoutRule();
+
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
+
 
     @Before
     public void init() {
@@ -161,6 +167,28 @@ public class MobileEngageConfigTest {
                 .build();
 
         assertEquals(expected, result);
+    }
+
+    @Test
+    public void testBuilder_whenInAppMessagingFlipperIsOn_DefaultInAppMessageHandlerIsRequired() {
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("DefaultInAppMessageHandler must not be null");
+
+        MobileEngageConfig result = new MobileEngageConfig.Builder()
+                .application(applicationDebug)
+                .credentials(APP_ID, SECRET)
+                .disableDefaultChannel()
+                .enableExperimentalFeatures(MobileEngageFeature.IN_APP_MESSAGING)
+                .build();
+    }
+
+    @Test
+    public void testBuilder_whenInAppMessagingFlipperIsOff_DefaultInAppMessageHandlerIsNotRequired() {
+        MobileEngageConfig result = new MobileEngageConfig.Builder()
+                .application(applicationDebug)
+                .credentials(APP_ID, SECRET)
+                .disableDefaultChannel()
+                .build();
     }
 
     @Test
