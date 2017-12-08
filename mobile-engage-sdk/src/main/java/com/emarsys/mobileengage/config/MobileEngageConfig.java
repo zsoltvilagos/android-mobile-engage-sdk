@@ -19,6 +19,7 @@ public class MobileEngageConfig {
     private final boolean isDebugMode;
     private final boolean idlingResourceEnabled;
     private final OreoConfig oreoConfig;
+    private final Object defaultInAppMessageHandler;
     private final FlipperFeature[] flipperFeatures;
 
     MobileEngageConfig(Application application,
@@ -28,6 +29,7 @@ public class MobileEngageConfig {
                        boolean isDebugMode,
                        boolean idlingResourceEnabled,
                        OreoConfig oreoConfig,
+                       Object defaultInAppMessageHandler,
                        FlipperFeature[] enabledFeatures) {
         Assert.notNull(application, "Application must not be null");
         Assert.notNull(applicationCode, "ApplicationCode must not be null");
@@ -42,6 +44,7 @@ public class MobileEngageConfig {
         this.isDebugMode = isDebugMode;
         this.idlingResourceEnabled = idlingResourceEnabled;
         this.oreoConfig = oreoConfig;
+        this.defaultInAppMessageHandler = defaultInAppMessageHandler;
         this.flipperFeatures = enabledFeatures;
     }
 
@@ -103,6 +106,9 @@ public class MobileEngageConfig {
             return false;
         if (oreoConfig != null ? !oreoConfig.equals(that.oreoConfig) : that.oreoConfig != null)
             return false;
+        if (defaultInAppMessageHandler != null ? !defaultInAppMessageHandler.equals(that.defaultInAppMessageHandler) : that.defaultInAppMessageHandler != null)
+            return false;
+
         return flipperFeatures != null ? Arrays.equals(flipperFeatures, that.flipperFeatures) : that.flipperFeatures == null;
     }
 
@@ -140,6 +146,7 @@ public class MobileEngageConfig {
         private MobileEngageStatusListener statusListener;
         private boolean idlingResourceEnabled;
         private OreoConfig oreoConfig;
+        private Object defaultInAppMessageHandler;
         private FlipperFeature[] experimentalFeatures;
 
         public Builder from(MobileEngageConfig baseConfig) {
@@ -204,7 +211,14 @@ public class MobileEngageConfig {
                     isDebuggable,
                     idlingResourceEnabled,
                     oreoConfig,
-                    experimentalFeatures);
+                    defaultInAppMessageHandler,
+                    experimentalFeatures
+            );
+        }
+
+        public Builder setDefaultInAppMessageHandler(Object inAppMessageHandler) {
+            this.defaultInAppMessageHandler = inAppMessageHandler;
+            return this;
         }
     }
 }
