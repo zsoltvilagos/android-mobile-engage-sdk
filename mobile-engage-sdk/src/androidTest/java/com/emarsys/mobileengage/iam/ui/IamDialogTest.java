@@ -1,5 +1,6 @@
 package com.emarsys.mobileengage.iam.ui;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.support.test.rule.ActivityTestRule;
 
@@ -17,6 +18,7 @@ import java.util.concurrent.CountDownLatch;
 
 public class IamDialogTest {
 
+    @SuppressLint("ValidFragment")
     private class TestIamDialog extends IamDialog {
 
         CountDownLatch latch;
