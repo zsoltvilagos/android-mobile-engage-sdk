@@ -82,6 +82,10 @@ public class MobileEngageConfig {
         return oreoConfig;
     }
 
+    public Object getDefaultInAppMessageHandler() {
+        return defaultInAppMessageHandler;
+    }
+
     public FlipperFeature[] getExperimentalFeatures() {
         return flipperFeatures;
     }
