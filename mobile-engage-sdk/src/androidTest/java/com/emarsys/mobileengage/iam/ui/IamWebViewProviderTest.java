@@ -73,7 +73,7 @@ public class IamWebViewProviderTest {
 
         handler = new Handler(Looper.getMainLooper());
         latch = new CountDownLatch(1);
-        dummyJsBridge = new IamJsBridge(null);
+        dummyJsBridge = new IamJsBridge(mock(DialogOwner.class));
     }
 
     @Test(expected = IllegalArgumentException.class)
