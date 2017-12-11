@@ -81,7 +81,7 @@ public class IamDialogTest {
         activity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                dialog.show(activity.getFragmentManager(), "fak");
+                dialog.show(activity.getFragmentManager(), "testDialog");
             }
         });
     }
