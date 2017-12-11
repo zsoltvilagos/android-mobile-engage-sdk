@@ -5,8 +5,9 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 
 import com.emarsys.core.activity.CurrentActivityWatchdog;
+import com.emarsys.mobileengage.iam.DialogOwner;
 
-public class DefaultMessageLoadedListener implements MessageLoadedListener {
+public class DefaultMessageLoadedListener implements MessageLoadedListener, DialogOwner {
 
     IamDialog iamDialog;
 
@@ -24,4 +25,8 @@ public class DefaultMessageLoadedListener implements MessageLoadedListener {
         }
     }
 
+    @Override
+    public IamDialog getIamDialog() {
+        return iamDialog;
+    }
 }

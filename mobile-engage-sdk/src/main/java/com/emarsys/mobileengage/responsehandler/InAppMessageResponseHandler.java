@@ -39,7 +39,8 @@ public class InAppMessageResponseHandler extends AbstractResponseHandler {
             JSONObject message = responseBody.getJSONObject("message");
             String html = message.getString("html");
 
-            webViewProvider.loadMessageAsync(html, new IamJsBridge(), new DefaultMessageLoadedListener());
+            DefaultMessageLoadedListener listener = new DefaultMessageLoadedListener();
+            webViewProvider.loadMessageAsync(html, new IamJsBridge(listener), listener);
         } catch (JSONException ignore) {
         }
     }

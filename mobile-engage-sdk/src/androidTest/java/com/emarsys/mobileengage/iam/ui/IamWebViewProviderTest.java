@@ -11,6 +11,7 @@ import android.webkit.WebView;
 import com.emarsys.mobileengage.MobileEngage;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.fake.FakeMessageLoadedListener;
+import com.emarsys.mobileengage.iam.DialogOwner;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
 import org.junit.Before;
@@ -27,6 +28,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 class TestJSInterface extends IamJsBridge{
+    public TestJSInterface(DialogOwner dialogOwner) {
+        super(dialogOwner);
+    }
 
     @JavascriptInterface
     public void onPageLoaded(String json) {
@@ -69,7 +73,7 @@ public class IamWebViewProviderTest {
 
         handler = new Handler(Looper.getMainLooper());
         latch = new CountDownLatch(1);
-        dummyJsBridge = new IamJsBridge();
+        dummyJsBridge = new IamJsBridge(null);
     }
 
     @Test(expected = IllegalArgumentException.class)
