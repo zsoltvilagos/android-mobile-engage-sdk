@@ -2,11 +2,16 @@ package com.emarsys.mobileengage.iam.ui;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.os.Handler;
+import android.os.Looper;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.rule.ActivityTestRule;
+import android.webkit.WebView;
 
 import com.emarsys.mobileengage.fake.FakeActivity;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -45,9 +50,16 @@ public class IamDialogTest {
     public ActivityTestRule<FakeActivity> activityRule = new ActivityTestRule<>(FakeActivity.class);
 
     @Before
-    public void init() {
+    public void init() throws InterruptedException {
         latch = new CountDownLatch(1);
         dialog = new TestIamDialog(latch);
+
+        initWebViewProvider();
+    }
+
+    @After
+    public void tearDown() {
+        IamWebViewProvider.webView = null;
     }
 
     @Test
@@ -84,6 +96,20 @@ public class IamDialogTest {
                 dialog.show(activity.getFragmentManager(), "fak");
             }
         });
+    }
+
+    private void initWebViewProvider() throws InterruptedException {
+        final CountDownLatch initLatch = new CountDownLatch(1);
+
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                IamWebViewProvider.webView = new WebView(InstrumentationRegistry.getTargetContext());
+                initLatch.countDown();
+            }
+        });
+
+        initLatch.await();
     }
 
 }
