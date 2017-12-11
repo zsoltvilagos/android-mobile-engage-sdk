@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.test.InstrumentationRegistry;
+import android.support.test.filters.SdkSuppress;
 import android.support.test.rule.ActivityTestRule;
 import android.webkit.WebView;
 
@@ -20,7 +21,9 @@ import org.junit.rules.TestRule;
 
 import java.util.concurrent.CountDownLatch;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
 
+@SdkSuppress(minSdkVersion = KITKAT)
 public class IamDialogTest {
 
     @SuppressLint("ValidFragment")
