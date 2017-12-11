@@ -21,6 +21,7 @@ import com.emarsys.mobileengage.responsehandler.AbstractResponseHandler;
 import com.emarsys.mobileengage.responsehandler.InAppMessageResponseHandler;
 import com.emarsys.mobileengage.responsehandler.MeIdResponseHandler;
 import com.emarsys.mobileengage.storage.AppLoginStorage;
+import com.emarsys.mobileengage.testUtil.ConnectivityWatchdogTestUtils;
 import com.emarsys.mobileengage.testUtil.ExperimentalTestUtils;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
@@ -32,8 +33,6 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -80,7 +79,7 @@ public class MobileEngageTest {
         MobileEngage.instance = mobileEngageInternal;
         MobileEngage.completionHandler = coreCompletionHandler;
 
-        resetCurrentActivityWatchdog();
+        ConnectivityWatchdogTestUtils.resetCurrentActivityWatchdog();
     }
 
     @Test
@@ -145,7 +144,7 @@ public class MobileEngageTest {
 
     @Test
     public void testSetup_registersCurrentActivityWatchDog() throws Exception {
-        resetCurrentActivityWatchdog();
+        ConnectivityWatchdogTestUtils.resetCurrentActivityWatchdog();
 
         MobileEngage.setup(baseConfig);
 
@@ -345,12 +344,6 @@ public class MobileEngageTest {
     public void testResetBadgeCount_zeroArgs_callsInternal_withNullListener() {
         MobileEngage.Inbox.resetBadgeCount();
         verify(inboxInternal).resetBadgeCount(null);
-    }
-
-    private void resetCurrentActivityWatchdog() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        Method method = CurrentActivityWatchdog.class.getDeclaredMethod("reset");
-        method.setAccessible(true);
-        method.invoke(null);
     }
 
     private int numberOfElementsIn(List list, Class klass) {

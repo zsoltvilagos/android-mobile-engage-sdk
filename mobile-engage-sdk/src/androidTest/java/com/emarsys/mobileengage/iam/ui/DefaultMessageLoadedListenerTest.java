@@ -4,7 +4,7 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
 
-import com.emarsys.core.activity.CurrentActivityWatchdog;
+import com.emarsys.mobileengage.testUtil.ConnectivityWatchdogTestUtils;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
 import org.junit.After;
@@ -13,8 +13,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
-
-import java.lang.reflect.Field;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -45,14 +43,14 @@ public class DefaultMessageLoadedListenerTest {
         currentActivity = mock(Activity.class);
         fragmentManager = mock(FragmentManager.class);
         when(currentActivity.getFragmentManager()).thenReturn(fragmentManager);
-        setActivityWatchdogState(true, currentActivity);
+        ConnectivityWatchdogTestUtils.setActivityWatchdogState(currentActivity);
         dialog = mock(IamDialog.class);
         listener.iamDialog = dialog;
     }
 
     @After
     public void tearDown() throws Exception {
-        setActivityWatchdogState(false, null);
+        ConnectivityWatchdogTestUtils.resetCurrentActivityWatchdog();
     }
 
     @Test
@@ -75,16 +73,6 @@ public class DefaultMessageLoadedListenerTest {
         listener.onMessageLoaded();
 
         verify(dialog, times(0)).show(fragmentManager, IamDialog.TAG);
-    }
-
-    private void setActivityWatchdogState(boolean isRegistered, Activity activity) throws NoSuchFieldException, IllegalAccessException {
-        Field activityField = CurrentActivityWatchdog.class.getDeclaredField("currentActivity");
-        activityField.setAccessible(true);
-        activityField.set(null, activity);
-
-        Field isRegisteredField = CurrentActivityWatchdog.class.getDeclaredField("isRegistered");
-        isRegisteredField.setAccessible(true);
-        isRegisteredField.set(null, isRegistered);
     }
 
 }
