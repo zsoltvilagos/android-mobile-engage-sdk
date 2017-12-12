@@ -1,6 +1,5 @@
 package com.emarsys.mobileengage.iam.ui;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.os.Handler;
 import android.os.Looper;
@@ -25,23 +24,6 @@ import static android.os.Build.VERSION_CODES.KITKAT;
 
 @SdkSuppress(minSdkVersion = KITKAT)
 public class IamDialogTest {
-
-    @SuppressLint("ValidFragment")
-    private class TestIamDialog extends IamDialog {
-
-        CountDownLatch latch;
-
-        public TestIamDialog(CountDownLatch latch) {
-            this.latch = latch;
-        }
-
-        @Override
-        public void onStart() {
-            super.onStart();
-            latch.countDown();
-        }
-
-    }
 
     private TestIamDialog dialog;
     private CountDownLatch latch;
