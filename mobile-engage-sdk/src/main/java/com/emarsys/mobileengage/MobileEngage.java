@@ -81,7 +81,7 @@ public class MobileEngage {
         List<AbstractResponseHandler> responseHandlers = new ArrayList<>();
         if (MobileEngageExperimental.isFeatureEnabled(MobileEngageFeature.IN_APP_MESSAGING)) {
             responseHandlers.add(new MeIdResponseHandler(new MeIdStorage(application)));
-            responseHandlers.add(new InAppMessageResponseHandler(new IamWebViewProvider()));
+            responseHandlers.add(new InAppMessageResponseHandler(new IamWebViewProvider(), config.getDefaultInAppMessageHandler()));
         }
 
         completionHandler = new MobileEngageCoreCompletionHandler(responseHandlers, config.getStatusListener());

@@ -1,6 +1,7 @@
 package com.emarsys.mobileengage.responsehandler;
 
 import com.emarsys.core.response.ResponseModel;
+import com.emarsys.mobileengage.iam.InAppMessageHandler;
 import com.emarsys.mobileengage.iam.ui.DefaultMessageLoadedListener;
 import com.emarsys.mobileengage.iam.ui.IamJsBridge;
 import com.emarsys.mobileengage.iam.ui.IamWebViewProvider;
@@ -27,7 +28,7 @@ public class InAppMessageResponseHandlerTest {
     @Before
     public void init() {
         webViewProvider = mock(IamWebViewProvider.class);
-        handler = new InAppMessageResponseHandler(webViewProvider);
+        handler = new InAppMessageResponseHandler(webViewProvider, mock(InAppMessageHandler.class));
     }
 
     @Test
@@ -54,9 +55,8 @@ public class InAppMessageResponseHandlerTest {
         Assert.assertFalse(handler.shouldHandleResponse(response));
     }
 
-
     @Test
-    public void testHandleResponse_shouldCallloadMessageAsyncWithCorrectArguments(){
+    public void testHandleResponse_shouldCallloadMessageAsyncWithCorrectArguments() {
         String html = "<p>hello</p>";
         String responseBody = String.format("{'message': {'html':'%s'}}", html);
         ResponseModel response = buildResponseModel(responseBody);

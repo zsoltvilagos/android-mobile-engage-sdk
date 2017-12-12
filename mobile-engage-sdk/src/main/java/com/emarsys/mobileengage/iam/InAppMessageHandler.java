@@ -1,8 +1,7 @@
 package com.emarsys.mobileengage.iam;
 
-
-import java.util.Map;
+import org.json.JSONObject;
 
 public interface InAppMessageHandler {
-    void handleApplicationEvent(String eventName, Map<String, Object> payload);
+    void handleApplicationEvent(String eventName, JSONObject payload);
 }

@@ -1,6 +1,7 @@
 package com.emarsys.mobileengage.responsehandler;
 
 import com.emarsys.core.response.ResponseModel;
+import com.emarsys.mobileengage.iam.InAppMessageHandler;
 import com.emarsys.mobileengage.iam.ui.DefaultMessageLoadedListener;
 import com.emarsys.mobileengage.iam.ui.IamJsBridge;
 import com.emarsys.mobileengage.iam.ui.IamWebViewProvider;
@@ -11,9 +12,11 @@ import org.json.JSONObject;
 public class InAppMessageResponseHandler extends AbstractResponseHandler {
 
     private IamWebViewProvider webViewProvider;
+    private InAppMessageHandler inAppMessageHandler;
 
-    public InAppMessageResponseHandler(IamWebViewProvider webViewProvider) {
+    public InAppMessageResponseHandler(IamWebViewProvider webViewProvider, InAppMessageHandler inAppMessageHandler) {
         this.webViewProvider = webViewProvider;
+        this.inAppMessageHandler = inAppMessageHandler;
     }
 
     @Override
@@ -40,7 +43,7 @@ public class InAppMessageResponseHandler extends AbstractResponseHandler {
             String html = message.getString("html");
 
             DefaultMessageLoadedListener listener = new DefaultMessageLoadedListener();
-            webViewProvider.loadMessageAsync(html, new IamJsBridge(listener), listener);
+            webViewProvider.loadMessageAsync(html, new IamJsBridge(listener, inAppMessageHandler), listener);
         } catch (JSONException ignore) {
         }
     }

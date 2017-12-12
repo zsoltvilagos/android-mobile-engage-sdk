@@ -12,6 +12,7 @@ import com.emarsys.mobileengage.MobileEngage;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.fake.FakeMessageLoadedListener;
 import com.emarsys.mobileengage.iam.DialogOwner;
+import com.emarsys.mobileengage.iam.InAppMessageHandler;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
 import org.junit.Before;
@@ -28,8 +29,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 class TestJSInterface extends IamJsBridge{
-    public TestJSInterface(DialogOwner dialogOwner) {
-        super(dialogOwner);
+    public TestJSInterface(DialogOwner dialogOwner, InAppMessageHandler inAppMessageHandler) {
+        super(dialogOwner, inAppMessageHandler);
     }
 
     @JavascriptInterface
@@ -73,7 +74,7 @@ public class IamWebViewProviderTest {
 
         handler = new Handler(Looper.getMainLooper());
         latch = new CountDownLatch(1);
-        dummyJsBridge = new IamJsBridge(mock(DialogOwner.class));
+        dummyJsBridge = new IamJsBridge(mock(DialogOwner.class), mock(InAppMessageHandler.class));
     }
 
     @Test(expected = IllegalArgumentException.class)
