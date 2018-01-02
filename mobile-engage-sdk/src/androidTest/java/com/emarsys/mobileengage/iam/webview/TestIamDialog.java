@@ -1,6 +1,8 @@
-package com.emarsys.mobileengage.iam.ui;
+package com.emarsys.mobileengage.iam.webview;
 
 import android.annotation.SuppressLint;
+
+import com.emarsys.mobileengage.iam.IamDialog;
 
 import java.util.concurrent.CountDownLatch;
 

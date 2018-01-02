@@ -18,7 +18,8 @@ import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
 import com.emarsys.mobileengage.experimental.FlipperFeature;
 import com.emarsys.mobileengage.experimental.MobileEngageExperimental;
 import com.emarsys.mobileengage.experimental.MobileEngageFeature;
-import com.emarsys.mobileengage.iam.ui.IamWebViewProvider;
+import com.emarsys.mobileengage.iam.jsbridge.InAppMessageHandlerProvider;
+import com.emarsys.mobileengage.iam.webview.IamWebViewProvider;
 import com.emarsys.mobileengage.inbox.InboxInternal;
 import com.emarsys.mobileengage.inbox.InboxResultListener;
 import com.emarsys.mobileengage.inbox.ResetBadgeCountResultListener;
@@ -81,7 +82,7 @@ public class MobileEngage {
         List<AbstractResponseHandler> responseHandlers = new ArrayList<>();
         if (MobileEngageExperimental.isFeatureEnabled(MobileEngageFeature.IN_APP_MESSAGING)) {
             responseHandlers.add(new MeIdResponseHandler(new MeIdStorage(application)));
-            responseHandlers.add(new InAppMessageResponseHandler(new IamWebViewProvider(), config.getDefaultInAppMessageHandler()));
+            responseHandlers.add(new InAppMessageResponseHandler(new IamWebViewProvider(), new InAppMessageHandlerProvider()));
         }
 
         completionHandler = new MobileEngageCoreCompletionHandler(responseHandlers, config.getStatusListener());

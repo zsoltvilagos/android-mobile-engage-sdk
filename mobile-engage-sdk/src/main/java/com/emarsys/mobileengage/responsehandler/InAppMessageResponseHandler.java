@@ -1,11 +1,11 @@
 package com.emarsys.mobileengage.responsehandler;
 
 import com.emarsys.core.response.ResponseModel;
-import com.emarsys.mobileengage.iam.InAppMessageHandler;
-import com.emarsys.mobileengage.iam.ui.DefaultMessageLoadedListener;
-import com.emarsys.mobileengage.iam.ui.IamDialog;
-import com.emarsys.mobileengage.iam.ui.IamJsBridge;
-import com.emarsys.mobileengage.iam.ui.IamWebViewProvider;
+import com.emarsys.mobileengage.iam.IamDialog;
+import com.emarsys.mobileengage.iam.jsbridge.IamJsBridge;
+import com.emarsys.mobileengage.iam.jsbridge.InAppMessageHandlerProvider;
+import com.emarsys.mobileengage.iam.webview.DefaultMessageLoadedListener;
+import com.emarsys.mobileengage.iam.webview.IamWebViewProvider;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -13,11 +13,11 @@ import org.json.JSONObject;
 public class InAppMessageResponseHandler extends AbstractResponseHandler {
 
     private IamWebViewProvider webViewProvider;
-    private InAppMessageHandler inAppMessageHandler;
+    private InAppMessageHandlerProvider messageHandlerProvider;
 
-    public InAppMessageResponseHandler(IamWebViewProvider webViewProvider, InAppMessageHandler inAppMessageHandler) {
+    public InAppMessageResponseHandler(IamWebViewProvider webViewProvider, InAppMessageHandlerProvider messageHandlerProvider) {
         this.webViewProvider = webViewProvider;
-        this.inAppMessageHandler = inAppMessageHandler;
+        this.messageHandlerProvider = messageHandlerProvider;
     }
 
     @Override
@@ -45,7 +45,7 @@ public class InAppMessageResponseHandler extends AbstractResponseHandler {
 
             IamDialog iamDialog = new IamDialog();
             DefaultMessageLoadedListener listener = new DefaultMessageLoadedListener(iamDialog);
-            webViewProvider.loadMessageAsync(html, new IamJsBridge(iamDialog, inAppMessageHandler), listener);
+            webViewProvider.loadMessageAsync(html, new IamJsBridge(iamDialog, messageHandlerProvider), listener);
 
         } catch (JSONException ignore) {
         }

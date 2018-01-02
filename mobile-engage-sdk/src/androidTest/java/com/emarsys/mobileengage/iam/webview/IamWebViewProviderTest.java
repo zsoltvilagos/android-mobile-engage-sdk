@@ -1,4 +1,4 @@
-package com.emarsys.mobileengage.iam.ui;
+package com.emarsys.mobileengage.iam.webview;
 
 import android.app.Application;
 import android.os.Handler;
@@ -11,7 +11,9 @@ import android.webkit.WebView;
 import com.emarsys.mobileengage.MobileEngage;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.fake.FakeMessageLoadedListener;
-import com.emarsys.mobileengage.iam.InAppMessageHandler;
+import com.emarsys.mobileengage.iam.IamDialog;
+import com.emarsys.mobileengage.iam.jsbridge.IamJsBridge;
+import com.emarsys.mobileengage.iam.jsbridge.InAppMessageHandlerProvider;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
 import org.junit.Before;
@@ -27,9 +29,9 @@ import static junit.framework.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-class TestJSInterface extends IamJsBridge{
-    public TestJSInterface(IamDialog iamDialog, InAppMessageHandler inAppMessageHandler) {
-        super(iamDialog, inAppMessageHandler);
+class TestJSInterface extends IamJsBridge {
+    public TestJSInterface(IamDialog iamDialog, InAppMessageHandlerProvider inAppMessageHandlerProvider) {
+        super(iamDialog, inAppMessageHandlerProvider);
     }
 
     @JavascriptInterface
@@ -73,7 +75,7 @@ public class IamWebViewProviderTest {
 
         handler = new Handler(Looper.getMainLooper());
         latch = new CountDownLatch(1);
-        dummyJsBridge = new IamJsBridge(mock(IamDialog.class), mock(InAppMessageHandler.class));
+        dummyJsBridge = new IamJsBridge(mock(IamDialog.class), mock(InAppMessageHandlerProvider.class));
     }
 
     @Test(expected = IllegalArgumentException.class)

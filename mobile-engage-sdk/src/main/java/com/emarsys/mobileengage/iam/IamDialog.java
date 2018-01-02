@@ -1,4 +1,4 @@
-package com.emarsys.mobileengage.iam.ui;
+package com.emarsys.mobileengage.iam;
 
 import android.app.DialogFragment;
 import android.graphics.Color;
@@ -13,6 +13,7 @@ import android.webkit.WebView;
 import android.widget.FrameLayout;
 
 import com.emarsys.mobileengage.R;
+import com.emarsys.mobileengage.iam.webview.IamWebViewProvider;
 
 public class IamDialog extends DialogFragment {
 

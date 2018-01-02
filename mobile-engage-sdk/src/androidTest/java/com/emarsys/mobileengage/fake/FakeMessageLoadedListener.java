@@ -2,7 +2,7 @@ package com.emarsys.mobileengage.fake;
 
 import android.os.Looper;
 
-import com.emarsys.mobileengage.iam.ui.MessageLoadedListener;
+import com.emarsys.mobileengage.iam.webview.MessageLoadedListener;
 
 import java.util.concurrent.CountDownLatch;
 

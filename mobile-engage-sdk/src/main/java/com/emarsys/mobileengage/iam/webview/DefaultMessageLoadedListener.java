@@ -1,10 +1,11 @@
-package com.emarsys.mobileengage.iam.ui;
+package com.emarsys.mobileengage.iam.webview;
 
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
 
 import com.emarsys.core.activity.CurrentActivityWatchdog;
+import com.emarsys.mobileengage.iam.IamDialog;
 
 public class DefaultMessageLoadedListener implements MessageLoadedListener {
 

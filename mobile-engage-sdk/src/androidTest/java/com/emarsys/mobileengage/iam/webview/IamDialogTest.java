@@ -1,4 +1,4 @@
-package com.emarsys.mobileengage.iam.ui;
+package com.emarsys.mobileengage.iam.webview;
 
 import android.app.Activity;
 import android.os.Handler;

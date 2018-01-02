@@ -1,9 +1,10 @@
-package com.emarsys.mobileengage.iam.ui;
+package com.emarsys.mobileengage.iam.webview;
 
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
 
+import com.emarsys.mobileengage.iam.IamDialog;
 import com.emarsys.mobileengage.testUtil.ConnectivityWatchdogTestUtils;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 

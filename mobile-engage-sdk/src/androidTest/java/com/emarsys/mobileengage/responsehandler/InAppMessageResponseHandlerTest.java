@@ -1,10 +1,10 @@
 package com.emarsys.mobileengage.responsehandler;
 
 import com.emarsys.core.response.ResponseModel;
-import com.emarsys.mobileengage.iam.InAppMessageHandler;
-import com.emarsys.mobileengage.iam.ui.DefaultMessageLoadedListener;
-import com.emarsys.mobileengage.iam.ui.IamJsBridge;
-import com.emarsys.mobileengage.iam.ui.IamWebViewProvider;
+import com.emarsys.mobileengage.iam.jsbridge.IamJsBridge;
+import com.emarsys.mobileengage.iam.jsbridge.InAppMessageHandlerProvider;
+import com.emarsys.mobileengage.iam.webview.DefaultMessageLoadedListener;
+import com.emarsys.mobileengage.iam.webview.IamWebViewProvider;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
 import org.junit.Assert;
@@ -28,7 +28,7 @@ public class InAppMessageResponseHandlerTest {
     @Before
     public void init() {
         webViewProvider = mock(IamWebViewProvider.class);
-        handler = new InAppMessageResponseHandler(webViewProvider, mock(InAppMessageHandler.class));
+        handler = new InAppMessageResponseHandler(webViewProvider, mock(InAppMessageHandlerProvider.class));
     }
 
     @Test

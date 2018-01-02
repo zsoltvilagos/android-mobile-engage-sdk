@@ -1,4 +1,4 @@
-package com.emarsys.mobileengage.iam.ui;
+package com.emarsys.mobileengage.iam.webview;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -9,6 +9,7 @@ import android.webkit.WebView;
 
 import com.emarsys.core.util.Assert;
 import com.emarsys.mobileengage.MobileEngage;
+import com.emarsys.mobileengage.iam.jsbridge.IamJsBridge;
 
 public class IamWebViewProvider {
 
