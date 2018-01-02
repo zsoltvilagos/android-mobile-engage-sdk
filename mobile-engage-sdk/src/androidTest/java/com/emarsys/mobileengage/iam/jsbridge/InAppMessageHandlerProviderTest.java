@@ -7,10 +7,13 @@ import com.emarsys.mobileengage.MobileEngage;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.experimental.MobileEngageFeature;
 import com.emarsys.mobileengage.iam.InAppMessageHandler;
+import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 
 import java.lang.reflect.Field;
 
@@ -21,6 +24,9 @@ public class InAppMessageHandlerProviderTest {
 
     InAppMessageHandler inAppMessageHandler;
     InAppMessageHandlerProvider provider;
+
+    @Rule
+    public TestRule timeout = TimeoutUtils.getTimeoutRule();
 
     @Before
     public void setUp() throws NoSuchFieldException, IllegalAccessException {
