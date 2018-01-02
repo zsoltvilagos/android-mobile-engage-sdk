@@ -1,5 +1,7 @@
 package com.emarsys.mobileengage.iam.jsbridge;
 
+import android.os.Build;
+import android.support.annotation.RequiresApi;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 
@@ -12,11 +14,11 @@ import com.emarsys.mobileengage.util.log.MobileEngageTopic;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+@RequiresApi(api = Build.VERSION_CODES.KITKAT)
 public class IamJsBridge {
 
     private IamDialog iamDialog;
     private InAppMessageHandlerProvider messageHandlerProvider;
-
     private WebView webView;
 
     public IamJsBridge(IamDialog iamDialog, InAppMessageHandlerProvider messageHandlerProvider) {
@@ -47,11 +49,23 @@ public class IamJsBridge {
                 if (jsonObject.has("payload")) {
                     payload = jsonObject.getJSONObject("payload");
                 }
+
                 inAppMessageHandler.handleApplicationEvent(eventName, payload);
+
+                JSONObject result = new JSONObject().put("id", jsonObject.getString("id"));
+                sendResult(result);
+
             } catch (JSONException je) {
                 EMSLogger.log(MobileEngageTopic.IN_APP_MESSAGE, "Exception occurred, exception: %s json: %s", je, json);
             }
         }
     }
 
+    void sendResult(JSONObject payload) {
+        Assert.notNull(payload, "Payload must not be null!");
+        if (!payload.has("id")) {
+            throw new IllegalArgumentException("Payload must have an id!");
+        }
+        webView.evaluateJavascript(String.format("MEIAM.handleResponse(%s);", payload), null);
+    }
 }
