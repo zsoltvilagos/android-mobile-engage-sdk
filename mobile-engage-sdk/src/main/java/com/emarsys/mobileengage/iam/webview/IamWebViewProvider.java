@@ -27,6 +27,8 @@ public class IamWebViewProvider {
                 Context context = MobileEngage.getConfig().getApplication();
                 webView = new WebView(context);
 
+                jsBridge.setWebView(webView);
+
                 webView.getSettings().setJavaScriptEnabled(true);
                 webView.addJavascriptInterface(jsBridge, "Android");
                 webView.setBackgroundColor(Color.TRANSPARENT);

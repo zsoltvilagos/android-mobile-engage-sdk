@@ -1,6 +1,7 @@
 package com.emarsys.mobileengage.iam.jsbridge;
 
 import android.webkit.JavascriptInterface;
+import android.webkit.WebView;
 
 import com.emarsys.core.util.Assert;
 import com.emarsys.mobileengage.iam.IamDialog;
@@ -14,11 +15,17 @@ public class IamJsBridge {
     private IamDialog iamDialog;
     private InAppMessageHandlerProvider messageHandlerProvider;
 
+    private WebView webView;
+
     public IamJsBridge(IamDialog iamDialog, InAppMessageHandlerProvider messageHandlerProvider) {
         Assert.notNull(iamDialog, "IamDialog must not be null!");
         Assert.notNull(messageHandlerProvider, "MessageHandlerProvider must not be null!");
         this.iamDialog = iamDialog;
         this.messageHandlerProvider = messageHandlerProvider;
+    }
+
+    public void setWebView(WebView webView) {
+        this.webView = webView;
     }
 
     @JavascriptInterface

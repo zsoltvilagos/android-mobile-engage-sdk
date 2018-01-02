@@ -102,6 +102,14 @@ public class IamWebViewProviderTest {
     }
 
     @Test
+    public void testLoadMessageAsync_shouldEventuallySetWebViewOnJSBridge() throws InterruptedException {
+        TestJSInterface jsInterface = mock(TestJSInterface.class);
+        provider.loadMessageAsync(html, jsInterface, new FakeMessageLoadedListener(latch));
+        latch.await();
+        verify(jsInterface).setWebView(provider.provideWebView());
+    }
+
+    @Test
     public void testProvideWebView_shouldReturnTheStaticInstance() throws InterruptedException {
         handler.post(new Runnable() {
             @Override
