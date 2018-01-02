@@ -1,6 +1,5 @@
 package com.emarsys.mobileengage.iam.ui;
 
-import com.emarsys.mobileengage.iam.DialogOwner;
 import com.emarsys.mobileengage.iam.InAppMessageHandler;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
@@ -14,7 +13,6 @@ import org.mockito.ArgumentCaptor;
 import static junit.framework.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 public class IamJsBridgeTest {
     @Rule
@@ -27,11 +25,9 @@ public class IamJsBridgeTest {
 
     @Test
     public void testClose_shouldInvokeCloseOnTheDialogOfTheMessageHandler() {
-        DialogOwner dialogOwner = mock(DialogOwner.class);
         IamDialog iamDialog = mock(IamDialog.class);
-        when(dialogOwner.getIamDialog()).thenReturn(iamDialog);
 
-        IamJsBridge jsBridge = new IamJsBridge(dialogOwner, mock(InAppMessageHandler.class));
+        IamJsBridge jsBridge = new IamJsBridge(iamDialog, mock(InAppMessageHandler.class));
         jsBridge.close("");
 
         verify(iamDialog).dismiss();
@@ -49,7 +45,7 @@ public class IamJsBridgeTest {
 
         InAppMessageHandler inAppMessageHandler = mock(InAppMessageHandler.class);
 
-        IamJsBridge jsBridge = new IamJsBridge(mock(DialogOwner.class), inAppMessageHandler);
+        IamJsBridge jsBridge = new IamJsBridge(mock(IamDialog.class), inAppMessageHandler);
         jsBridge.triggerAppEvent(json.toString());
 
         ArgumentCaptor<String> nameCaptor = ArgumentCaptor.forClass(String.class);
@@ -71,7 +67,7 @@ public class IamJsBridgeTest {
         json.put("payload", payload);
 
 
-        IamJsBridge jsBridge = new IamJsBridge(mock(DialogOwner.class), null);
+        IamJsBridge jsBridge = new IamJsBridge(mock(IamDialog.class), null);
         jsBridge.triggerAppEvent(json.toString());
     }
 }

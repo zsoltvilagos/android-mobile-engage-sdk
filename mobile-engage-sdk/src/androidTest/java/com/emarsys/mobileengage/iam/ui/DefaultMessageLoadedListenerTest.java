@@ -25,6 +25,7 @@ public class DefaultMessageLoadedListenerTest {
         mock(Activity.class);
         mock(FragmentManager.class);
         mock(Fragment.class);
+        mock(IamDialog.class);
     }
 
     private FragmentManager fragmentManager;
@@ -38,7 +39,7 @@ public class DefaultMessageLoadedListenerTest {
 
     @Before
     public void init() throws Exception {
-        listener = new DefaultMessageLoadedListener();
+        listener = new DefaultMessageLoadedListener(mock(IamDialog.class));
 
         currentActivity = mock(Activity.class);
         fragmentManager = mock(FragmentManager.class);
@@ -55,7 +56,7 @@ public class DefaultMessageLoadedListenerTest {
 
     @Test
     public void testConstructor_iamDialogShouldBeInitialized() {
-        Assert.assertNotNull(new DefaultMessageLoadedListener().iamDialog);
+        Assert.assertNotNull(new DefaultMessageLoadedListener(mock(IamDialog.class)).iamDialog);
     }
 
     @Test

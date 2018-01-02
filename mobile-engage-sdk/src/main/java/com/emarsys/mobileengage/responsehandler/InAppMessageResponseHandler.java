@@ -3,6 +3,7 @@ package com.emarsys.mobileengage.responsehandler;
 import com.emarsys.core.response.ResponseModel;
 import com.emarsys.mobileengage.iam.InAppMessageHandler;
 import com.emarsys.mobileengage.iam.ui.DefaultMessageLoadedListener;
+import com.emarsys.mobileengage.iam.ui.IamDialog;
 import com.emarsys.mobileengage.iam.ui.IamJsBridge;
 import com.emarsys.mobileengage.iam.ui.IamWebViewProvider;
 
@@ -42,8 +43,10 @@ public class InAppMessageResponseHandler extends AbstractResponseHandler {
             JSONObject message = responseBody.getJSONObject("message");
             String html = message.getString("html");
 
-            DefaultMessageLoadedListener listener = new DefaultMessageLoadedListener();
-            webViewProvider.loadMessageAsync(html, new IamJsBridge(listener, inAppMessageHandler), listener);
+            IamDialog iamDialog = new IamDialog();
+            DefaultMessageLoadedListener listener = new DefaultMessageLoadedListener(iamDialog);
+            webViewProvider.loadMessageAsync(html, new IamJsBridge(iamDialog, inAppMessageHandler), listener);
+
         } catch (JSONException ignore) {
         }
     }
