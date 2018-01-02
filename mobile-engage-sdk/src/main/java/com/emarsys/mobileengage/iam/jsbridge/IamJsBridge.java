@@ -4,8 +4,10 @@ import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 
 import com.emarsys.core.util.Assert;
+import com.emarsys.core.util.log.EMSLogger;
 import com.emarsys.mobileengage.iam.IamDialog;
 import com.emarsys.mobileengage.iam.InAppMessageHandler;
+import com.emarsys.mobileengage.util.log.MobileEngageTopic;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -40,16 +42,16 @@ public class IamJsBridge {
         if (inAppMessageHandler != null) {
             try {
                 JSONObject jsonObject = new JSONObject(json);
-                if (jsonObject.has("name")) {
-                    String eventName = jsonObject.getString("name");
-                    JSONObject payload = null;
-                    if (jsonObject.has("payload")) {
-                        payload = jsonObject.getJSONObject("payload");
-                    }
-                    inAppMessageHandler.handleApplicationEvent(eventName, payload);
+                String eventName = jsonObject.getString("name");
+                JSONObject payload = null;
+                if (jsonObject.has("payload")) {
+                    payload = jsonObject.getJSONObject("payload");
                 }
-            } catch (JSONException ignored) {
+                inAppMessageHandler.handleApplicationEvent(eventName, payload);
+            } catch (JSONException je) {
+                EMSLogger.log(MobileEngageTopic.IN_APP_MESSAGE, "Exception occurred, exception: %s json: %s", je, json);
             }
         }
     }
+
 }

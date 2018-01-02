@@ -84,4 +84,6 @@ public class IamJsBridgeTest {
         IamJsBridge jsBridge = new IamJsBridge(mock(IamDialog.class), messageHandlerProvider);
         jsBridge.triggerAppEvent(json.toString());
     }
+
+
 }

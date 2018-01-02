@@ -14,6 +14,11 @@ public enum MobileEngageTopic implements LogTopic {
     INBOX("ems_inbox"),
 
     /**
+     * Topic for In App Message
+     */
+    IN_APP_MESSAGE("ems_in_app_message"),
+
+    /**
      * Topic for receiving push tokens and getting push notifications
      */
     PUSH("ems_push"),
