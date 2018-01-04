@@ -6,7 +6,7 @@ import android.webkit.WebView;
 import com.emarsys.mobileengage.iam.IamDialog;
 import com.emarsys.mobileengage.iam.InAppMessageHandler;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
-import com.emarsys.mobileengage.testUtil.mockito.UiThreadSpy;
+import com.emarsys.mobileengage.testUtil.mockito.ThreadSpy;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -72,7 +72,7 @@ public class IamJsBridgeTest {
     @Test
     public void testClose_calledOnMainThread() throws InterruptedException {
         IamDialog iamDialog = mock(IamDialog.class);
-        UiThreadSpy threadSpy = new UiThreadSpy();
+        ThreadSpy threadSpy = new ThreadSpy();
         doAnswer(threadSpy).when(iamDialog).dismiss();
 
         IamJsBridge jsBridge = new IamJsBridge(iamDialog, mock(InAppMessageHandlerProvider.class));
@@ -124,7 +124,7 @@ public class IamJsBridgeTest {
     @Test
     public void testTriggerAppEvent_inAppMessageHandler_calledOnMainThread() throws JSONException, InterruptedException {
         JSONObject json = new JSONObject().put("name", "eventName").put("id", "123456789");
-        UiThreadSpy threadSpy = new UiThreadSpy();
+        ThreadSpy threadSpy = new ThreadSpy();
 
         InAppMessageHandler messageHandler = mock(InAppMessageHandler.class);
         doAnswer(threadSpy).when(messageHandler).handleApplicationEvent("eventName", null);

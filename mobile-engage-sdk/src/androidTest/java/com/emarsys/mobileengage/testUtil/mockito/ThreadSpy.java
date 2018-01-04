@@ -8,18 +8,20 @@ import org.mockito.stubbing.Answer;
 import java.util.concurrent.CountDownLatch;
 
 import static junit.framework.Assert.assertEquals;
+import static org.hamcrest.Matchers.startsWith;
+import static org.junit.Assert.assertThat;
 
-public class UiThreadSpy<T> implements Answer<T> {
+public class ThreadSpy<T> implements Answer<T> {
 
     private Thread thread;
     private CountDownLatch latch;
     private T result;
 
-    public UiThreadSpy() {
+    public ThreadSpy() {
         this(null);
     }
 
-    public UiThreadSpy(T result) {
+    public ThreadSpy(T result) {
         latch = new CountDownLatch(1);
         this.result = result;
     }
@@ -40,5 +42,10 @@ public class UiThreadSpy<T> implements Answer<T> {
         Thread expected = Looper.getMainLooper().getThread();
         Thread result = getThread();
         assertEquals(expected, result);
+    }
+
+    public void assertCalledOnCoreSdkThread() throws InterruptedException {
+        Thread result = getThread();
+        assertThat(result.getName(), startsWith("CoreSDKHandlerThread"));
     }
 }
