@@ -1,5 +1,7 @@
 package com.emarsys.mobileengage.responsehandler;
 
+import android.os.Build;
+
 import com.emarsys.core.response.ResponseModel;
 import com.emarsys.mobileengage.iam.IamDialog;
 import com.emarsys.mobileengage.iam.jsbridge.IamJsBridge;
@@ -37,17 +39,18 @@ public class InAppMessageResponseHandler extends AbstractResponseHandler {
 
     @Override
     protected void handleResponse(ResponseModel responseModel) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            JSONObject responseBody = responseModel.getParsedBody();
+            try {
+                JSONObject message = responseBody.getJSONObject("message");
+                String html = message.getString("html");
 
-        JSONObject responseBody = responseModel.getParsedBody();
-        try {
-            JSONObject message = responseBody.getJSONObject("message");
-            String html = message.getString("html");
+                IamDialog iamDialog = new IamDialog();
+                DefaultMessageLoadedListener listener = new DefaultMessageLoadedListener(iamDialog);
+                webViewProvider.loadMessageAsync(html, new IamJsBridge(iamDialog, messageHandlerProvider), listener);
 
-            IamDialog iamDialog = new IamDialog();
-            DefaultMessageLoadedListener listener = new DefaultMessageLoadedListener(iamDialog);
-            webViewProvider.loadMessageAsync(html, new IamJsBridge(iamDialog, messageHandlerProvider), listener);
-
-        } catch (JSONException ignore) {
+            } catch (JSONException ignore) {
+            }
         }
     }
 }
