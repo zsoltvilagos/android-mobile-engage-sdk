@@ -78,7 +78,7 @@ public class IamJsBridgeTest {
         IamJsBridge jsBridge = new IamJsBridge(iamDialog, mock(InAppMessageHandlerProvider.class));
         jsBridge.close("");
 
-        threadSpy.assertCalledOnMainThread();
+        threadSpy.verifyCalledOnMainThread();
     }
 
     @Test
@@ -136,7 +136,7 @@ public class IamJsBridgeTest {
         jsBridge.setWebView(webView);
         jsBridge.triggerAppEvent(json.toString());
 
-        threadSpy.assertCalledOnMainThread();
+        threadSpy.verifyCalledOnMainThread();
     }
 
     @Test

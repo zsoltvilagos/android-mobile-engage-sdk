@@ -38,13 +38,13 @@ public class ThreadSpy<T> implements Answer<T> {
         return thread;
     }
 
-    public void assertCalledOnMainThread() throws InterruptedException {
+    public void verifyCalledOnMainThread() throws InterruptedException {
         Thread expected = Looper.getMainLooper().getThread();
         Thread result = getThread();
         assertEquals(expected, result);
     }
 
-    public void assertCalledOnCoreSdkThread() throws InterruptedException {
+    public void verifyCalledOnCoreSdkThread() throws InterruptedException {
         Thread result = getThread();
         assertThat(result.getName(), startsWith("CoreSDKHandlerThread"));
     }
