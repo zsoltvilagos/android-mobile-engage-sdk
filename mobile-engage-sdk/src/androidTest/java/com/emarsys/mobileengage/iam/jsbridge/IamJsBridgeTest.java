@@ -6,6 +6,7 @@ import android.webkit.WebView;
 import com.emarsys.mobileengage.iam.IamDialog;
 import com.emarsys.mobileengage.iam.InAppMessageHandler;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
+import com.emarsys.mobileengage.testUtil.mockito.UiThreadSpy;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -14,9 +15,11 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static junit.framework.Assert.assertEquals;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -63,51 +66,77 @@ public class IamJsBridgeTest {
 
         IamJsBridge jsBridge = new IamJsBridge(iamDialog, mock(InAppMessageHandlerProvider.class));
         jsBridge.close("");
+        verify(iamDialog, Mockito.timeout(1000)).dismiss();
+    }
 
-        verify(iamDialog).dismiss();
+    @Test
+    public void testClose_calledOnMainThread() throws InterruptedException {
+        IamDialog iamDialog = mock(IamDialog.class);
+        UiThreadSpy threadSpy = new UiThreadSpy();
+        doAnswer(threadSpy).when(iamDialog).dismiss();
+
+        IamJsBridge jsBridge = new IamJsBridge(iamDialog, mock(InAppMessageHandlerProvider.class));
+        jsBridge.close("");
+
+        threadSpy.assertCalledOnMainThread();
     }
 
     @Test
     public void testTriggerAppEvent_shouldCallHandleApplicationEventMethodOnInAppMessageHandler() throws JSONException {
-        JSONObject json = new JSONObject();
-        json.put("name", "eventName");
-        JSONObject payload = new JSONObject();
-        JSONObject payloadValue = new JSONObject();
-        payloadValue.put("payloadKey2", "payloadValue1");
-        payload.put("payloadKey1", payloadValue);
-        json.put("payload", payload);
+        JSONObject payload =
+                new JSONObject()
+                        .put("payloadKey1",
+                                new JSONObject()
+                                        .put("payloadKey2", "payloadValue1"));
+        JSONObject json =
+                new JSONObject()
+                        .put("name", "eventName")
+                        .put("id", "123456789")
+                        .put("payload", payload);
 
         InAppMessageHandler inAppMessageHandler = mock(InAppMessageHandler.class);
         InAppMessageHandlerProvider messageHandlerProvider = mock(InAppMessageHandlerProvider.class);
         when(messageHandlerProvider.provideHandler()).thenReturn(inAppMessageHandler);
 
         IamJsBridge jsBridge = new IamJsBridge(mock(IamDialog.class), messageHandlerProvider);
+        jsBridge.setWebView(webView);
         jsBridge.triggerAppEvent(json.toString());
 
         ArgumentCaptor<String> nameCaptor = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<JSONObject> payloadCaptor = ArgumentCaptor.forClass(JSONObject.class);
-        verify(inAppMessageHandler).handleApplicationEvent(nameCaptor.capture(), payloadCaptor.capture());
+        verify(inAppMessageHandler, Mockito.timeout(1000)).handleApplicationEvent(nameCaptor.capture(), payloadCaptor.capture());
 
         assertEquals(payload.toString(), payloadCaptor.getValue().toString());
         assertEquals("eventName", nameCaptor.getValue());
     }
 
     @Test
-    public void testTriggerAppEvent_shouldNotThrowExceptionWhenInAppMessageHandleIsNotSet() throws JSONException {
-        JSONObject json = new JSONObject();
-        json.put("name", "eventName");
-        JSONObject payload = new JSONObject();
-        JSONObject payloadValue = new JSONObject();
-        payloadValue.put("payloadKey2", "payloadValue1");
-        payload.put("payloadKey1", payloadValue);
-        json.put("payload", payload);
-
+    public void testTriggerAppEvent_shouldNotThrowException_whenInAppMessageHandle_isNotSet() throws JSONException {
+        JSONObject json = new JSONObject().put("name", "eventName").put("id", "123456789");
 
         InAppMessageHandlerProvider messageHandlerProvider = mock(InAppMessageHandlerProvider.class);
         when(messageHandlerProvider.provideHandler()).thenReturn(null);
 
         IamJsBridge jsBridge = new IamJsBridge(mock(IamDialog.class), messageHandlerProvider);
         jsBridge.triggerAppEvent(json.toString());
+    }
+
+    @Test
+    public void testTriggerAppEvent_inAppMessageHandler_calledOnMainThread() throws JSONException, InterruptedException {
+        JSONObject json = new JSONObject().put("name", "eventName").put("id", "123456789");
+        UiThreadSpy threadSpy = new UiThreadSpy();
+
+        InAppMessageHandler messageHandler = mock(InAppMessageHandler.class);
+        doAnswer(threadSpy).when(messageHandler).handleApplicationEvent("eventName", null);
+
+        InAppMessageHandlerProvider messageHandlerProvider = mock(InAppMessageHandlerProvider.class);
+        when(messageHandlerProvider.provideHandler()).thenReturn(messageHandler);
+
+        IamJsBridge jsBridge = new IamJsBridge(mock(IamDialog.class), messageHandlerProvider);
+        jsBridge.setWebView(webView);
+        jsBridge.triggerAppEvent(json.toString());
+
+        threadSpy.assertCalledOnMainThread();
     }
 
     @Test
@@ -118,7 +147,7 @@ public class IamJsBridgeTest {
 
         JSONObject result = new JSONObject().put("id", id);
 
-        verify(webView).evaluateJavascript(String.format("MEIAM.handleResponse(%s);", result), null);
+        verify(webView, Mockito.timeout(1000)).evaluateJavascript(String.format("MEIAM.handleResponse(%s);", result), null);
     }
 
     @Test(expected = IllegalArgumentException.class)

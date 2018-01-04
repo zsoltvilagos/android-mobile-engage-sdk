@@ -1,6 +1,8 @@
 package com.emarsys.mobileengage.iam.jsbridge;
 
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.RequiresApi;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
@@ -20,12 +22,14 @@ public class IamJsBridge {
     private IamDialog iamDialog;
     private InAppMessageHandlerProvider messageHandlerProvider;
     private WebView webView;
+    private Handler uiHandler;
 
     public IamJsBridge(IamDialog iamDialog, InAppMessageHandlerProvider messageHandlerProvider) {
         Assert.notNull(iamDialog, "IamDialog must not be null!");
         Assert.notNull(messageHandlerProvider, "MessageHandlerProvider must not be null!");
         this.iamDialog = iamDialog;
         this.messageHandlerProvider = messageHandlerProvider;
+        this.uiHandler = new Handler(Looper.getMainLooper());
     }
 
     public void setWebView(WebView webView) {
@@ -34,27 +38,33 @@ public class IamJsBridge {
 
     @JavascriptInterface
     public void close(String json) {
-        iamDialog.dismiss();
+        uiHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                iamDialog.dismiss();
+            }
+        });
     }
 
     @JavascriptInterface
     public void triggerAppEvent(String json) {
-        InAppMessageHandler inAppMessageHandler = messageHandlerProvider.provideHandler();
+        final InAppMessageHandler inAppMessageHandler = messageHandlerProvider.provideHandler();
 
         if (inAppMessageHandler != null) {
             try {
-                JSONObject jsonObject = new JSONObject(json);
-                String eventName = jsonObject.getString("name");
-                JSONObject payload = null;
-                if (jsonObject.has("payload")) {
-                    payload = jsonObject.getJSONObject("payload");
-                }
+                final JSONObject jsonObject = new JSONObject(json);
+                final String eventName = jsonObject.getString("name");
+                final JSONObject payload = jsonObject.has("payload") ? jsonObject.getJSONObject("payload") : null;
 
-                inAppMessageHandler.handleApplicationEvent(eventName, payload);
+                final JSONObject result = new JSONObject().put("id", jsonObject.getString("id"));
 
-                JSONObject result = new JSONObject().put("id", jsonObject.getString("id"));
-                sendResult(result);
-
+                uiHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        inAppMessageHandler.handleApplicationEvent(eventName, payload);
+                        sendResult(result);
+                    }
+                });
             } catch (JSONException je) {
                 EMSLogger.log(MobileEngageTopic.IN_APP_MESSAGE, "Exception occurred, exception: %s json: %s", je, json);
             }
