@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.support.test.InstrumentationRegistry;
+import android.support.test.filters.SdkSuppress;
 
 import com.emarsys.mobileengage.testUtil.DatabaseTestUtils;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
@@ -17,12 +18,14 @@ import org.junit.rules.TestRule;
 
 import java.util.Date;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static com.emarsys.mobileengage.iam.model.DisplayedIamContract.COLUMN_NAME_CAMPAIGN_ID;
 import static com.emarsys.mobileengage.iam.model.DisplayedIamContract.COLUMN_NAME_EVENT_NAME;
 import static com.emarsys.mobileengage.iam.model.DisplayedIamContract.COLUMN_NAME_TIMESTAMP;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@SdkSuppress(minSdkVersion = KITKAT)
 public class DisplayedIamRepositoryTest {
 
     private DisplayedIamRepository iamRepository;

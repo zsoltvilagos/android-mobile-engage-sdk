@@ -2,6 +2,7 @@ package com.emarsys.mobileengage.iam;
 
 import android.content.ContentValues;
 import android.database.Cursor;
+import android.support.test.filters.SdkSuppress;
 
 import com.emarsys.mobileengage.database.CoreSqliteDatabase;
 import com.emarsys.mobileengage.database.MobileEngageDbHelper;
@@ -16,12 +17,14 @@ import org.mockito.Mockito;
 import java.util.Arrays;
 import java.util.List;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static junit.framework.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@SdkSuppress(minSdkVersion = KITKAT)
 public class AbstractSqliteRepositoryTest {
 
     private final static String TABLE_NAME = "table";

@@ -2,6 +2,7 @@ package com.emarsys.mobileengage.iam.jsbridge;
 
 import android.app.Application;
 import android.support.test.InstrumentationRegistry;
+import android.support.test.filters.SdkSuppress;
 
 import com.emarsys.mobileengage.MobileEngage;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
@@ -17,9 +18,11 @@ import org.junit.rules.TestRule;
 
 import java.lang.reflect.Field;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static junit.framework.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 
+@SdkSuppress(minSdkVersion = KITKAT)
 public class InAppMessageHandlerProviderTest {
 
     InAppMessageHandler inAppMessageHandler;

@@ -1,5 +1,7 @@
 package com.emarsys.mobileengage.responsehandler;
 
+import android.support.test.filters.SdkSuppress;
+
 import com.emarsys.core.response.ResponseModel;
 import com.emarsys.mobileengage.iam.jsbridge.IamJsBridge;
 import com.emarsys.mobileengage.iam.jsbridge.InAppMessageHandlerProvider;
@@ -13,11 +15,13 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
+@SdkSuppress(minSdkVersion = KITKAT)
 public class InAppMessageResponseHandlerTest {
     private InAppMessageResponseHandler handler;
     private IamWebViewProvider webViewProvider;

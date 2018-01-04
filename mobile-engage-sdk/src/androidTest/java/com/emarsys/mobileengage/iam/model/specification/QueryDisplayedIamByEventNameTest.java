@@ -2,6 +2,7 @@ package com.emarsys.mobileengage.iam.model.specification;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
+import android.support.test.filters.SdkSuppress;
 
 import com.emarsys.mobileengage.iam.model.DisplayedIam;
 import com.emarsys.mobileengage.iam.model.DisplayedIamRepository;
@@ -16,9 +17,11 @@ import org.junit.rules.TestRule;
 import java.util.Arrays;
 import java.util.List;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
+@SdkSuppress(minSdkVersion = KITKAT)
 public class QueryDisplayedIamByEventNameTest {
 
     String eventName;
