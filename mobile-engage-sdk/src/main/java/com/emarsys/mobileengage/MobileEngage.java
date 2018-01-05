@@ -18,6 +18,7 @@ import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
 import com.emarsys.mobileengage.experimental.FlipperFeature;
 import com.emarsys.mobileengage.experimental.MobileEngageExperimental;
 import com.emarsys.mobileengage.experimental.MobileEngageFeature;
+import com.emarsys.mobileengage.iam.dialog.IamDialogProvider;
 import com.emarsys.mobileengage.iam.jsbridge.InAppMessageHandlerProvider;
 import com.emarsys.mobileengage.iam.webview.IamWebViewProvider;
 import com.emarsys.mobileengage.inbox.InboxInternal;
@@ -76,18 +77,23 @@ public class MobileEngage {
         MobileEngage.config = config;
         MobileEngageUtils.setup(config);
 
+        handler = new CoreSdkHandlerProvider().provideHandler();
+
         Application application = config.getApplication();
         CurrentActivityWatchdog.registerApplication(application);
 
         List<AbstractResponseHandler> responseHandlers = new ArrayList<>();
         if (MobileEngageExperimental.isFeatureEnabled(MobileEngageFeature.IN_APP_MESSAGING)) {
             responseHandlers.add(new MeIdResponseHandler(new MeIdStorage(application)));
-            responseHandlers.add(new InAppMessageResponseHandler(new IamWebViewProvider(), new InAppMessageHandlerProvider()));
+            responseHandlers.add(new InAppMessageResponseHandler(
+                    handler,
+                    new IamWebViewProvider(),
+                    new InAppMessageHandlerProvider(),
+                    new IamDialogProvider()));
         }
 
         completionHandler = new MobileEngageCoreCompletionHandler(responseHandlers, config.getStatusListener());
 
-        handler = new CoreSdkHandlerProvider().provideHandler();
         RequestManager requestManager = new RequestManager(handler, new ConnectionWatchDog(application, handler), new SqliteQueue(application), completionHandler);
 
         instance = new MobileEngageInternal(config, requestManager, new AppLoginStorage(application), completionHandler);

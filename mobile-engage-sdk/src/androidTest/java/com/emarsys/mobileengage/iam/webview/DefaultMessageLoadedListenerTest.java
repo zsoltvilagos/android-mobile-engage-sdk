@@ -4,7 +4,7 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
 
-import com.emarsys.mobileengage.iam.IamDialog;
+import com.emarsys.mobileengage.iam.dialog.IamDialog;
 import com.emarsys.mobileengage.testUtil.ConnectivityWatchdogTestUtils;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
@@ -53,6 +53,11 @@ public class DefaultMessageLoadedListenerTest {
     @After
     public void tearDown() throws Exception {
         ConnectivityWatchdogTestUtils.resetCurrentActivityWatchdog();
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructor_iamDialogShouldNotBeNull() {
+        new DefaultMessageLoadedListener(null);
     }
 
     @Test

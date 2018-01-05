@@ -9,8 +9,8 @@ import android.webkit.WebView;
 
 import com.emarsys.core.util.Assert;
 import com.emarsys.core.util.log.EMSLogger;
-import com.emarsys.mobileengage.iam.IamDialog;
 import com.emarsys.mobileengage.iam.InAppMessageHandler;
+import com.emarsys.mobileengage.iam.dialog.IamDialog;
 import com.emarsys.mobileengage.util.log.MobileEngageTopic;
 
 import org.json.JSONException;

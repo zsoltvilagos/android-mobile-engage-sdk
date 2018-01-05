@@ -1,8 +1,12 @@
 package com.emarsys.mobileengage.responsehandler;
 
+import android.os.Handler;
 import android.support.test.filters.SdkSuppress;
 
 import com.emarsys.core.response.ResponseModel;
+import com.emarsys.mobileengage.iam.dialog.IamDialog;
+import com.emarsys.mobileengage.iam.dialog.IamDialogProvider;
+import com.emarsys.mobileengage.iam.dialog.OnDialogShownAction;
 import com.emarsys.mobileengage.iam.jsbridge.IamJsBridge;
 import com.emarsys.mobileengage.iam.jsbridge.InAppMessageHandlerProvider;
 import com.emarsys.mobileengage.iam.webview.DefaultMessageLoadedListener;
@@ -20,11 +24,18 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @SdkSuppress(minSdkVersion = KITKAT)
 public class InAppMessageResponseHandlerTest {
+
+    static {
+        mock(Handler.class);
+    }
+
     private InAppMessageResponseHandler handler;
     private IamWebViewProvider webViewProvider;
+    private IamDialog dialog;
 
     @Rule
     public TestRule timeout = TimeoutUtils.getTimeoutRule();
@@ -32,7 +43,15 @@ public class InAppMessageResponseHandlerTest {
     @Before
     public void init() {
         webViewProvider = mock(IamWebViewProvider.class);
-        handler = new InAppMessageResponseHandler(webViewProvider, mock(InAppMessageHandlerProvider.class));
+        dialog = mock(IamDialog.class);
+        IamDialogProvider dialogProvider = mock(IamDialogProvider.class);
+        when(dialogProvider.provideDialog(any(String.class))).thenReturn(dialog);
+
+        handler = new InAppMessageResponseHandler(
+                mock(Handler.class),
+                webViewProvider,
+                mock(InAppMessageHandlerProvider.class),
+                dialogProvider);
     }
 
     @Test
@@ -60,14 +79,25 @@ public class InAppMessageResponseHandlerTest {
     }
 
     @Test
-    public void testHandleResponse_shouldCallloadMessageAsyncWithCorrectArguments() {
+    public void testHandleResponse_shouldCallLoadMessageAsync_withCorrectArguments() {
         String html = "<p>hello</p>";
-        String responseBody = String.format("{'message': {'html':'%s'}}", html);
+        String responseBody = String.format("{'message': {'html':'%s', 'id': '123'} }", html);
         ResponseModel response = buildResponseModel(responseBody);
 
         handler.handleResponse(response);
 
         verify(webViewProvider).loadMessageAsync(eq(html), any(IamJsBridge.class), any(DefaultMessageLoadedListener.class));
+    }
+
+    @Test
+    public void testHandleResponse_setsAction_onDialog() {
+        String html = "<p>hello</p>";
+        String responseBody = String.format("{'message': {'html':'%s', 'id': '123'} }", html);
+        ResponseModel response = buildResponseModel(responseBody);
+
+        handler.handleResponse(response);
+
+        verify(dialog).setAction(any(OnDialogShownAction.class));
     }
 
     private ResponseModel buildResponseModel(String responseBody) {

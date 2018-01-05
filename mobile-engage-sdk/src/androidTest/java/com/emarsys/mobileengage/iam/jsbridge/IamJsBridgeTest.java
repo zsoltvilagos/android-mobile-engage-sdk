@@ -3,8 +3,8 @@ package com.emarsys.mobileengage.iam.jsbridge;
 import android.support.test.filters.SdkSuppress;
 import android.webkit.WebView;
 
-import com.emarsys.mobileengage.iam.IamDialog;
 import com.emarsys.mobileengage.iam.InAppMessageHandler;
+import com.emarsys.mobileengage.iam.dialog.IamDialog;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 import com.emarsys.mobileengage.testUtil.mockito.ThreadSpy;
 
