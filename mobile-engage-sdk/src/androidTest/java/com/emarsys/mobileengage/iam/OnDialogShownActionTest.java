@@ -1,6 +1,7 @@
 package com.emarsys.mobileengage.iam;
 
 import android.os.Handler;
+import android.support.test.filters.SdkSuppress;
 
 import com.emarsys.core.concurrency.CoreSdkHandlerProvider;
 import com.emarsys.mobileengage.database.MobileEngageDbHelper;
@@ -18,12 +19,14 @@ import org.junit.rules.TestRule;
 
 import java.lang.reflect.Field;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 
+@SdkSuppress(minSdkVersion = KITKAT)
 public class OnDialogShownActionTest {
 
     private static final String ID = "id";

@@ -1,12 +1,16 @@
 package com.emarsys.mobileengage.iam.webview;
 
 import android.annotation.SuppressLint;
+import android.support.test.filters.SdkSuppress;
 
 import com.emarsys.mobileengage.iam.dialog.IamDialog;
 
 import java.util.concurrent.CountDownLatch;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
+
 @SuppressLint("ValidFragment")
+@SdkSuppress(minSdkVersion = KITKAT)
 public class TestIamDialog extends IamDialog {
 
     CountDownLatch latch;

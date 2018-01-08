@@ -3,6 +3,7 @@ package com.emarsys.mobileengage.iam.webview;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.test.InstrumentationRegistry;
+import android.support.test.filters.SdkSuppress;
 import android.webkit.WebView;
 
 import com.emarsys.mobileengage.fake.FakeMessageLoadedListener;
@@ -15,8 +16,10 @@ import org.junit.rules.TestRule;
 
 import java.util.concurrent.CountDownLatch;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static junit.framework.Assert.assertEquals;
 
+@SdkSuppress(minSdkVersion = KITKAT)
 public class IamWebViewClientTest {
 
     private CountDownLatch latch;

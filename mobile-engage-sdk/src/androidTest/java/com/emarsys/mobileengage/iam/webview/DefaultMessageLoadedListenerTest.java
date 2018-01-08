@@ -3,6 +3,7 @@ package com.emarsys.mobileengage.iam.webview;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.support.test.filters.SdkSuppress;
 
 import com.emarsys.mobileengage.iam.dialog.IamDialog;
 import com.emarsys.mobileengage.testUtil.ConnectivityWatchdogTestUtils;
@@ -15,11 +16,13 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@SdkSuppress(minSdkVersion = KITKAT)
 public class DefaultMessageLoadedListenerTest {
 
     static {
