@@ -2,7 +2,7 @@
 
 node('master') {
     withSlack channel: 'jenkins', {
-        timeout(15) {
+        timeout(20) {
             stage("init") {
                 deleteDir()
                 deviceCount shouldBe: env.ANDROID_DEVICE_COUNT,
