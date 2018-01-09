@@ -33,6 +33,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.emarsys.mobileengage.endpoint.Endpoint.ME_LAST_MOBILE_ACTIVITY_V2;
+import static com.emarsys.mobileengage.endpoint.Endpoint.ME_LOGIN_V2;
+import static com.emarsys.mobileengage.endpoint.Endpoint.ME_LOGOUT_V2;
+
 public class MobileEngageInternal {
     public static final String MOBILEENGAGE_SDK_VERSION = BuildConfig.VERSION_NAME;
 
@@ -110,13 +114,13 @@ public class MobileEngageInternal {
 
         if (storedHashCode == null || currentHashCode != storedHashCode) {
             model = new RequestModel.Builder()
-                    .url(RequestUtils.ENDPOINT_LOGIN)
+                    .url(ME_LOGIN_V2)
                     .payload(payload)
                     .build();
             appLoginStorage.set(currentHashCode);
         } else {
             model = new RequestModel.Builder()
-                    .url(RequestUtils.ENDPOINT_LAST_MOBILE_ACTIVITY)
+                    .url(ME_LAST_MOBILE_ACTIVITY_V2)
                     .payload(RequestUtils.createBasePayload(config, appLoginParameters))
                     .build();
         }
@@ -130,7 +134,7 @@ public class MobileEngageInternal {
         EMSLogger.log(MobileEngageTopic.MOBILE_ENGAGE, "Called");
 
         RequestModel model = new RequestModel.Builder()
-                .url(RequestUtils.ENDPOINT_LOGOUT)
+                .url(ME_LOGOUT_V2)
                 .payload(RequestUtils.createBasePayload(config, appLoginParameters))
                 .build();
 
@@ -157,7 +161,7 @@ public class MobileEngageInternal {
             payload.put("attributes", eventAttributes);
         }
         RequestModel model = new RequestModel.Builder()
-                .url(RequestUtils.createEventUrl(eventName))
+                .url(RequestUtils.createEventUrl_V2(eventName))
                 .payload(payload)
                 .build();
 
@@ -221,7 +225,7 @@ public class MobileEngageInternal {
             Map<String, Object> payload = RequestUtils.createBasePayload(config, appLoginParameters);
             payload.put("sid", messageId);
             RequestModel model = new RequestModel.Builder()
-                    .url(RequestUtils.createEventUrl("message_open"))
+                    .url(RequestUtils.createEventUrl_V2("message_open"))
                     .payload(payload)
                     .build();
 

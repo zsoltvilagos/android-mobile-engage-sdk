@@ -59,12 +59,12 @@ public class RequestUtilsTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testCreateEventUrl_shouldNotAcceptNull() {
-        RequestUtils.createEventUrl(null);
+        RequestUtils.createEventUrl_V2(null);
     }
 
     @Test
     public void testCreateEventUrl_shouldReturnTheCorrectEventUrl() {
-        String url = RequestUtils.createEventUrl("my-custom-event");
+        String url = RequestUtils.createEventUrl_V2("my-custom-event");
         String expected = "https://push.eservice.emarsys.net/api/mobileengage/v2/events/my-custom-event";
         assertEquals(expected, url);
     }

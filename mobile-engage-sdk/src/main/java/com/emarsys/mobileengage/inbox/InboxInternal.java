@@ -24,10 +24,10 @@ import com.emarsys.mobileengage.util.log.MobileEngageTopic;
 import java.util.HashMap;
 import java.util.Map;
 
-public class InboxInternal {
+import static com.emarsys.mobileengage.endpoint.Endpoint.INBOX_FETCH;
+import static com.emarsys.mobileengage.endpoint.Endpoint.INBOX_RESET_BADGE_COUNT;
 
-    private static String ENDPOINT_BASE = "https://me-inbox.eservice.emarsys.net/api/";
-    private static String ENDPOINT_FETCH = ENDPOINT_BASE + "notifications";
+public class InboxInternal {
 
     Handler handler;
     RestClient client;
@@ -66,7 +66,7 @@ public class InboxInternal {
 
     private void handleFetchRequest(final InboxResultListener<NotificationInboxStatus> resultListener) {
         RequestModel model = new RequestModel.Builder()
-                .url(ENDPOINT_FETCH)
+                .url(INBOX_FETCH)
                 .headers(createBaseHeaders(config))
                 .method(RequestMethod.GET)
                 .build();
@@ -117,7 +117,7 @@ public class InboxInternal {
         payload.put("source", "inbox");
         payload.put("sid", message.getSid());
         RequestModel model = new RequestModel.Builder()
-                .url(RequestUtils.createEventUrl("message_open"))
+                .url(RequestUtils.createEventUrl_V2("message_open"))
                 .payload(payload)
                 .build();
 
@@ -125,10 +125,9 @@ public class InboxInternal {
         return model.getId();
     }
 
-
     private void handleResetRequest(final ResetBadgeCountResultListener listener) {
         RequestModel model = new RequestModel.Builder()
-                .url("https://me-inbox.eservice.emarsys.net/api/reset-badge-count")
+                .url(INBOX_RESET_BADGE_COUNT)
                 .headers(createBaseHeaders(config))
                 .method(RequestMethod.POST)
                 .build();

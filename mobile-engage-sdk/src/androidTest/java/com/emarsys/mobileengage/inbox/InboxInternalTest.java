@@ -560,7 +560,7 @@ public class InboxInternalTest {
         payload.put("source", "inbox");
 
         RequestModel expected = new RequestModel.Builder()
-                .url(RequestUtils.ENDPOINT_BASE + "events/message_open")
+                .url("https://push.eservice.emarsys.net/api/mobileengage/v2/events/message_open")
                 .payload(payload)
                 .headers(defaultHeaders)
                 .build();
