@@ -2,11 +2,11 @@ package com.emarsys.mobileengage.iam.model.specification;
 
 import com.emarsys.mobileengage.iam.SqlSpecification;
 
-public class RemoveDisplayedIamByCampaignId implements SqlSpecification {
+public class FilterByCampaignId implements SqlSpecification {
 
     private final String campaignId;
 
-    public RemoveDisplayedIamByCampaignId(String campaignId) {
+    public FilterByCampaignId(String campaignId) {
         this.campaignId = campaignId;
     }
 

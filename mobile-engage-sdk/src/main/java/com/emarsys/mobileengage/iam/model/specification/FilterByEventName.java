@@ -3,11 +3,11 @@ package com.emarsys.mobileengage.iam.model.specification;
 import com.emarsys.mobileengage.iam.SqlSpecification;
 import com.emarsys.mobileengage.iam.model.displayediam.DisplayedIamContract;
 
-public class QueryDisplayedIamByEventName implements SqlSpecification {
+public class FilterByEventName implements SqlSpecification {
 
     private final String eventName;
 
-    public QueryDisplayedIamByEventName(String eventName) {
+    public FilterByEventName(String eventName) {
         this.eventName = eventName;
     }
 

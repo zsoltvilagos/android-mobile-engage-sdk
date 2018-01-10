@@ -22,10 +22,10 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
 @SdkSuppress(minSdkVersion = KITKAT)
-public class QueryDisplayedIamByEventNameTest {
+public class FilterByEventNameTest {
 
     String eventName;
-    QueryDisplayedIamByEventName specification;
+    FilterByEventName specification;
     private Context context;
 
     @Rule
@@ -36,7 +36,7 @@ public class QueryDisplayedIamByEventNameTest {
         DatabaseTestUtils.deleteMobileEngageDatabase();
 
         eventName = "event2";
-        specification = new QueryDisplayedIamByEventName(eventName);
+        specification = new FilterByEventName(eventName);
         context = InstrumentationRegistry.getContext();
     }
 

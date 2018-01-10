@@ -23,10 +23,10 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
 @SdkSuppress(minSdkVersion = KITKAT)
-public class RemoveDisplayedIamByCampaignIdTest {
+public class FilterByCampaignIdTest {
 
     String campaignId;
-    RemoveDisplayedIamByCampaignId specification;
+    FilterByCampaignId specification;
     private Context context;
 
     @Rule
@@ -37,7 +37,7 @@ public class RemoveDisplayedIamByCampaignIdTest {
         DatabaseTestUtils.deleteMobileEngageDatabase();
 
         campaignId = "campaign2";
-        specification = new RemoveDisplayedIamByCampaignId(campaignId);
+        specification = new FilterByCampaignId(campaignId);
         context = InstrumentationRegistry.getContext();
     }
 
