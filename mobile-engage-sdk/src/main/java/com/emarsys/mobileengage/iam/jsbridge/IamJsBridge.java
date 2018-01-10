@@ -37,7 +37,7 @@ public class IamJsBridge {
     }
 
     @JavascriptInterface
-    public void close(String json) {
+    public void close(String jsonString) {
         uiHandler.post(new Runnable() {
             @Override
             public void run() {
@@ -47,16 +47,16 @@ public class IamJsBridge {
     }
 
     @JavascriptInterface
-    public void triggerAppEvent(String json) {
+    public void triggerAppEvent(String jsonString) {
         final InAppMessageHandler inAppMessageHandler = messageHandlerProvider.provideHandler();
 
         if (inAppMessageHandler != null) {
             try {
-                final JSONObject jsonObject = new JSONObject(json);
-                final String eventName = jsonObject.getString("name");
-                final JSONObject payload = jsonObject.has("payload") ? jsonObject.getJSONObject("payload") : null;
+                final JSONObject json = new JSONObject(jsonString);
+                final String eventName = json.getString("name");
+                final JSONObject payload = json.has("payload") ? json.getJSONObject("payload") : null;
 
-                final JSONObject result = new JSONObject().put("id", jsonObject.getString("id"));
+                final JSONObject result = new JSONObject().put("id", json.getString("id"));
 
                 uiHandler.post(new Runnable() {
                     @Override
@@ -66,7 +66,7 @@ public class IamJsBridge {
                     }
                 });
             } catch (JSONException je) {
-                EMSLogger.log(MobileEngageTopic.IN_APP_MESSAGE, "Exception occurred, exception: %s json: %s", je, json);
+                EMSLogger.log(MobileEngageTopic.IN_APP_MESSAGE, "Exception occurred, exception: %s json: %s", je, jsonString);
             }
         }
     }
