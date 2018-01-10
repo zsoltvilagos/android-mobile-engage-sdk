@@ -6,8 +6,8 @@ import android.support.test.filters.SdkSuppress;
 import com.emarsys.core.concurrency.CoreSdkHandlerProvider;
 import com.emarsys.mobileengage.database.MobileEngageDbHelper;
 import com.emarsys.mobileengage.iam.dialog.OnDialogShownAction;
-import com.emarsys.mobileengage.iam.model.DisplayedIam;
-import com.emarsys.mobileengage.iam.model.DisplayedIamRepository;
+import com.emarsys.mobileengage.iam.model.displayediam.DisplayedIam;
+import com.emarsys.mobileengage.iam.model.displayediam.DisplayedIamRepository;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 import com.emarsys.mobileengage.testUtil.mockito.ThreadSpy;
 

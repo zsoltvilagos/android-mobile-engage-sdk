@@ -3,8 +3,8 @@ package com.emarsys.mobileengage.database;
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
 
-import com.emarsys.mobileengage.iam.model.DisplayedIam;
-import com.emarsys.mobileengage.iam.model.DisplayedIamRepository;
+import com.emarsys.mobileengage.iam.model.displayediam.DisplayedIam;
+import com.emarsys.mobileengage.iam.model.displayediam.DisplayedIamRepository;
 import com.emarsys.mobileengage.testUtil.DatabaseTestUtils;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 

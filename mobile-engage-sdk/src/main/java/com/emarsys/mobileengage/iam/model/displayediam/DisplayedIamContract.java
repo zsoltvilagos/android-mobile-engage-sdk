@@ -1,4 +1,4 @@
-package com.emarsys.mobileengage.iam.model;
+package com.emarsys.mobileengage.iam.model.displayediam;
 
 public final class DisplayedIamContract {
 

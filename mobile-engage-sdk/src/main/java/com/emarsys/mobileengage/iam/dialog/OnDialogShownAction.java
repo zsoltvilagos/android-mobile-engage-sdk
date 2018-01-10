@@ -3,8 +3,8 @@ package com.emarsys.mobileengage.iam.dialog;
 import android.os.Handler;
 
 import com.emarsys.core.util.Assert;
-import com.emarsys.mobileengage.iam.model.DisplayedIam;
-import com.emarsys.mobileengage.iam.model.DisplayedIamRepository;
+import com.emarsys.mobileengage.iam.model.displayediam.DisplayedIam;
+import com.emarsys.mobileengage.iam.model.displayediam.DisplayedIamRepository;
 
 public class OnDialogShownAction {
 

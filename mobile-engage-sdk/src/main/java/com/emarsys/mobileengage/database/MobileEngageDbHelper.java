@@ -4,7 +4,7 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import com.emarsys.mobileengage.iam.model.DisplayedIamContract;
+import com.emarsys.mobileengage.iam.model.displayediam.DisplayedIamContract;
 
 
 public class MobileEngageDbHelper extends SQLiteOpenHelper {
