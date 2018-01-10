@@ -28,6 +28,10 @@ import static org.mockito.Mockito.when;
 @SdkSuppress(minSdkVersion = KITKAT)
 public class DisplayedIamRepositoryTest {
 
+    static {
+        mock(Cursor.class);
+    }
+
     private DisplayedIamRepository iamRepository;
     private DisplayedIam displayedIam1;
     private DisplayedIam displayedIam2;

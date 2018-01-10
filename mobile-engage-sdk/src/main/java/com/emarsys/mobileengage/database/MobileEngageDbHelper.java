@@ -4,6 +4,7 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import com.emarsys.mobileengage.iam.model.buttonclicked.ButtonClickedContract;
 import com.emarsys.mobileengage.iam.model.displayediam.DisplayedIamContract;
 
 
@@ -19,6 +20,7 @@ public class MobileEngageDbHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(DisplayedIamContract.SQL_CREATE_TABLE);
+        db.execSQL(ButtonClickedContract.SQL_CREATE_TABLE);
     }
 
     @Override

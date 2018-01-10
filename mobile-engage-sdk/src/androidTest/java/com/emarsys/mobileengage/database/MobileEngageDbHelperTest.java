@@ -8,16 +8,20 @@ import android.support.test.InstrumentationRegistry;
 import com.emarsys.mobileengage.testUtil.DatabaseTestUtils;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
-import junit.framework.Assert;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 
+import static junit.framework.Assert.assertEquals;
+
 public class MobileEngageDbHelperTest {
 
-    public static final String SQL_QUERY_IAM_TABLE_EXISTS = "SELECT name FROM sqlite_master WHERE type='table' AND name='displayed_iam';";
+    public static final String TABLE_EXISTS = "SELECT * FROM sqlite_master WHERE type='table' AND name='%s';";
+    public static final String DISPLAYED_IAM_EXISTS = String.format(TABLE_EXISTS, "displayed_iam");
+    public static final String BUTTON_CLICKED_EXISTS = String.format(TABLE_EXISTS, "button_clicked");
+    public static final String COLUMN_NAME_SQL = "sql";
+
     private MobileEngageDbHelper dbHelper;
 
     @Rule
@@ -32,12 +36,38 @@ public class MobileEngageDbHelperTest {
     }
 
     @Test
-    public void onCreate() throws Exception {
+    public void onCreate_createsDisplayedIamTable() throws Exception {
         SQLiteDatabase db = dbHelper.getReadableCoreDatabase().getBackingDatabase();
 
-        Cursor cursor = db.rawQuery(SQL_QUERY_IAM_TABLE_EXISTS, null);
+        Cursor cursor = db.rawQuery(DISPLAYED_IAM_EXISTS, null);
 
-        Assert.assertEquals(1, cursor.getCount());
+        assertEquals(1, cursor.getCount());
+
+        cursor.moveToFirst();
+        String actual = cursor.getString(cursor.getColumnIndex(COLUMN_NAME_SQL));
+
+
+        String expected = "CREATE TABLE displayed_iam (campaign_id TEXT,timestamp INTEGER,event_name TEXT)";
+        assertEquals(expected, actual);
+
+        cursor.close();
+    }
+
+    @Test
+    public void onCreate_createsButtonClickedTable() throws Exception {
+        SQLiteDatabase db = dbHelper.getReadableCoreDatabase().getBackingDatabase();
+
+        Cursor cursor = db.rawQuery(BUTTON_CLICKED_EXISTS, null);
+
+        assertEquals(1, cursor.getCount());
+
+        cursor.moveToFirst();
+        String actual = cursor.getString(cursor.getColumnIndex(COLUMN_NAME_SQL));
+
+
+        String expected = "CREATE TABLE button_clicked (campaign_id TEXT,button_id TEXT,timestamp INTEGER)";
+        assertEquals(expected, actual);
+
         cursor.close();
     }
 
