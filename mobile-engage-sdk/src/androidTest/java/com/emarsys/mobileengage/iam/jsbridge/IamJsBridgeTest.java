@@ -140,12 +140,23 @@ public class IamJsBridgeTest {
     }
 
     @Test
-    public void testTriggerAppEvent_shouldInvokeCallback() throws Exception {
+    public void testTriggerAppEvent_shouldInvokeCallback_onSuccess() throws Exception {
         String id = "123456789";
         JSONObject json = new JSONObject().put("id", id).put("name", "value");
         jsBridge.triggerAppEvent(json.toString());
 
-        JSONObject result = new JSONObject().put("id", id);
+        JSONObject result = new JSONObject().put("id", id).put("success", true);
+
+        verify(webView, Mockito.timeout(1000)).evaluateJavascript(String.format("MEIAM.handleResponse(%s);", result), null);
+    }
+
+    @Test
+    public void testTriggerAppEvent_shouldInvokeCallback_whenNameIsMissing() throws Exception {
+        String id = "123456789";
+        JSONObject json = new JSONObject().put("id", id);
+        jsBridge.triggerAppEvent(json.toString());
+
+        JSONObject result = new JSONObject().put("id", id).put("success", false).put("error", "Missing name!");
 
         verify(webView, Mockito.timeout(1000)).evaluateJavascript(String.format("MEIAM.handleResponse(%s);", result), null);
     }
@@ -165,6 +176,6 @@ public class IamJsBridgeTest {
         JSONObject json = new JSONObject().put("id", "123456789").put("key", "value");
         jsBridge.sendResult(json);
 
-        verify(webView).evaluateJavascript(String.format("MEIAM.handleResponse(%s);", json), null);
+        verify(webView, Mockito.timeout(1000)).evaluateJavascript(String.format("MEIAM.handleResponse(%s);", json), null);
     }
 }

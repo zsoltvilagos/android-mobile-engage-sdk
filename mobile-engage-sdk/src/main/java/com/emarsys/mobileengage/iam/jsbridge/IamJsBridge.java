@@ -53,29 +53,43 @@ public class IamJsBridge {
         if (inAppMessageHandler != null) {
             try {
                 final JSONObject json = new JSONObject(jsonString);
-                final String eventName = json.getString("name");
-                final JSONObject payload = json.has("payload") ? json.getJSONObject("payload") : null;
-
                 final JSONObject result = new JSONObject().put("id", json.getString("id"));
 
-                uiHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        inAppMessageHandler.handleApplicationEvent(eventName, payload);
-                        sendResult(result);
-                    }
-                });
+                if (json.has("name")) {
+                    final String eventName = json.getString("name");
+                    final JSONObject payload = json.has("payload") ? json.getJSONObject("payload") : null;
+                    uiHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            inAppMessageHandler.handleApplicationEvent(eventName, payload);
+                        }
+                    });
+                    result.put("success", true);
+                } else {
+                    result.put("success", false)
+                            .put("error", "Missing name!");
+                }
+                sendResult(result);
             } catch (JSONException je) {
                 EMSLogger.log(MobileEngageTopic.IN_APP_MESSAGE, "Exception occurred, exception: %s json: %s", je, jsonString);
             }
         }
     }
 
-    void sendResult(JSONObject payload) {
+    void sendResult(final JSONObject payload) {
         Assert.notNull(payload, "Payload must not be null!");
         if (!payload.has("id")) {
             throw new IllegalArgumentException("Payload must have an id!");
         }
-        webView.evaluateJavascript(String.format("MEIAM.handleResponse(%s);", payload), null);
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            webView.evaluateJavascript(String.format("MEIAM.handleResponse(%s);", payload), null);
+        } else {
+            uiHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    webView.evaluateJavascript(String.format("MEIAM.handleResponse(%s);", payload), null);
+                }
+            });
+        }
     }
 }
