@@ -3,15 +3,16 @@ package com.emarsys.mobileengage.iam.dialog;
 import android.os.Handler;
 
 import com.emarsys.core.util.Assert;
+import com.emarsys.mobileengage.iam.Repository;
+import com.emarsys.mobileengage.iam.SqlSpecification;
 import com.emarsys.mobileengage.iam.model.displayediam.DisplayedIam;
-import com.emarsys.mobileengage.iam.model.displayediam.DisplayedIamRepository;
 
 public class OnDialogShownAction {
 
     Handler handler;
-    DisplayedIamRepository repository;
+    Repository<DisplayedIam, SqlSpecification> repository;
 
-    public OnDialogShownAction(Handler handler, DisplayedIamRepository repository) {
+    public OnDialogShownAction(Handler handler, Repository<DisplayedIam, SqlSpecification> repository) {
         Assert.notNull(handler, "Handler must not be null!");
         Assert.notNull(repository, "Repository must not be null!");
         this.handler = handler;

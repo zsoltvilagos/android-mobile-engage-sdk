@@ -4,10 +4,8 @@ import android.os.Handler;
 import android.support.test.filters.SdkSuppress;
 
 import com.emarsys.core.concurrency.CoreSdkHandlerProvider;
-import com.emarsys.mobileengage.database.MobileEngageDbHelper;
 import com.emarsys.mobileengage.iam.dialog.OnDialogShownAction;
 import com.emarsys.mobileengage.iam.model.displayediam.DisplayedIam;
-import com.emarsys.mobileengage.iam.model.displayediam.DisplayedIamRepository;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 import com.emarsys.mobileengage.testUtil.mockito.ThreadSpy;
 
@@ -17,10 +15,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 
-import java.lang.reflect.Field;
-
 import static android.os.Build.VERSION_CODES.KITKAT;
-import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.timeout;
@@ -34,7 +29,7 @@ public class OnDialogShownActionTest {
     private static final DisplayedIam IAM = new DisplayedIam(ID, TIMESTAMP, "");
 
     private OnDialogShownAction action;
-    private DisplayedIamRepository repository;
+    private Repository<DisplayedIam, SqlSpecification> repository;
     private ThreadSpy threadSpy;
     private Handler handler;
 
@@ -42,15 +37,11 @@ public class OnDialogShownActionTest {
     public TestRule timeout = TimeoutUtils.getTimeoutRule();
 
     @Before
+    @SuppressWarnings("unchecked")
     public void init() throws NoSuchFieldException, IllegalAccessException {
         threadSpy = new ThreadSpy();
-        repository = mock(DisplayedIamRepository.class);
+        repository = mock(Repository.class);
         handler = new CoreSdkHandlerProvider().provideHandler();
-
-        MobileEngageDbHelper helper = mock(MobileEngageDbHelper.class, RETURNS_DEEP_STUBS);
-        Field dbHelperField = AbstractSqliteRepository.class.getDeclaredField("dbHelper");
-        dbHelperField.setAccessible(true);
-        dbHelperField.set(repository, helper);
 
         doAnswer(threadSpy).when(repository).add(IAM);
         action = new OnDialogShownAction(handler, repository);
