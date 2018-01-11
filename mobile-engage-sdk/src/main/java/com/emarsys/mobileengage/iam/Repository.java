@@ -2,7 +2,7 @@ package com.emarsys.mobileengage.iam;
 
 import java.util.List;
 
-interface Repository<T, S> {
+public interface Repository<T, S> {
 
     void add(T item);
 

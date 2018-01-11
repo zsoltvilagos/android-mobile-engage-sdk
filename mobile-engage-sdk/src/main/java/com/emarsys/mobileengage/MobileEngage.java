@@ -20,6 +20,7 @@ import com.emarsys.mobileengage.experimental.MobileEngageExperimental;
 import com.emarsys.mobileengage.experimental.MobileEngageFeature;
 import com.emarsys.mobileengage.iam.dialog.IamDialogProvider;
 import com.emarsys.mobileengage.iam.jsbridge.InAppMessageHandlerProvider;
+import com.emarsys.mobileengage.iam.model.buttonclicked.ButtonClickedRepository;
 import com.emarsys.mobileengage.iam.webview.IamWebViewProvider;
 import com.emarsys.mobileengage.inbox.InboxInternal;
 import com.emarsys.mobileengage.inbox.InboxResultListener;
@@ -43,7 +44,7 @@ public class MobileEngage {
     static InboxInternal inboxInstance;
     static MobileEngageConfig config;
     static MobileEngageCoreCompletionHandler completionHandler;
-    static Handler handler;
+    static Handler coreSdkHandler;
 
     public static class Inbox {
 
@@ -77,7 +78,7 @@ public class MobileEngage {
         MobileEngage.config = config;
         MobileEngageUtils.setup(config);
 
-        handler = new CoreSdkHandlerProvider().provideHandler();
+        coreSdkHandler = new CoreSdkHandlerProvider().provideHandler();
 
         Application application = config.getApplication();
         CurrentActivityWatchdog.registerApplication(application);
@@ -86,15 +87,16 @@ public class MobileEngage {
         if (MobileEngageExperimental.isFeatureEnabled(MobileEngageFeature.IN_APP_MESSAGING)) {
             responseHandlers.add(new MeIdResponseHandler(new MeIdStorage(application)));
             responseHandlers.add(new InAppMessageResponseHandler(
-                    handler,
+                    coreSdkHandler,
                     new IamWebViewProvider(),
                     new InAppMessageHandlerProvider(),
-                    new IamDialogProvider()));
+                    new IamDialogProvider(),
+                    new ButtonClickedRepository(application)));
         }
 
         completionHandler = new MobileEngageCoreCompletionHandler(responseHandlers, config.getStatusListener());
 
-        RequestManager requestManager = new RequestManager(handler, new ConnectionWatchDog(application, handler), new SqliteQueue(application), completionHandler);
+        RequestManager requestManager = new RequestManager(coreSdkHandler, new ConnectionWatchDog(application, coreSdkHandler), new SqliteQueue(application), completionHandler);
 
         instance = new MobileEngageInternal(config, requestManager, new AppLoginStorage(application), completionHandler);
         inboxInstance = new InboxInternal(config, requestManager);

@@ -67,7 +67,7 @@ public class MobileEngageIntegrationTest {
 
     @After
     public void tearDown() {
-        MobileEngage.handler.getLooper().quit();
+        MobileEngage.coreSdkHandler.getLooper().quit();
         clearStorages();
     }
 

@@ -9,6 +9,7 @@ import com.emarsys.mobileengage.iam.dialog.IamDialogProvider;
 import com.emarsys.mobileengage.iam.dialog.OnDialogShownAction;
 import com.emarsys.mobileengage.iam.jsbridge.IamJsBridge;
 import com.emarsys.mobileengage.iam.jsbridge.InAppMessageHandlerProvider;
+import com.emarsys.mobileengage.iam.model.buttonclicked.ButtonClickedRepository;
 import com.emarsys.mobileengage.iam.webview.DefaultMessageLoadedListener;
 import com.emarsys.mobileengage.iam.webview.IamWebViewProvider;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
@@ -51,7 +52,8 @@ public class InAppMessageResponseHandlerTest {
                 mock(Handler.class),
                 webViewProvider,
                 mock(InAppMessageHandlerProvider.class),
-                dialogProvider);
+                dialogProvider,
+                mock(ButtonClickedRepository.class));
     }
 
     @Test

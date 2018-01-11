@@ -1,15 +1,22 @@
 package com.emarsys.mobileengage.iam.jsbridge;
 
+import android.os.Handler;
 import android.support.test.filters.SdkSuppress;
 import android.webkit.WebView;
 
+import com.emarsys.core.concurrency.CoreSdkHandlerProvider;
 import com.emarsys.mobileengage.iam.InAppMessageHandler;
+import com.emarsys.mobileengage.iam.Repository;
+import com.emarsys.mobileengage.iam.SqlSpecification;
 import com.emarsys.mobileengage.iam.dialog.IamDialog;
+import com.emarsys.mobileengage.iam.model.buttonclicked.ButtonClicked;
+import com.emarsys.mobileengage.iam.model.buttonclicked.ButtonClickedRepository;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 import com.emarsys.mobileengage.testUtil.mockito.ThreadSpy;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -18,7 +25,12 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import static android.os.Build.VERSION_CODES.KITKAT;
-import static junit.framework.Assert.assertEquals;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.lessThanOrEqualTo;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -30,41 +42,69 @@ public class IamJsBridgeTest {
     static {
         mock(IamDialog.class);
         mock(WebView.class);
+        mock(Handler.class);
     }
 
     private IamJsBridge jsBridge;
     private WebView webView;
-
-    @Before
-    public void setUp() throws Exception {
-        IamDialog dialog = mock(IamDialog.class);
-        InAppMessageHandler handler = mock(InAppMessageHandler.class);
-        InAppMessageHandlerProvider provider = mock(InAppMessageHandlerProvider.class);
-        when(provider.provideHandler()).thenReturn(handler);
-
-        jsBridge = new IamJsBridge(dialog, provider);
-        webView = mock(WebView.class);
-        jsBridge.setWebView(webView);
-    }
+    private Repository<ButtonClicked, SqlSpecification> repository;
+    private String campaignId;
+    private Handler coreSdkHandler;
 
     @Rule
     public TestRule timeout = TimeoutUtils.getTimeoutRule();
 
+    @Before
+    @SuppressWarnings("unchecked")
+    public void setUp() throws Exception {
+        IamDialog dialog = mock(IamDialog.class);
+        InAppMessageHandler inAppHandler = mock(InAppMessageHandler.class);
+        InAppMessageHandlerProvider provider = mock(InAppMessageHandlerProvider.class);
+        when(provider.provideHandler()).thenReturn(inAppHandler);
+
+        repository = mock(Repository.class);
+        campaignId = "123";
+        coreSdkHandler = new CoreSdkHandlerProvider().provideHandler();
+        jsBridge = new IamJsBridge(dialog, provider, repository, campaignId, coreSdkHandler);
+        webView = mock(WebView.class);
+        jsBridge.setWebView(webView);
+    }
+
+    @After
+    public void tearDown() {
+        coreSdkHandler.getLooper().quit();
+    }
+
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_dialog_shouldNotAcceptNull() {
-        new IamJsBridge(null, mock(InAppMessageHandlerProvider.class));
+        new IamJsBridge(null, mock(InAppMessageHandlerProvider.class), repository, campaignId, mock(Handler.class));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_messageHandlerProvider_shouldNotAcceptNull() {
-        new IamJsBridge(mock(IamDialog.class), null);
+        new IamJsBridge(mock(IamDialog.class), null, repository, campaignId, mock(Handler.class));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructor_buttonClickedRepository_shouldNotAcceptNull() {
+        new IamJsBridge(mock(IamDialog.class), mock(InAppMessageHandlerProvider.class), null, campaignId, mock(Handler.class));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructor_campaignId_shouldNotAcceptNull() {
+        new IamJsBridge(mock(IamDialog.class), mock(InAppMessageHandlerProvider.class), repository, null, mock(Handler.class));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructor_coreSdkHandler_shouldNotAcceptNull() {
+        new IamJsBridge(mock(IamDialog.class), mock(InAppMessageHandlerProvider.class), repository, campaignId, null);
     }
 
     @Test
     public void testClose_shouldInvokeCloseOnTheDialogOfTheMessageHandler() {
         IamDialog iamDialog = mock(IamDialog.class);
 
-        IamJsBridge jsBridge = new IamJsBridge(iamDialog, mock(InAppMessageHandlerProvider.class));
+        IamJsBridge jsBridge = new IamJsBridge(iamDialog, mock(InAppMessageHandlerProvider.class), mock(ButtonClickedRepository.class), campaignId, mock(Handler.class));
         jsBridge.close("");
         verify(iamDialog, Mockito.timeout(1000)).dismiss();
     }
@@ -75,7 +115,7 @@ public class IamJsBridgeTest {
         ThreadSpy threadSpy = new ThreadSpy();
         doAnswer(threadSpy).when(iamDialog).dismiss();
 
-        IamJsBridge jsBridge = new IamJsBridge(iamDialog, mock(InAppMessageHandlerProvider.class));
+        IamJsBridge jsBridge = new IamJsBridge(iamDialog, mock(InAppMessageHandlerProvider.class), repository, campaignId, mock(Handler.class));
         jsBridge.close("");
 
         threadSpy.verifyCalledOnMainThread();
@@ -98,7 +138,7 @@ public class IamJsBridgeTest {
         InAppMessageHandlerProvider messageHandlerProvider = mock(InAppMessageHandlerProvider.class);
         when(messageHandlerProvider.provideHandler()).thenReturn(inAppMessageHandler);
 
-        IamJsBridge jsBridge = new IamJsBridge(mock(IamDialog.class), messageHandlerProvider);
+        IamJsBridge jsBridge = new IamJsBridge(mock(IamDialog.class), messageHandlerProvider, repository, campaignId, mock(Handler.class));
         jsBridge.setWebView(webView);
         jsBridge.triggerAppEvent(json.toString());
 
@@ -117,7 +157,7 @@ public class IamJsBridgeTest {
         InAppMessageHandlerProvider messageHandlerProvider = mock(InAppMessageHandlerProvider.class);
         when(messageHandlerProvider.provideHandler()).thenReturn(null);
 
-        IamJsBridge jsBridge = new IamJsBridge(mock(IamDialog.class), messageHandlerProvider);
+        IamJsBridge jsBridge = new IamJsBridge(mock(IamDialog.class), messageHandlerProvider, repository, campaignId, mock(Handler.class));
         jsBridge.triggerAppEvent(json.toString());
     }
 
@@ -132,7 +172,7 @@ public class IamJsBridgeTest {
         InAppMessageHandlerProvider messageHandlerProvider = mock(InAppMessageHandlerProvider.class);
         when(messageHandlerProvider.provideHandler()).thenReturn(messageHandler);
 
-        IamJsBridge jsBridge = new IamJsBridge(mock(IamDialog.class), messageHandlerProvider);
+        IamJsBridge jsBridge = new IamJsBridge(mock(IamDialog.class), messageHandlerProvider, repository, campaignId, mock(Handler.class));
         jsBridge.setWebView(webView);
         jsBridge.triggerAppEvent(json.toString());
 
@@ -156,8 +196,71 @@ public class IamJsBridgeTest {
         JSONObject json = new JSONObject().put("id", id);
         jsBridge.triggerAppEvent(json.toString());
 
-        JSONObject result = new JSONObject().put("id", id).put("success", false).put("error", "Missing name!");
+        JSONObject result = new JSONObject()
+                .put("id", id)
+                .put("success", false)
+                .put("error", "Missing name!");
 
+        verify(webView, Mockito.timeout(1000)).evaluateJavascript(String.format("MEIAM.handleResponse(%s);", result), null);
+    }
+
+    @Test
+    public void testButtonClicked_shouldStoreButtonClick_inRepository() throws Exception {
+        ArgumentCaptor<ButtonClicked> buttonClickedArgumentCaptor = ArgumentCaptor.forClass(ButtonClicked.class);
+
+        String id = "12346789";
+        String buttonId = "987654321";
+        JSONObject json = new JSONObject().put("id", id).put("buttonId", buttonId);
+
+        long before = System.currentTimeMillis();
+        jsBridge.buttonClicked(json.toString());
+
+        verify(repository, Mockito.timeout(1000)).add(buttonClickedArgumentCaptor.capture());
+        long after = System.currentTimeMillis();
+        ButtonClicked buttonClicked = buttonClickedArgumentCaptor.getValue();
+
+        assertEquals(campaignId, buttonClicked.getCampaignId());
+        assertEquals(buttonId, buttonClicked.getButtonId());
+        assertThat(
+                buttonClicked.getTimestamp(),
+                allOf(greaterThanOrEqualTo(before), lessThanOrEqualTo(after)));
+    }
+
+    @Test
+    public void testButtonClicked_shouldCallAddOnRepository_onCoreSDKThread() throws JSONException, InterruptedException {
+        ThreadSpy threadSpy = new ThreadSpy();
+        doAnswer(threadSpy).when(repository).add(any(ButtonClicked.class));
+
+        String id = "12346789";
+        String buttonId = "987654321";
+        JSONObject json = new JSONObject().put("id", id).put("buttonId", buttonId);
+
+        jsBridge.buttonClicked(json.toString());
+        threadSpy.verifyCalledOnCoreSdkThread();
+    }
+
+    @Test
+    public void testButtonClicked_shouldInvokeCallback_onSuccess() throws JSONException {
+        String id = "12346789";
+        String buttonId = "987654321";
+        JSONObject json = new JSONObject().put("id", id).put("buttonId", buttonId);
+
+        jsBridge.buttonClicked(json.toString());
+        JSONObject result = new JSONObject().put("id", id).put("success", true);
+        verify(webView, Mockito.timeout(1000)).evaluateJavascript(String.format("MEIAM.handleResponse(%s);", result), null);
+    }
+
+    @Test
+    public void testButtonClicked_shouldInvokeCallback_whenButtonIdIsMissing() throws JSONException {
+        String id = "12346789";
+        JSONObject json = new JSONObject().put("id", id);
+
+        jsBridge.buttonClicked(json.toString());
+
+        JSONObject result = new JSONObject()
+                .put("id", id)
+                .put("success", false)
+                .put("error", "Missing buttonId!");
         verify(webView, Mockito.timeout(1000)).evaluateJavascript(String.format("MEIAM.handleResponse(%s);", result), null);
     }
 

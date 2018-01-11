@@ -10,6 +10,7 @@ import com.emarsys.mobileengage.iam.dialog.IamDialogProvider;
 import com.emarsys.mobileengage.iam.dialog.OnDialogShownAction;
 import com.emarsys.mobileengage.iam.jsbridge.IamJsBridge;
 import com.emarsys.mobileengage.iam.jsbridge.InAppMessageHandlerProvider;
+import com.emarsys.mobileengage.iam.model.buttonclicked.ButtonClickedRepository;
 import com.emarsys.mobileengage.iam.model.displayediam.DisplayedIamRepository;
 import com.emarsys.mobileengage.iam.webview.DefaultMessageLoadedListener;
 import com.emarsys.mobileengage.iam.webview.IamWebViewProvider;
@@ -23,13 +24,20 @@ public class InAppMessageResponseHandler extends AbstractResponseHandler {
     private IamWebViewProvider webViewProvider;
     private InAppMessageHandlerProvider messageHandlerProvider;
     private IamDialogProvider dialogProvider;
-    private Handler handler;
+    private Handler coreSdkHandler;
+    private ButtonClickedRepository repository;
 
-    public InAppMessageResponseHandler(Handler handler, IamWebViewProvider webViewProvider, InAppMessageHandlerProvider messageHandlerProvider, IamDialogProvider dialogProvider) {
-        this.handler = handler;
+    public InAppMessageResponseHandler(
+            Handler coreSdkHandler,
+            IamWebViewProvider webViewProvider,
+            InAppMessageHandlerProvider messageHandlerProvider,
+            IamDialogProvider dialogProvider,
+            ButtonClickedRepository repository) {
+        this.coreSdkHandler = coreSdkHandler;
         this.webViewProvider = webViewProvider;
         this.messageHandlerProvider = messageHandlerProvider;
         this.dialogProvider = dialogProvider;
+        this.repository = repository;
     }
 
     @Override
@@ -58,12 +66,12 @@ public class InAppMessageResponseHandler extends AbstractResponseHandler {
 
                 IamDialog iamDialog = dialogProvider.provideDialog(id);
                 OnDialogShownAction action = new OnDialogShownAction(
-                        handler,
+                        coreSdkHandler,
                         new DisplayedIamRepository(iamDialog.getActivity()));
                 iamDialog.setAction(action);
 
                 DefaultMessageLoadedListener listener = new DefaultMessageLoadedListener(iamDialog);
-                webViewProvider.loadMessageAsync(html, new IamJsBridge(iamDialog, messageHandlerProvider), listener);
+                webViewProvider.loadMessageAsync(html, new IamJsBridge(iamDialog, messageHandlerProvider, repository, id, coreSdkHandler), listener);
             } catch (JSONException je) {
                 EMSLogger.log(MobileEngageTopic.IN_APP_MESSAGE, "Exception occurred, exception: %s json: %s", je, responseBody);
             }

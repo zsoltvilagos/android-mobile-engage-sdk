@@ -14,6 +14,7 @@ import com.emarsys.mobileengage.fake.FakeMessageLoadedListener;
 import com.emarsys.mobileengage.iam.dialog.IamDialog;
 import com.emarsys.mobileengage.iam.jsbridge.IamJsBridge;
 import com.emarsys.mobileengage.iam.jsbridge.InAppMessageHandlerProvider;
+import com.emarsys.mobileengage.iam.model.buttonclicked.ButtonClickedRepository;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
 import org.junit.Before;
@@ -30,8 +31,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 class TestJSInterface extends IamJsBridge {
-    public TestJSInterface(IamDialog iamDialog, InAppMessageHandlerProvider inAppMessageHandlerProvider) {
-        super(iamDialog, inAppMessageHandlerProvider);
+    public TestJSInterface(IamDialog iamDialog, InAppMessageHandlerProvider inAppMessageHandlerProvider, ButtonClickedRepository repository, String campaignId, Handler coreSdkHandler) {
+        super(iamDialog, inAppMessageHandlerProvider, repository, campaignId, coreSdkHandler);
     }
 
     @JavascriptInterface
@@ -41,6 +42,11 @@ class TestJSInterface extends IamJsBridge {
 
 @SdkSuppress(minSdkVersion = KITKAT)
 public class IamWebViewProviderTest {
+    static {
+        mock(IamDialog.class);
+        mock(Handler.class);
+    }
+
     private static final String BASIC_HTML = "<html><head></head><body>webview content</body></html>";
 
     private IamWebViewProvider provider;
@@ -75,7 +81,7 @@ public class IamWebViewProviderTest {
 
         handler = new Handler(Looper.getMainLooper());
         latch = new CountDownLatch(1);
-        dummyJsBridge = new IamJsBridge(mock(IamDialog.class), mock(InAppMessageHandlerProvider.class));
+        dummyJsBridge = new IamJsBridge(mock(IamDialog.class), mock(InAppMessageHandlerProvider.class), mock(ButtonClickedRepository.class), "123", mock(Handler.class));
     }
 
     @Test(expected = IllegalArgumentException.class)
