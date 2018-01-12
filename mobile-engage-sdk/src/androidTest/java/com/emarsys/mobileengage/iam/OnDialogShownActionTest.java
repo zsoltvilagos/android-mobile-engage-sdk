@@ -4,6 +4,8 @@ import android.os.Handler;
 import android.support.test.filters.SdkSuppress;
 
 import com.emarsys.core.concurrency.CoreSdkHandlerProvider;
+import com.emarsys.core.database.repository.Repository;
+import com.emarsys.core.database.repository.SqlSpecification;
 import com.emarsys.mobileengage.iam.dialog.OnDialogShownAction;
 import com.emarsys.mobileengage.iam.model.displayediam.DisplayedIam;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;

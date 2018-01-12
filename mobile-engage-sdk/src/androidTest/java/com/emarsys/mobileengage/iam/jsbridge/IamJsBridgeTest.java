@@ -5,9 +5,9 @@ import android.support.test.filters.SdkSuppress;
 import android.webkit.WebView;
 
 import com.emarsys.core.concurrency.CoreSdkHandlerProvider;
+import com.emarsys.core.database.repository.Repository;
+import com.emarsys.core.database.repository.SqlSpecification;
 import com.emarsys.mobileengage.iam.InAppMessageHandler;
-import com.emarsys.mobileengage.iam.Repository;
-import com.emarsys.mobileengage.iam.SqlSpecification;
 import com.emarsys.mobileengage.iam.dialog.IamDialog;
 import com.emarsys.mobileengage.iam.model.buttonclicked.ButtonClicked;
 import com.emarsys.mobileengage.iam.model.buttonclicked.ButtonClickedRepository;

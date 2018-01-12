@@ -4,8 +4,8 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 
+import com.emarsys.core.database.repository.AbstractSqliteRepository;
 import com.emarsys.mobileengage.database.MobileEngageDbHelper;
-import com.emarsys.mobileengage.iam.AbstractSqliteRepository;
 
 import static com.emarsys.mobileengage.iam.model.buttonclicked.ButtonClickedContract.COLUMN_NAME_BUTTON_ID;
 import static com.emarsys.mobileengage.iam.model.buttonclicked.ButtonClickedContract.COLUMN_NAME_CAMPAIGN_ID;

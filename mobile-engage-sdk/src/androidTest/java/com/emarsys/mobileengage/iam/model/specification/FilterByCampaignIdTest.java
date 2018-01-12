@@ -4,7 +4,7 @@ import android.content.Context;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SdkSuppress;
 
-import com.emarsys.mobileengage.database.QueryAll;
+import com.emarsys.core.database.repository.QueryAll;
 import com.emarsys.mobileengage.iam.model.displayediam.DisplayedIam;
 import com.emarsys.mobileengage.iam.model.displayediam.DisplayedIamRepository;
 import com.emarsys.mobileengage.testUtil.DatabaseTestUtils;

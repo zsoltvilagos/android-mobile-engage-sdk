@@ -15,7 +15,7 @@ import com.emarsys.mobileengage.fake.FakeInboxResultListener;
 import com.emarsys.mobileengage.fake.FakeResetBadgeCountResultListener;
 import com.emarsys.mobileengage.fake.FakeStatusListener;
 import com.emarsys.mobileengage.testUtil.ConnectionTestUtils;
-import com.emarsys.mobileengage.testUtil.TestDbHelper;
+import com.emarsys.mobileengage.testUtil.DatabaseTestUtils;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 import com.emarsys.mobileengage.util.RequestUtils;
 
@@ -47,8 +47,9 @@ public class NotificationInboxIntegrationTest {
 
     @Before
     public void setup() {
-        context = (Application) InstrumentationRegistry.getTargetContext().getApplicationContext();
+        DatabaseTestUtils.deleteCoreDatabase();
 
+        context = (Application) InstrumentationRegistry.getTargetContext().getApplicationContext();
         ConnectionTestUtils.checkConnection(context);
 
         latch = new CountDownLatch(1);
@@ -61,7 +62,6 @@ public class NotificationInboxIntegrationTest {
                 .build();
         MobileEngage.setup(config);
         SqliteQueue queue = new SqliteQueue(context);
-        queue.setHelper(new TestDbHelper(context));
         Handler handler = new CoreSdkHandlerProvider().provideHandler();
         MobileEngage.instance.manager = new RequestManager(handler, new ConnectionWatchDog(context, handler), queue, new CoreCompletionHandler() {
             @Override

@@ -7,11 +7,11 @@ import android.support.annotation.RequiresApi;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 
+import com.emarsys.core.database.repository.Repository;
+import com.emarsys.core.database.repository.SqlSpecification;
 import com.emarsys.core.util.Assert;
 import com.emarsys.core.util.log.EMSLogger;
 import com.emarsys.mobileengage.iam.InAppMessageHandler;
-import com.emarsys.mobileengage.iam.Repository;
-import com.emarsys.mobileengage.iam.SqlSpecification;
 import com.emarsys.mobileengage.iam.dialog.IamDialog;
 import com.emarsys.mobileengage.iam.model.buttonclicked.ButtonClicked;
 import com.emarsys.mobileengage.util.log.MobileEngageTopic;

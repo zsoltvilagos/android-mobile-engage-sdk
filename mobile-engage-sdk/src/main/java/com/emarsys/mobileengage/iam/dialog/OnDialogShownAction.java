@@ -2,9 +2,9 @@ package com.emarsys.mobileengage.iam.dialog;
 
 import android.os.Handler;
 
+import com.emarsys.core.database.repository.Repository;
+import com.emarsys.core.database.repository.SqlSpecification;
 import com.emarsys.core.util.Assert;
-import com.emarsys.mobileengage.iam.Repository;
-import com.emarsys.mobileengage.iam.SqlSpecification;
 import com.emarsys.mobileengage.iam.model.displayediam.DisplayedIam;
 
 public class OnDialogShownAction {

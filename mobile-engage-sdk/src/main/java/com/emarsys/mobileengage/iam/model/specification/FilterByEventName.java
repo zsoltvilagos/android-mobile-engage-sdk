@@ -1,6 +1,6 @@
 package com.emarsys.mobileengage.iam.model.specification;
 
-import com.emarsys.mobileengage.iam.SqlSpecification;
+import com.emarsys.core.database.repository.SqlSpecification;
 import com.emarsys.mobileengage.iam.model.displayediam.DisplayedIamContract;
 
 public class FilterByEventName implements SqlSpecification {
