@@ -1,5 +1,6 @@
 package com.emarsys.mobileengage.responsehandler;
 
+import com.emarsys.core.request.RequestModel;
 import com.emarsys.core.response.ResponseModel;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
@@ -38,6 +39,7 @@ public class AbstractResponseHandlerTest {
         ResponseModel responseModel = new ResponseModel.Builder()
                 .statusCode(200)
                 .message("OK")
+                .requestModel(mock(RequestModel.class))
                 .build();
 
         abstractResponseHandler.processResponse(responseModel);
@@ -51,6 +53,7 @@ public class AbstractResponseHandlerTest {
         ResponseModel responseModel = new ResponseModel.Builder()
                 .statusCode(200)
                 .message("OK")
+                .requestModel(mock(RequestModel.class))
                 .build();
 
         abstractResponseHandler.processResponse(responseModel);

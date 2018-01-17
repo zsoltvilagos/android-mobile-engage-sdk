@@ -1,5 +1,6 @@
 package com.emarsys.mobileengage.responsehandler;
 
+import com.emarsys.core.request.RequestModel;
 import com.emarsys.core.response.ResponseModel;
 import com.emarsys.mobileengage.storage.MeIdStorage;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
@@ -35,6 +36,7 @@ public class MeIdResponseHandlerTest {
                 .statusCode(200)
                 .message("OK")
                 .body(String.format("{ 'api_me_id': '%s' }", meId))
+                .requestModel(mock(RequestModel.class))
                 .build();
     }
 
@@ -59,6 +61,7 @@ public class MeIdResponseHandlerTest {
                 .statusCode(200)
                 .message("OK")
                 .body("{ 'yolo': '123' }")
+                .requestModel(mock(RequestModel.class))
                 .build();
 
         boolean result = handler.shouldHandleResponse(responseModel);

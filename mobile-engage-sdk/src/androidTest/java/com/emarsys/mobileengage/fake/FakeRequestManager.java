@@ -7,6 +7,8 @@ import com.emarsys.core.response.ResponseModel;
 
 import java.util.concurrent.CountDownLatch;
 
+import static org.mockito.Mockito.mock;
+
 public class FakeRequestManager extends RequestManager {
 
     public static enum ResponseType {
@@ -31,7 +33,13 @@ public class FakeRequestManager extends RequestManager {
             @Override
             public void run() {
                 if (responseType == ResponseType.SUCCESS) {
-                    coreCompletionHandler.onSuccess(model.getId(), new ResponseModel.Builder().statusCode(200).message("OK").build());
+                    coreCompletionHandler.onSuccess(
+                            model.getId(),
+                            new ResponseModel.Builder()
+                                    .statusCode(200)
+                                    .message("OK")
+                                    .requestModel(mock(RequestModel.class))
+                                    .build());
                 } else {
                     coreCompletionHandler.onError(model.getId(), new Exception());
                 }

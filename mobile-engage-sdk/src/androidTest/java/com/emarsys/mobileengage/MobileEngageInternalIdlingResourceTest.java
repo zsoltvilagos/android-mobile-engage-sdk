@@ -12,6 +12,7 @@ import com.emarsys.core.concurrency.CoreSdkHandlerProvider;
 import com.emarsys.core.connection.ConnectionWatchDog;
 import com.emarsys.core.queue.sqlite.SqliteQueue;
 import com.emarsys.core.request.RequestManager;
+import com.emarsys.core.request.RequestModel;
 import com.emarsys.core.response.ResponseModel;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
@@ -138,14 +139,26 @@ public class MobileEngageInternalIdlingResourceTest {
 
     @Test
     public void testCoreCompletionHandler_onSuccess_callsIdlingResource(){
-        coreCompletionHandler.onSuccess("id", new ResponseModel.Builder().statusCode(200).message("OK").build());
+        coreCompletionHandler.onSuccess(
+                "id",
+                new ResponseModel.Builder()
+                        .statusCode(200)
+                        .message("OK")
+                        .requestModel(mock(RequestModel.class))
+                        .build());
 
         verify(idlingResource, times(1)).decrement();
     }
 
     @Test
     public void testCoreCompletionHandler_onError_responseModel_callsIdlingResource(){
-        coreCompletionHandler.onError("id", new ResponseModel.Builder().statusCode(404).message("Not found").build());
+        coreCompletionHandler.onError(
+                "id",
+                new ResponseModel.Builder()
+                        .statusCode(404)
+                        .message("Not found")
+                        .requestModel(mock(RequestModel.class))
+                        .build());
 
         verify(idlingResource, times(1)).decrement();
     }

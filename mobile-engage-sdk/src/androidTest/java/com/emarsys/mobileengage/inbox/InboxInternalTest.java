@@ -228,7 +228,11 @@ public class InboxInternalTest {
     public void testFetchNotification_listener_failureWithResponseModel() throws InterruptedException {
         inbox.setAppLoginParameters(appLoginParameters_withCredentials);
 
-        ResponseModel responseModel = new ResponseModel.Builder().statusCode(400).message("Bad request").build();
+        ResponseModel responseModel = new ResponseModel.Builder()
+                .statusCode(400)
+                .message("Bad request")
+                .requestModel(mock(RequestModel.class))
+                .build();
         inbox.client = new FakeRestClient(responseModel, FakeRestClient.Mode.ERROR_RESPONSE_MODEL);
 
         FakeInboxResultListener listener = new FakeInboxResultListener(latch);
@@ -252,7 +256,11 @@ public class InboxInternalTest {
     public void testFetchNotification_listener_failureWithResponseModel_shouldBeCalledOnMainThread() throws InterruptedException {
         inbox.setAppLoginParameters(appLoginParameters_withCredentials);
 
-        ResponseModel responseModel = new ResponseModel.Builder().statusCode(400).message("Bad request").build();
+        ResponseModel responseModel = new ResponseModel.Builder()
+                .statusCode(400)
+                .message("Bad request")
+                .requestModel(mock(RequestModel.class))
+                .build();
         inbox.client = new FakeRestClient(responseModel, FakeRestClient.Mode.ERROR_RESPONSE_MODEL);
 
         FakeInboxResultListener listener = new FakeInboxResultListener(latch, Mode.MAIN_THREAD);
@@ -396,7 +404,11 @@ public class InboxInternalTest {
     public void testResetBadgeCount_listener_failureWithResponseModel() throws InterruptedException {
         inbox.setAppLoginParameters(appLoginParameters_withCredentials);
 
-        ResponseModel responseModel = new ResponseModel.Builder().statusCode(400).message("Bad request").build();
+        ResponseModel responseModel = new ResponseModel.Builder()
+                .statusCode(400)
+                .message("Bad request")
+                .requestModel(mock(RequestModel.class))
+                .build();
         inbox.client = new FakeRestClient(responseModel, FakeRestClient.Mode.ERROR_RESPONSE_MODEL);
 
         FakeResetBadgeCountResultListener listener = new FakeResetBadgeCountResultListener(latch);
@@ -420,7 +432,11 @@ public class InboxInternalTest {
     public void testResetBadgeCount_listener_failureWithResponseModel_shouldBeCalledOnMainThread() throws InterruptedException {
         inbox.setAppLoginParameters(appLoginParameters_withCredentials);
 
-        ResponseModel responseModel = new ResponseModel.Builder().statusCode(400).message("Bad request").build();
+        ResponseModel responseModel = new ResponseModel.Builder()
+                .statusCode(400)
+                .message("Bad request")
+                .requestModel(mock(RequestModel.class))
+                .build();
         inbox.client = new FakeRestClient(responseModel, FakeRestClient.Mode.ERROR_RESPONSE_MODEL);
 
         FakeResetBadgeCountResultListener listener = new FakeResetBadgeCountResultListener(latch, FakeResetBadgeCountResultListener.Mode.MAIN_THREAD);
@@ -514,7 +530,11 @@ public class InboxInternalTest {
     public void testResetBadgeCount_shouldNotFail_withNullListener_failureWithResponseModel() {
         inbox.setAppLoginParameters(appLoginParameters_withCredentials);
 
-        ResponseModel responseModel = new ResponseModel.Builder().statusCode(400).message("Bad request").build();
+        ResponseModel responseModel = new ResponseModel.Builder()
+                .statusCode(400)
+                .message("Bad request")
+                .requestModel(mock(RequestModel.class))
+                .build();
         inbox.client = new FakeRestClient(responseModel, FakeRestClient.Mode.ERROR_RESPONSE_MODEL);
 
         try {
@@ -733,6 +753,7 @@ public class InboxInternalTest {
                 .statusCode(200)
                 .message("OK")
                 .body(json)
+                .requestModel(mock(RequestModel.class))
                 .build();
     }
 }
