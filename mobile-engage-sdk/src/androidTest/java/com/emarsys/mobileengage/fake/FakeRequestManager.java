@@ -2,7 +2,7 @@ package com.emarsys.mobileengage.fake;
 
 import com.emarsys.core.CoreCompletionHandler;
 import com.emarsys.core.request.RequestManager;
-import com.emarsys.core.request.RequestModel;
+import com.emarsys.core.request.model.RequestModel;
 import com.emarsys.core.response.ResponseModel;
 
 import java.util.concurrent.CountDownLatch;

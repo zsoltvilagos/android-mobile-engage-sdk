@@ -1,6 +1,6 @@
 package com.emarsys.mobileengage.responsehandler;
 
-import com.emarsys.core.request.RequestModel;
+import com.emarsys.core.request.model.RequestModel;
 import com.emarsys.core.response.ResponseModel;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 

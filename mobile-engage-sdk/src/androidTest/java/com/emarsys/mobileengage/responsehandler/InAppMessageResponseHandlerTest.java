@@ -3,7 +3,7 @@ package com.emarsys.mobileengage.responsehandler;
 import android.os.Handler;
 import android.support.test.filters.SdkSuppress;
 
-import com.emarsys.core.request.RequestModel;
+import com.emarsys.core.request.model.RequestModel;
 import com.emarsys.core.response.ResponseModel;
 import com.emarsys.mobileengage.iam.dialog.IamDialog;
 import com.emarsys.mobileengage.iam.dialog.IamDialogProvider;

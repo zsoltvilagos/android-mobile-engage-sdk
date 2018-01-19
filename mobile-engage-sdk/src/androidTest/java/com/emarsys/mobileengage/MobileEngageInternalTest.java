@@ -9,7 +9,7 @@ import android.support.test.runner.AndroidJUnit4;
 
 import com.emarsys.core.DeviceInfo;
 import com.emarsys.core.request.RequestManager;
-import com.emarsys.core.request.RequestModel;
+import com.emarsys.core.request.model.RequestModel;
 import com.emarsys.core.timestamp.TimestampProvider;
 import com.emarsys.core.util.TimestampUtils;
 import com.emarsys.mobileengage.config.MobileEngageConfig;

@@ -4,8 +4,8 @@ import android.os.Handler;
 import android.os.Looper;
 
 import com.emarsys.core.CoreCompletionHandler;
-import com.emarsys.core.request.RequestModel;
 import com.emarsys.core.request.RestClient;
+import com.emarsys.core.request.model.RequestModel;
 import com.emarsys.core.response.ResponseModel;
 
 

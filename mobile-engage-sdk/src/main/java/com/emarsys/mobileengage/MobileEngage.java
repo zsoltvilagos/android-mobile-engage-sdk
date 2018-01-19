@@ -10,7 +10,7 @@ import com.emarsys.core.activity.CurrentActivityWatchdog;
 import com.emarsys.core.concurrency.CoreSdkHandlerProvider;
 import com.emarsys.core.connection.ConnectionWatchDog;
 import com.emarsys.core.request.RequestManager;
-import com.emarsys.core.request.RequestModelRepository;
+import com.emarsys.core.request.model.RequestModelRepository;
 import com.emarsys.core.util.Assert;
 import com.emarsys.core.util.log.EMSLogger;
 import com.emarsys.mobileengage.config.MobileEngageConfig;

@@ -8,7 +8,7 @@ import com.emarsys.core.CoreCompletionHandler;
 import com.emarsys.core.concurrency.CoreSdkHandlerProvider;
 import com.emarsys.core.connection.ConnectionWatchDog;
 import com.emarsys.core.request.RequestManager;
-import com.emarsys.core.request.RequestModelRepository;
+import com.emarsys.core.request.model.RequestModelRepository;
 import com.emarsys.core.response.ResponseModel;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.fake.FakeInboxResultListener;
