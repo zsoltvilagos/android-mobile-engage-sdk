@@ -10,9 +10,9 @@ import android.support.test.runner.AndroidJUnit4;
 import com.emarsys.core.CoreCompletionHandler;
 import com.emarsys.core.concurrency.CoreSdkHandlerProvider;
 import com.emarsys.core.connection.ConnectionWatchDog;
-import com.emarsys.core.queue.sqlite.SqliteQueue;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.request.RequestModel;
+import com.emarsys.core.request.RequestModelRepository;
 import com.emarsys.core.response.ResponseModel;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
@@ -183,7 +183,7 @@ public class MobileEngageInternalIdlingResourceTest {
             }
         });
         Handler handler = new CoreSdkHandlerProvider().provideHandler();
-        RequestManager manager = new RequestManager(handler, new ConnectionWatchDog(config.getApplication(), handler), new SqliteQueue(config.getApplication()), completionHandler);
+        RequestManager manager = new RequestManager(handler, new ConnectionWatchDog(config.getApplication(), handler), new RequestModelRepository(config.getApplication()), completionHandler);
         return new MobileEngageInternal(config, manager, new AppLoginStorage(config.getApplication().getApplicationContext()), completionHandler);
     }
 

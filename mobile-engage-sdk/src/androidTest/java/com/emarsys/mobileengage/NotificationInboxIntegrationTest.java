@@ -7,8 +7,8 @@ import android.support.test.InstrumentationRegistry;
 import com.emarsys.core.CoreCompletionHandler;
 import com.emarsys.core.concurrency.CoreSdkHandlerProvider;
 import com.emarsys.core.connection.ConnectionWatchDog;
-import com.emarsys.core.queue.sqlite.SqliteQueue;
 import com.emarsys.core.request.RequestManager;
+import com.emarsys.core.request.RequestModelRepository;
 import com.emarsys.core.response.ResponseModel;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.fake.FakeInboxResultListener;
@@ -61,9 +61,9 @@ public class NotificationInboxIntegrationTest {
                 .disableDefaultChannel()
                 .build();
         MobileEngage.setup(config);
-        SqliteQueue queue = new SqliteQueue(context);
+        RequestModelRepository requestRepository = new RequestModelRepository(context);
         Handler handler = new CoreSdkHandlerProvider().provideHandler();
-        MobileEngage.instance.manager = new RequestManager(handler, new ConnectionWatchDog(context, handler), queue, new CoreCompletionHandler() {
+        MobileEngage.instance.manager = new RequestManager(handler, new ConnectionWatchDog(context, handler), requestRepository, new CoreCompletionHandler() {
             @Override
             public void onSuccess(String id, ResponseModel responseModel) {
                 listener.onStatusLog(id, "");
