@@ -140,6 +140,8 @@ public class MobileEngageInternal {
 
         MobileEngageUtils.incrementIdlingResource();
         manager.submit(model);
+        meIdStorage.remove();
+        appLoginStorage.remove();
         return model.getId();
     }
 

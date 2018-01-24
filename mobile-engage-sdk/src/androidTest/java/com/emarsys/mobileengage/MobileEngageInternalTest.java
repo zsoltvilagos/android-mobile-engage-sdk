@@ -225,6 +225,35 @@ public class MobileEngageInternalTest {
     }
 
     @Test
+    public void testAppLogin_shouldResult_inMultipleAppLoginRequests_when_thereWasALogout() {
+        AppLoginParameters appLoginParameters = new AppLoginParameters(3, "test@test.com");
+
+        ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
+
+        mobileEngage.setAppLoginParameters(appLoginParameters);
+        mobileEngage.appLogin();
+
+        verify(manager).submit(captor.capture());
+        RequestModel requestModel = captor.getValue();
+        assertRequestModels(createLoginRequestModel(appLoginParameters), requestModel);
+
+        clearInvocations(manager);
+
+        mobileEngage.appLogout();
+
+        clearInvocations(manager);
+
+        captor = ArgumentCaptor.forClass(RequestModel.class);
+
+        mobileEngage.setAppLoginParameters(appLoginParameters);
+        mobileEngage.appLogin();
+
+        verify(manager).submit(captor.capture());
+        requestModel = captor.getValue();
+        assertRequestModels(createLoginRequestModel(appLoginParameters), requestModel);
+    }
+
+    @Test
     public void testAppLogin_shouldNotResult_inMultipleAppLoginRequests_ifPayloadIsTheSame_evenIfMobileEngageIsReInitialized() {
         AppLoginParameters sameLoginParameters = new AppLoginParameters(3, "test@test.com");
 
@@ -278,6 +307,24 @@ public class MobileEngageInternalTest {
         verify(manager).submit(captor.capture());
 
         assertEquals(captor.getValue().getId(), result);
+    }
+
+    @Test
+    public void testAppLogout_removesStoredMeId() {
+        MeIdStorage storage = new MeIdStorage(application);
+        storage.set("testMeID");
+
+        mobileEngage.appLogout();
+        assertEquals(storage.get(), null);
+    }
+
+    @Test
+    public void testAppLogout_removesStoredApploginParameters() {
+        AppLoginStorage storage = new AppLoginStorage(application);
+        storage.set(42);
+
+        mobileEngage.appLogout();
+        assertEquals(storage.get(), null);
     }
 
     @Test
