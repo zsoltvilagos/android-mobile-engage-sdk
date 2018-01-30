@@ -1,0 +1,146 @@
+package com.emarsys.mobileengage.iam.model.requestRepositoryProxy;
+
+import com.emarsys.core.DeviceInfo;
+import com.emarsys.core.database.repository.Repository;
+import com.emarsys.core.database.repository.SqlSpecification;
+import com.emarsys.core.request.model.CompositeRequestModel;
+import com.emarsys.core.request.model.RequestModel;
+import com.emarsys.core.request.model.specification.FilterByUrlPattern;
+import com.emarsys.core.util.Assert;
+import com.emarsys.mobileengage.endpoint.Endpoint;
+import com.emarsys.mobileengage.iam.model.buttonclicked.ButtonClicked;
+import com.emarsys.mobileengage.iam.model.displayediam.DisplayedIam;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static com.emarsys.mobileengage.endpoint.Endpoint.ME_BASE_V3;
+
+
+public class RequestRepositoryProxy implements Repository<RequestModel, SqlSpecification> {
+
+    private static final String CUSTOM_EVENT_URL_PATTERN = Endpoint.ME_BASE_V3 + "_%/events";
+
+    private final DeviceInfo deviceInfo;
+    private final Repository<RequestModel, SqlSpecification> requestRepository;
+    private final Repository<DisplayedIam, SqlSpecification> iamRepository;
+    private final Repository<ButtonClicked, SqlSpecification> buttonClickedRepository;
+
+    public RequestRepositoryProxy(
+            DeviceInfo deviceInfo,
+            Repository<RequestModel, SqlSpecification> requestRepository,
+            Repository<DisplayedIam, SqlSpecification> iamRepository,
+            Repository<ButtonClicked, SqlSpecification> buttonClickedRepository) {
+        Assert.notNull(deviceInfo, "DeviceInfo must not be null!");
+        Assert.notNull(requestRepository, "RequestRepository must not be null!");
+        Assert.notNull(iamRepository, "IamRepository must not be null!");
+        Assert.notNull(buttonClickedRepository, "ButtonClickedRepository must not be null!");
+        this.deviceInfo = deviceInfo;
+        this.requestRepository = requestRepository;
+        this.iamRepository = iamRepository;
+        this.buttonClickedRepository = buttonClickedRepository;
+    }
+
+    @Override
+    public void add(RequestModel item) {
+        if (!(item instanceof CompositeRequestModel)) {
+            requestRepository.add(item);
+        }
+    }
+
+    @Override
+    public void remove(SqlSpecification specification) {
+        requestRepository.remove(specification);
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return requestRepository.isEmpty();
+    }
+
+    @Override
+    public List<RequestModel> query(SqlSpecification specification) {
+        List<RequestModel> result = requestRepository.query(specification);
+        List<RequestModel> customEventsInResult = collectCustomEvents(result);
+
+        if (!customEventsInResult.isEmpty()) {
+            List<RequestModel> customEvents = requestRepository.query(new FilterByUrlPattern(CUSTOM_EVENT_URL_PATTERN));
+            RequestModel composite = createCompositeCustomEvent(customEvents);
+
+            RequestModel firstCustomEvent = customEventsInResult.get(0);
+            int firstCustomEventIndex = result.indexOf(firstCustomEvent);
+            result.add(firstCustomEventIndex, composite);
+
+            result.removeAll(customEventsInResult);
+        }
+        return result;
+    }
+
+    private List<RequestModel> collectCustomEvents(List<RequestModel> models) {
+        List<RequestModel> result = new ArrayList<>();
+        for (RequestModel requestModel : models) {
+            if (isCustomEvent(requestModel)) {
+                result.add(requestModel);
+            }
+        }
+        return result;
+    }
+
+    private boolean isCustomEvent(RequestModel requestModel) {
+        String url = requestModel.getUrl().toString();
+        Pattern customEventPattern = Pattern.compile(ME_BASE_V3 + "\\w+/events");
+        Matcher matcher = customEventPattern.matcher(url);
+        return matcher.matches();
+    }
+
+    private CompositeRequestModel createCompositeCustomEvent(List<RequestModel> models) {
+        RequestModel first = models.get(0);
+        Map<String, Object> payload = createCompositePayload(models);
+        String[] requestIds = collectRequestIds(models);
+
+        return new CompositeRequestModel(
+                first.getUrl().toString(),
+                first.getMethod(),
+                payload,
+                first.getHeaders(),
+                requestIds
+        );
+    }
+
+    private Map<String, Object> createCompositePayload(List<RequestModel> models) {
+        Map<String, Object> payload = new HashMap<>();
+
+        List<Object> events = new ArrayList<>();
+
+        for (RequestModel model : models) {
+            Object individualEvents = model.getPayload().get("events");
+            if (individualEvents != null && individualEvents instanceof List) {
+                events.addAll((List) individualEvents);
+            }
+        }
+
+        payload.put("clicks", new ArrayList<>());
+        payload.put("viewed_messages", new ArrayList<>());
+        payload.put("events", events);
+        payload.put("hardware_id", deviceInfo.getHwid());
+
+        return payload;
+    }
+
+    private String[] collectRequestIds(List<RequestModel> models) {
+        int size = models.size();
+        String[] result = new String[size];
+
+        for (int i = 0; i < size; ++i) {
+            result[i] = models.get(i).getId();
+        }
+
+        return result;
+    }
+
+
+}
