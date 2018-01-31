@@ -27,9 +27,12 @@ node('master') {
                     androidLint andArchive: '**/lint-results*.*'
                 }
 
-                stage("instrumentation-test") {
+                stage('remove-test-app') {
                     sh './gradlew uninstallDebugAndroidTest'
-                    androidInstrumentationTest withScreenOn: true, withLock: env.ANDROID_DEVICE_FARM_LOCK, withRetryCount: 2, andArchive: '**/outputs/androidTest-results/connected/*.xml'
+                }
+
+                stage("instrumentation-test") {
+                    androidInstrumentationTest withScreenOn: true, withLock: env.ANDROID_DEVICE_FARM_LOCK, withRetryCount: 2, runTrulyParallel: true, withStepNames: env.ANDROID_STEP_NAMES, andArchive: '**/outputs/androidTest-results/connected/*.xml'
                 }
 
                 stage('local-maven-deploy') {
