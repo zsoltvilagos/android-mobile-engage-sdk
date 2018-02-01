@@ -371,7 +371,7 @@ public class MobileEngageInternalTest {
     }
 
     @Test
-    public void testTrackCustomEvent_V2_requestManagerCalledWithCorrectRequestModel() throws NoSuchFieldException, IllegalAccessException {
+    public void testTrackCustomEvent_V2_requestManagerCalledWithCorrectRequestModel() throws Exception {
         ExperimentalTestUtils.resetExperimentalFeatures();
 
         String eventName = "cartoon";
@@ -400,7 +400,7 @@ public class MobileEngageInternalTest {
     }
 
     @Test
-    public void testCustomEvent_V2_containsCredentials_fromApploginParameters() throws NoSuchFieldException, IllegalAccessException {
+    public void testCustomEvent_V2_containsCredentials_fromApploginParameters() throws Exception {
         ExperimentalTestUtils.resetExperimentalFeatures();
 
         int contactFieldId = 3;

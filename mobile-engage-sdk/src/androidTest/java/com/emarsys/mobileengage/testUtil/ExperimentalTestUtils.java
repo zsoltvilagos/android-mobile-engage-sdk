@@ -2,18 +2,17 @@ package com.emarsys.mobileengage.testUtil;
 
 import com.emarsys.mobileengage.experimental.MobileEngageExperimental;
 
-import java.lang.reflect.Field;
-import java.util.Set;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 public class ExperimentalTestUtils {
 
     private ExperimentalTestUtils() {
     }
 
-    public static void resetExperimentalFeatures() throws NoSuchFieldException, IllegalAccessException {
-        Field experimentalSet = MobileEngageExperimental.class.getDeclaredField("enabledFeatures");
-        experimentalSet.setAccessible(true);
-        Set<String> features = (Set<String>) experimentalSet.get(null);
-        features.clear();
+    public static void resetExperimentalFeatures() throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
+        Method reset = MobileEngageExperimental.class.getDeclaredMethod("reset");
+        reset.setAccessible(true);
+        reset.invoke(null);
     }
 }
