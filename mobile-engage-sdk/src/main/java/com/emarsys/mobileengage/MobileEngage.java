@@ -16,6 +16,7 @@ import com.emarsys.core.database.repository.SqlSpecification;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.request.model.RequestModel;
 import com.emarsys.core.request.model.RequestModelRepository;
+import com.emarsys.core.timestamp.TimestampProvider;
 import com.emarsys.core.util.Assert;
 import com.emarsys.core.util.log.EMSLogger;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
@@ -168,7 +169,8 @@ public class MobileEngage {
                     deviceInfo,
                     requestModelRepository,
                     displayedIamRepository,
-                    buttonClickedRepository);
+                    buttonClickedRepository,
+                    new TimestampProvider());
         } else {
             return new RequestModelRepository(context);
         }

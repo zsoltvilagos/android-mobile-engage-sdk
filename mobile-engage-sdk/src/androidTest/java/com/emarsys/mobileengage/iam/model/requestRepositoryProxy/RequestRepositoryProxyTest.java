@@ -13,6 +13,7 @@ import com.emarsys.core.request.model.RequestMethod;
 import com.emarsys.core.request.model.RequestModel;
 import com.emarsys.core.request.model.RequestModelRepository;
 import com.emarsys.core.request.model.specification.QueryNewestRequestModel;
+import com.emarsys.core.timestamp.TimestampProvider;
 import com.emarsys.core.util.TimestampUtils;
 import com.emarsys.mobileengage.iam.model.IamConversionUtils;
 import com.emarsys.mobileengage.iam.model.buttonclicked.ButtonClicked;
@@ -48,6 +49,7 @@ import static org.mockito.Mockito.when;
 public class RequestRepositoryProxyTest {
 
     public static final String MEID = "123meid456";
+    public static final long TIMESTAMP = 80_000L;
 
     private DeviceInfo deviceInfo;
     private DeviceInfo mockDeviceInfo;
@@ -59,6 +61,8 @@ public class RequestRepositoryProxyTest {
     private Repository<RequestModel, SqlSpecification> requestModelRepository;
     private Repository<DisplayedIam, SqlSpecification> displayedIamRepository;
     private Repository<ButtonClicked, SqlSpecification> buttonClickedRepository;
+
+    private TimestampProvider timestampProvider;
     private RequestRepositoryProxy compositeRepository;
     private Context context;
 
@@ -84,31 +88,40 @@ public class RequestRepositoryProxyTest {
         displayedIamRepository = new DisplayedIamRepository(context);
         buttonClickedRepository = new ButtonClickedRepository(context);
 
+        timestampProvider = mock(TimestampProvider.class);
+        when(timestampProvider.provideTimestamp()).thenReturn(TIMESTAMP);
+
         compositeRepository = new RequestRepositoryProxy(
                 mockDeviceInfo,
                 mockRequestModelRepository,
                 mockDisplayedIamRepository,
-                mockButtonClickedRepository);
+                mockButtonClickedRepository,
+                timestampProvider);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_deviceInfo_mustNotBeNull() {
-        new RequestRepositoryProxy(null, mockRequestModelRepository, mockDisplayedIamRepository, mockButtonClickedRepository);
+        new RequestRepositoryProxy(null, mockRequestModelRepository, mockDisplayedIamRepository, mockButtonClickedRepository, timestampProvider);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_requestRepository_mustNotBeNull() {
-        new RequestRepositoryProxy(mockDeviceInfo, null, mockDisplayedIamRepository, mockButtonClickedRepository);
+        new RequestRepositoryProxy(mockDeviceInfo, null, mockDisplayedIamRepository, mockButtonClickedRepository, timestampProvider);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_displayedIamRepository_mustNotBeNull() {
-        new RequestRepositoryProxy(mockDeviceInfo, mockRequestModelRepository, null, mockButtonClickedRepository);
+        new RequestRepositoryProxy(mockDeviceInfo, mockRequestModelRepository, null, mockButtonClickedRepository, timestampProvider);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_buttonClickedRepository_mustNotBeNull() {
-        new RequestRepositoryProxy(mockDeviceInfo, mockRequestModelRepository, mockDisplayedIamRepository, null);
+        new RequestRepositoryProxy(mockDeviceInfo, mockRequestModelRepository, mockDisplayedIamRepository, null, timestampProvider);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructor_timestampProvider_mustNotBeNull() {
+        new RequestRepositoryProxy(mockDeviceInfo, mockRequestModelRepository, mockDisplayedIamRepository, buttonClickedRepository, null);
     }
 
     @Test
@@ -156,7 +169,7 @@ public class RequestRepositoryProxyTest {
 
     @Test
     public void testQuery_shouldReturnOriginalQuery_whenThereAreNoCustomEvents() {
-        compositeRepository = compositeRepositoryWithRealDependencies();
+        compositeRepository = compositeRepositoryWithRealRepositories();
 
         RequestModel firstRequestModel = requestModel();
         requestModelRepository.add(firstRequestModel);
@@ -170,7 +183,7 @@ public class RequestRepositoryProxyTest {
 
     @Test
     public void testQuery_resultShouldContainCompositeRequestModel_whenResultContainsCustomEvent() {
-        compositeRepository = compositeRepositoryWithRealDependencies();
+        compositeRepository = compositeRepositoryWithRealRepositories();
 
         RequestModel request1 = requestModel();
         RequestModel request2 = requestModel();
@@ -221,6 +234,8 @@ public class RequestRepositoryProxyTest {
                     put("hardware_id", new DeviceInfo(context).getHwid());
                 }},
                 customEvent1.getHeaders(),
+                TIMESTAMP,
+                Long.MAX_VALUE,
                 new String[]{customEvent1.getId(), customEvent2.getId(), customEvent3.getId()}
         );
 
@@ -235,7 +250,7 @@ public class RequestRepositoryProxyTest {
 
     @Test
     public void testQuery_resultShouldContainClicksAndDisplays_withSingleCustomEvent() {
-        compositeRepository = compositeRepositoryWithRealDependencies();
+        compositeRepository = compositeRepositoryWithRealRepositories();
 
         HashMap<String, Object> attributes = new HashMap<>();
         attributes.put("key1", "value1");
@@ -286,6 +301,8 @@ public class RequestRepositoryProxyTest {
                     put("hardware_id", new DeviceInfo(context).getHwid());
                 }},
                 customEvent1.getHeaders(),
+                TIMESTAMP,
+                Long.MAX_VALUE,
                 new String[]{customEvent1.getId()}
         );
 
@@ -296,7 +313,7 @@ public class RequestRepositoryProxyTest {
 
     @Test
     public void testQuery_resultShouldContainClicksAndDisplays_withMultipleRequests() {
-        compositeRepository = compositeRepositoryWithRealDependencies();
+        compositeRepository = compositeRepositoryWithRealRepositories();
 
         RequestModel request1 = requestModel();
         RequestModel request2 = requestModel();
@@ -371,6 +388,8 @@ public class RequestRepositoryProxyTest {
                     put("hardware_id", new DeviceInfo(context).getHwid());
                 }},
                 customEvent1.getHeaders(),
+                TIMESTAMP,
+                Long.MAX_VALUE,
                 new String[]{customEvent1.getId(), customEvent2.getId(), customEvent3.getId()}
         );
 
@@ -383,12 +402,13 @@ public class RequestRepositoryProxyTest {
         assertEquals(expected.toString(), compositeRepository.query(new QueryAll(RequestContract.TABLE_NAME)).toString());
     }
 
-    private RequestRepositoryProxy compositeRepositoryWithRealDependencies() {
+    private RequestRepositoryProxy compositeRepositoryWithRealRepositories() {
         return new RequestRepositoryProxy(
                 deviceInfo,
                 requestModelRepository,
                 displayedIamRepository,
-                buttonClickedRepository
+                buttonClickedRepository,
+                timestampProvider
         );
     }
 

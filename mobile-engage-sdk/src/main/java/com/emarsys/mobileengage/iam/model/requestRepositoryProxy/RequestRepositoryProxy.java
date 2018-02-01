@@ -7,6 +7,7 @@ import com.emarsys.core.database.repository.specification.QueryAll;
 import com.emarsys.core.request.model.CompositeRequestModel;
 import com.emarsys.core.request.model.RequestModel;
 import com.emarsys.core.request.model.specification.FilterByUrlPattern;
+import com.emarsys.core.timestamp.TimestampProvider;
 import com.emarsys.core.util.Assert;
 import com.emarsys.mobileengage.endpoint.Endpoint;
 import com.emarsys.mobileengage.iam.model.IamConversionUtils;
@@ -33,20 +34,24 @@ public class RequestRepositoryProxy implements Repository<RequestModel, SqlSpeci
     private final Repository<RequestModel, SqlSpecification> requestRepository;
     private final Repository<DisplayedIam, SqlSpecification> iamRepository;
     private final Repository<ButtonClicked, SqlSpecification> buttonClickedRepository;
+    private final TimestampProvider timestampProvider;
 
     public RequestRepositoryProxy(
             DeviceInfo deviceInfo,
             Repository<RequestModel, SqlSpecification> requestRepository,
             Repository<DisplayedIam, SqlSpecification> iamRepository,
-            Repository<ButtonClicked, SqlSpecification> buttonClickedRepository) {
+            Repository<ButtonClicked, SqlSpecification> buttonClickedRepository,
+            TimestampProvider timestampProvider) {
         Assert.notNull(deviceInfo, "DeviceInfo must not be null!");
         Assert.notNull(requestRepository, "RequestRepository must not be null!");
         Assert.notNull(iamRepository, "IamRepository must not be null!");
         Assert.notNull(buttonClickedRepository, "ButtonClickedRepository must not be null!");
+        Assert.notNull(timestampProvider, "TimestampProvider must not be null!");
         this.deviceInfo = deviceInfo;
         this.requestRepository = requestRepository;
         this.iamRepository = iamRepository;
         this.buttonClickedRepository = buttonClickedRepository;
+        this.timestampProvider = timestampProvider;
     }
 
     @Override
@@ -111,6 +116,8 @@ public class RequestRepositoryProxy implements Repository<RequestModel, SqlSpeci
                 first.getMethod(),
                 payload,
                 first.getHeaders(),
+                timestampProvider.provideTimestamp(),
+                Long.MAX_VALUE,
                 requestIds
         );
     }
