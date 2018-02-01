@@ -14,6 +14,7 @@ import com.emarsys.core.request.model.RequestModel;
 import com.emarsys.core.request.model.RequestModelRepository;
 import com.emarsys.core.request.model.specification.QueryNewestRequestModel;
 import com.emarsys.core.util.TimestampUtils;
+import com.emarsys.mobileengage.iam.model.IamConversionUtils;
 import com.emarsys.mobileengage.iam.model.buttonclicked.ButtonClicked;
 import com.emarsys.mobileengage.iam.model.buttonclicked.ButtonClickedRepository;
 import com.emarsys.mobileengage.iam.model.displayediam.DisplayedIam;
@@ -22,6 +23,7 @@ import com.emarsys.mobileengage.testUtil.DatabaseTestUtils;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 import com.emarsys.mobileengage.util.RequestUtils;
 
+import org.json.JSONArray;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -213,8 +215,8 @@ public class RequestRepositoryProxyTest {
                     event3.put("name", "event3");
                     event3.put("timestamp", TimestampUtils.formatTimestampWithUTC(1200));
 
-                    put("viewed_messages", new ArrayList<>());
-                    put("clicks", new ArrayList<>());
+                    put("viewed_messages", new JSONArray());
+                    put("clicks", new JSONArray());
                     put("events", Arrays.asList(event1, event2, event3));
                     put("hardware_id", new DeviceInfo(context).getHwid());
                 }},
@@ -229,6 +231,156 @@ public class RequestRepositoryProxyTest {
                 request3);
 
         assertEquals(expected, compositeRepository.query(new QueryAll(RequestContract.TABLE_NAME)));
+    }
+
+    @Test
+    public void testQuery_resultShouldContainClicksAndDisplays_withSingleCustomEvent() {
+        compositeRepository = compositeRepositoryWithRealDependencies();
+
+        HashMap<String, Object> attributes = new HashMap<>();
+        attributes.put("key1", "value1");
+        attributes.put("key2", "value2");
+        final RequestModel customEvent1 = customEvent_V3(1000, "event1", attributes);
+
+        requestModelRepository.add(customEvent1);
+
+        ButtonClicked buttonClicked1 = new ButtonClicked("campaign1", "button1", 200);
+        ButtonClicked buttonClicked2 = new ButtonClicked("campaign1", "button2", 300);
+        ButtonClicked buttonClicked3 = new ButtonClicked("campaign2", "button1", 2000);
+
+        buttonClickedRepository.add(buttonClicked1);
+        buttonClickedRepository.add(buttonClicked2);
+        buttonClickedRepository.add(buttonClicked3);
+
+        DisplayedIam displayedIam1 = new DisplayedIam("campaign1", 100, "");
+        DisplayedIam displayedIam2 = new DisplayedIam("campaign2", 1500, "");
+        DisplayedIam displayedIam3 = new DisplayedIam("campaign3", 30000, "");
+
+        displayedIamRepository.add(displayedIam1);
+        displayedIamRepository.add(displayedIam2);
+        displayedIamRepository.add(displayedIam3);
+
+        RequestModel expectedComposite = new CompositeRequestModel(
+                RequestUtils.createEventUrl_V3(MEID),
+                RequestMethod.POST,
+                new HashMap<String, Object>() {{
+                    Map<String, Object> event1 = new HashMap<>();
+                    event1.put("type", "custom");
+                    event1.put("name", "event1");
+                    event1.put("timestamp", TimestampUtils.formatTimestampWithUTC(1000));
+                    event1.put("attributes", new HashMap<String, String>() {{
+                        put("key1", "value1");
+                        put("key2", "value2");
+                    }});
+                    put("viewed_messages", IamConversionUtils.displayedIamsToArray(Arrays.asList(
+                            new DisplayedIam("campaign1", 100, ""),
+                            new DisplayedIam("campaign2", 1500, ""),
+                            new DisplayedIam("campaign3", 30000, "")
+                    )));
+                    put("clicks", IamConversionUtils.buttonClicksToArray(Arrays.asList(
+                            new ButtonClicked("campaign1", "button1", 200),
+                            new ButtonClicked("campaign1", "button2", 300),
+                            new ButtonClicked("campaign2", "button1", 2000)
+                    )));
+                    put("events", Collections.singletonList(event1));
+                    put("hardware_id", new DeviceInfo(context).getHwid());
+                }},
+                customEvent1.getHeaders(),
+                new String[]{customEvent1.getId()}
+        );
+
+        List<RequestModel> expected = Collections.singletonList(expectedComposite);
+
+        assertEquals(expected.toString(), compositeRepository.query(new QueryAll(RequestContract.TABLE_NAME)).toString());
+    }
+
+    @Test
+    public void testQuery_resultShouldContainClicksAndDisplays_withMultipleRequests() {
+        compositeRepository = compositeRepositoryWithRealDependencies();
+
+        RequestModel request1 = requestModel();
+        RequestModel request2 = requestModel();
+        RequestModel request3 = requestModel();
+
+        final RequestModel customEvent1 = customEvent_V3(900, "event1");
+
+        HashMap<String, Object> attributes = new HashMap<>();
+        attributes.put("key1", "value1");
+        attributes.put("key2", "value2");
+        final RequestModel customEvent2 = customEvent_V3(1000, "event2", attributes);
+        final RequestModel customEvent3 = customEvent_V3(1200, "event3");
+
+        requestModelRepository.add(request1);
+        requestModelRepository.add(request2);
+        requestModelRepository.add(customEvent1);
+        requestModelRepository.add(customEvent2);
+        requestModelRepository.add(request3);
+        requestModelRepository.add(customEvent3);
+
+        ButtonClicked buttonClicked1 = new ButtonClicked("campaign1", "button1", 200);
+        ButtonClicked buttonClicked2 = new ButtonClicked("campaign1", "button2", 300);
+        ButtonClicked buttonClicked3 = new ButtonClicked("campaign2", "button1", 2000);
+
+        buttonClickedRepository.add(buttonClicked1);
+        buttonClickedRepository.add(buttonClicked2);
+        buttonClickedRepository.add(buttonClicked3);
+
+        DisplayedIam displayedIam1 = new DisplayedIam("campaign1", 100, "");
+        DisplayedIam displayedIam2 = new DisplayedIam("campaign2", 1500, "");
+        DisplayedIam displayedIam3 = new DisplayedIam("campaign3", 30000, "");
+
+        displayedIamRepository.add(displayedIam1);
+        displayedIamRepository.add(displayedIam2);
+        displayedIamRepository.add(displayedIam3);
+
+        RequestModel expectedComposite = new CompositeRequestModel(
+                RequestUtils.createEventUrl_V3(MEID),
+                RequestMethod.POST,
+                new HashMap<String, Object>() {{
+
+                    Map<String, Object> event1 = new HashMap<>();
+                    event1.put("type", "custom");
+                    event1.put("name", "event1");
+                    event1.put("timestamp", TimestampUtils.formatTimestampWithUTC(900));
+
+                    Map<String, Object> event2 = new HashMap<>();
+                    event2.put("type", "custom");
+                    event2.put("name", "event2");
+                    event2.put("timestamp", TimestampUtils.formatTimestampWithUTC(1000));
+                    event2.put("attributes", new HashMap<String, String>() {{
+                        put("key1", "value1");
+                        put("key2", "value2");
+                    }});
+
+                    Map<String, Object> event3 = new HashMap<>();
+                    event3.put("type", "custom");
+                    event3.put("name", "event3");
+                    event3.put("timestamp", TimestampUtils.formatTimestampWithUTC(1200));
+
+                    put("viewed_messages", IamConversionUtils.displayedIamsToArray(Arrays.asList(
+                            new DisplayedIam("campaign1", 100, ""),
+                            new DisplayedIam("campaign2", 1500, ""),
+                            new DisplayedIam("campaign3", 30000, "")
+                    )));
+                    put("clicks", IamConversionUtils.buttonClicksToArray(Arrays.asList(
+                            new ButtonClicked("campaign1", "button1", 200),
+                            new ButtonClicked("campaign1", "button2", 300),
+                            new ButtonClicked("campaign2", "button1", 2000)
+                    )));
+                    put("events", Arrays.asList(event1, event2, event3));
+                    put("hardware_id", new DeviceInfo(context).getHwid());
+                }},
+                customEvent1.getHeaders(),
+                new String[]{customEvent1.getId(), customEvent2.getId(), customEvent3.getId()}
+        );
+
+        List<RequestModel> expected = Arrays.asList(
+                request1,
+                request2,
+                expectedComposite,
+                request3);
+
+        assertEquals(expected.toString(), compositeRepository.query(new QueryAll(RequestContract.TABLE_NAME)).toString());
     }
 
     private RequestRepositoryProxy compositeRepositoryWithRealDependencies() {
