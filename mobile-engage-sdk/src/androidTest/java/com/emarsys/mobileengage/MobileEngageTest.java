@@ -7,12 +7,14 @@ import android.support.test.runner.AndroidJUnit4;
 
 import com.emarsys.core.activity.CurrentActivityWatchdog;
 import com.emarsys.core.request.RequestManager;
+import com.emarsys.core.request.model.RequestModelRepository;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
 import com.emarsys.mobileengage.experimental.MobileEngageExperimental;
 import com.emarsys.mobileengage.experimental.MobileEngageFeature;
 import com.emarsys.mobileengage.fake.FakeRequestManager;
 import com.emarsys.mobileengage.fake.FakeStatusListener;
+import com.emarsys.mobileengage.iam.model.requestRepositoryProxy.RequestRepositoryProxy;
 import com.emarsys.mobileengage.inbox.InboxInternal;
 import com.emarsys.mobileengage.inbox.InboxResultListener;
 import com.emarsys.mobileengage.inbox.ResetBadgeCountResultListener;
@@ -22,17 +24,20 @@ import com.emarsys.mobileengage.responsehandler.InAppMessageResponseHandler;
 import com.emarsys.mobileengage.responsehandler.MeIdResponseHandler;
 import com.emarsys.mobileengage.storage.AppLoginStorage;
 import com.emarsys.mobileengage.testUtil.ConnectivityWatchdogTestUtils;
+import com.emarsys.mobileengage.testUtil.DatabaseTestUtils;
 import com.emarsys.mobileengage.testUtil.ExperimentalTestUtils;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -66,6 +71,9 @@ public class MobileEngageTest {
     public void init() throws Exception {
         MobileEngageExperimental.enableFeature(MobileEngageFeature.IN_APP_MESSAGING);
 
+        DatabaseTestUtils.deleteMobileEngageDatabase();
+        DatabaseTestUtils.deleteCoreDatabase();
+
         application = (Application) InstrumentationRegistry.getTargetContext().getApplicationContext();
         coreCompletionHandler = mock(MobileEngageCoreCompletionHandler.class);
         mobileEngageInternal = mock(MobileEngageInternal.class);
@@ -80,6 +88,11 @@ public class MobileEngageTest {
         MobileEngage.completionHandler = coreCompletionHandler;
 
         ConnectivityWatchdogTestUtils.resetCurrentActivityWatchdog();
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        ExperimentalTestUtils.resetExperimentalFeatures();
     }
 
     @Test
@@ -101,7 +114,7 @@ public class MobileEngageTest {
     }
 
     @Test
-    public void testSetup_whenInAppMessagingFlipperIsOff_initializesCoreCompletionHandler_withoutMeIdResponseHandler() throws NoSuchFieldException, IllegalAccessException {
+    public void testSetup_whenInAppMessagingFlipperIsOff_initializesCoreCompletionHandler_withoutMeIdResponseHandler() throws Exception {
         ExperimentalTestUtils.resetExperimentalFeatures();
 
         MobileEngage.completionHandler = null;
@@ -123,7 +136,7 @@ public class MobileEngageTest {
     }
 
     @Test
-    public void testSetup_whenInAppMessagingFlipperIsOff_initializesCoreCompletionHandler_withoutInAppMessageResponseHandler() throws NoSuchFieldException, IllegalAccessException {
+    public void testSetup_whenInAppMessagingFlipperIsOff_initializesCoreCompletionHandler_withoutInAppMessageResponseHandler() throws Exception {
         ExperimentalTestUtils.resetExperimentalFeatures();
 
         MobileEngage.completionHandler = null;
@@ -132,6 +145,27 @@ public class MobileEngageTest {
         MobileEngageCoreCompletionHandler coreCompletionHandler = MobileEngage.completionHandler;
         assertNotNull(coreCompletionHandler);
         assertEquals(0, numberOfElementsIn(coreCompletionHandler.responseHandlers, InAppMessageResponseHandler.class));
+    }
+
+    @Test
+    public void testSetup_initializesRequestManager_withRequestModelProxy() throws Exception {
+        MobileEngage.setup(baseConfig);
+
+        Field repositoryField = RequestManager.class.getDeclaredField("requestRepository");
+        repositoryField.setAccessible(true);
+        Object repository = repositoryField.get(MobileEngage.instance.manager);
+        assertEquals(repository.getClass(), RequestRepositoryProxy.class);
+    }
+
+    @Test
+    public void testSetup_whenFlipperIsOff_initializesRequestManager_withPlainRequestModelRepository() throws Exception {
+        ExperimentalTestUtils.resetExperimentalFeatures();
+        MobileEngage.setup(baseConfig);
+
+        Field repositoryField = RequestManager.class.getDeclaredField("requestRepository");
+        repositoryField.setAccessible(true);
+        Object repository = repositoryField.get(MobileEngage.instance.manager);
+        assertEquals(repository.getClass(), RequestModelRepository.class);
     }
 
     @Test

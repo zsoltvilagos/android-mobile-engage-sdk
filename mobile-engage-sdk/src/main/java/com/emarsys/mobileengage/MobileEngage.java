@@ -1,15 +1,20 @@
 package com.emarsys.mobileengage;
 
 import android.app.Application;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.emarsys.core.DeviceInfo;
 import com.emarsys.core.activity.CurrentActivityWatchdog;
 import com.emarsys.core.concurrency.CoreSdkHandlerProvider;
 import com.emarsys.core.connection.ConnectionWatchDog;
+import com.emarsys.core.database.repository.Repository;
+import com.emarsys.core.database.repository.SqlSpecification;
 import com.emarsys.core.request.RequestManager;
+import com.emarsys.core.request.model.RequestModel;
 import com.emarsys.core.request.model.RequestModelRepository;
 import com.emarsys.core.util.Assert;
 import com.emarsys.core.util.log.EMSLogger;
@@ -21,6 +26,8 @@ import com.emarsys.mobileengage.experimental.MobileEngageFeature;
 import com.emarsys.mobileengage.iam.dialog.IamDialogProvider;
 import com.emarsys.mobileengage.iam.jsbridge.InAppMessageHandlerProvider;
 import com.emarsys.mobileengage.iam.model.buttonclicked.ButtonClickedRepository;
+import com.emarsys.mobileengage.iam.model.displayediam.DisplayedIamRepository;
+import com.emarsys.mobileengage.iam.model.requestRepositoryProxy.RequestRepositoryProxy;
 import com.emarsys.mobileengage.iam.webview.IamWebViewProvider;
 import com.emarsys.mobileengage.inbox.InboxInternal;
 import com.emarsys.mobileengage.inbox.InboxResultListener;
@@ -96,7 +103,11 @@ public class MobileEngage {
 
         completionHandler = new MobileEngageCoreCompletionHandler(responseHandlers, config.getStatusListener());
 
-        RequestManager requestManager = new RequestManager(coreSdkHandler, new ConnectionWatchDog(application, coreSdkHandler), new RequestModelRepository(application), completionHandler);
+        RequestManager requestManager = new RequestManager(
+                coreSdkHandler,
+                new ConnectionWatchDog(application, coreSdkHandler),
+                createRequestModelRepository(application),
+                completionHandler);
 
         instance = new MobileEngageInternal(config, requestManager, new AppLoginStorage(application), completionHandler);
         inboxInstance = new InboxInternal(config, requestManager);
@@ -145,6 +156,22 @@ public class MobileEngage {
     private static void setAppLoginParameters(AppLoginParameters parameters) {
         instance.setAppLoginParameters(parameters);
         inboxInstance.setAppLoginParameters(parameters);
+    }
+
+    private static Repository<RequestModel, SqlSpecification> createRequestModelRepository(Context context) {
+        if (MobileEngageExperimental.isFeatureEnabled(MobileEngageFeature.IN_APP_MESSAGING)) {
+            DeviceInfo deviceInfo = new DeviceInfo(context);
+            RequestModelRepository requestModelRepository = new RequestModelRepository(context);
+            ButtonClickedRepository buttonClickedRepository = new ButtonClickedRepository(context);
+            DisplayedIamRepository displayedIamRepository = new DisplayedIamRepository(context);
+            return new RequestRepositoryProxy(
+                    deviceInfo,
+                    requestModelRepository,
+                    displayedIamRepository,
+                    buttonClickedRepository);
+        } else {
+            return new RequestModelRepository(context);
+        }
     }
 
 }
