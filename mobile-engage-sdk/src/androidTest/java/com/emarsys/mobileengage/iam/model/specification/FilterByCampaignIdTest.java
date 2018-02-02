@@ -59,10 +59,10 @@ public class FilterByCampaignIdTest {
     public void testSpecification_shouldWorkAsIntended() {
         DisplayedIamRepository repository = new DisplayedIamRepository(context);
 
-        DisplayedIam iam1 = new DisplayedIam("campaign1", 10L, "event1");
-        DisplayedIam iam2 = new DisplayedIam("campaign2", 20L, "event2");
-        DisplayedIam iam3 = new DisplayedIam("campaign3", 30L, "event3");
-        DisplayedIam iam4 = new DisplayedIam("campaign2", 40L, "event2");
+        DisplayedIam iam1 = new DisplayedIam("campaign1", 10L);
+        DisplayedIam iam2 = new DisplayedIam("campaign2", 20L);
+        DisplayedIam iam3 = new DisplayedIam("campaign3", 30L);
+        DisplayedIam iam4 = new DisplayedIam("campaign2", 40L);
 
         repository.add(iam1);
         repository.add(iam2);

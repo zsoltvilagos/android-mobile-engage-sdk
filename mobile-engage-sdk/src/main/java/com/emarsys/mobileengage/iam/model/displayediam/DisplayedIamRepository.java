@@ -18,7 +18,6 @@ public class DisplayedIamRepository extends AbstractSqliteRepository<DisplayedIa
         ContentValues contentValues = new ContentValues();
         contentValues.put(DisplayedIamContract.COLUMN_NAME_CAMPAIGN_ID, item.getCampaignId());
         contentValues.put(DisplayedIamContract.COLUMN_NAME_TIMESTAMP, item.getTimestamp());
-        contentValues.put(DisplayedIamContract.COLUMN_NAME_EVENT_NAME, item.getEventName());
         return contentValues;
     }
 
@@ -26,8 +25,7 @@ public class DisplayedIamRepository extends AbstractSqliteRepository<DisplayedIa
     protected DisplayedIam itemFromCursor(Cursor cursor) {
         String campaignId = cursor.getString(cursor.getColumnIndex(DisplayedIamContract.COLUMN_NAME_CAMPAIGN_ID));
         long timestamp = cursor.getLong(cursor.getColumnIndex(DisplayedIamContract.COLUMN_NAME_TIMESTAMP));
-        String eventName = cursor.getString(cursor.getColumnIndex(DisplayedIamContract.COLUMN_NAME_EVENT_NAME));
-        return new DisplayedIam(campaignId, timestamp, eventName);
+        return new DisplayedIam(campaignId, timestamp);
     }
 
 }

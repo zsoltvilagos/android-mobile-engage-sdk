@@ -3,12 +3,10 @@ package com.emarsys.mobileengage.iam.model.displayediam;
 public class DisplayedIam {
     private String campaignId;
     private long timestamp;
-    private String eventName;
 
-    public DisplayedIam(String campaignId, long timestamp, String eventName) {
+    public DisplayedIam(String campaignId, long timestamp) {
         this.campaignId = campaignId;
         this.timestamp = timestamp;
-        this.eventName = eventName;
     }
 
     public String getCampaignId() {
@@ -19,10 +17,6 @@ public class DisplayedIam {
         return timestamp;
     }
 
-    public String getEventName() {
-        return eventName;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -31,17 +25,13 @@ public class DisplayedIam {
         DisplayedIam that = (DisplayedIam) o;
 
         if (timestamp != that.timestamp) return false;
-        if (campaignId != null ? !campaignId.equals(that.campaignId) : that.campaignId != null)
-            return false;
-        return eventName != null ? eventName.equals(that.eventName) : that.eventName == null;
-
+        return campaignId != null ? campaignId.equals(that.campaignId) : that.campaignId == null;
     }
 
     @Override
     public int hashCode() {
         int result = campaignId != null ? campaignId.hashCode() : 0;
         result = 31 * result + (int) (timestamp ^ (timestamp >>> 32));
-        result = 31 * result + (eventName != null ? eventName.hashCode() : 0);
         return result;
     }
 
@@ -50,7 +40,6 @@ public class DisplayedIam {
         return "DisplayedIam{" +
                 "campaignId='" + campaignId + '\'' +
                 ", timestamp=" + timestamp +
-                ", eventName='" + eventName + '\'' +
                 '}';
     }
 }

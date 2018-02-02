@@ -8,18 +8,15 @@ public final class DisplayedIamContract {
     public static final String TABLE_NAME = "displayed_iam";
     public static final String COLUMN_NAME_CAMPAIGN_ID = "campaign_id";
     public static final String COLUMN_NAME_TIMESTAMP = "timestamp";
-    public static final String COLUMN_NAME_EVENT_NAME = "event_name";
 
     public static final String SQL_CREATE_TABLE = String.format(
             "CREATE TABLE IF NOT EXISTS %s (" +
                     "%s TEXT," +
-                    "%s INTEGER," +
-                    "%s TEXT" +
+                    "%s INTEGER" +
                     ");",
             TABLE_NAME,
             COLUMN_NAME_CAMPAIGN_ID,
-            COLUMN_NAME_TIMESTAMP,
-            COLUMN_NAME_EVENT_NAME
+            COLUMN_NAME_TIMESTAMP
     );
 
     public static final String SQL_CLEAR = String.format(
@@ -35,4 +32,3 @@ public final class DisplayedIamContract {
     );
 
 }
-

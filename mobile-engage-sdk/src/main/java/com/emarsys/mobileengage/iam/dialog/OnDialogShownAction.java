@@ -24,7 +24,7 @@ public class OnDialogShownAction {
         handler.post(new Runnable() {
             @Override
             public void run() {
-                DisplayedIam iam = new DisplayedIam(campaignId, timestamp, "");
+                DisplayedIam iam = new DisplayedIam(campaignId, timestamp);
                 repository.add(iam);
             }
         });

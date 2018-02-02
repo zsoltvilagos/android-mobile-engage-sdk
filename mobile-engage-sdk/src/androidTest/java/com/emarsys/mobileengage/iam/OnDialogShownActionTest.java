@@ -28,7 +28,7 @@ public class OnDialogShownActionTest {
 
     private static final String ID = "id";
     private static final long TIMESTAMP = 123;
-    private static final DisplayedIam IAM = new DisplayedIam(ID, TIMESTAMP, "");
+    private static final DisplayedIam IAM = new DisplayedIam(ID, TIMESTAMP);
 
     private OnDialogShownAction action;
     private Repository<DisplayedIam, SqlSpecification> repository;

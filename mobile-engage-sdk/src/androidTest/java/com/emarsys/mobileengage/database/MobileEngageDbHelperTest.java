@@ -46,8 +46,7 @@ public class MobileEngageDbHelperTest {
         cursor.moveToFirst();
         String actual = cursor.getString(cursor.getColumnIndex(COLUMN_NAME_SQL));
 
-
-        String expected = "CREATE TABLE displayed_iam (campaign_id TEXT,timestamp INTEGER,event_name TEXT)";
+        String expected = "CREATE TABLE displayed_iam (campaign_id TEXT,timestamp INTEGER)";
         assertEquals(expected, actual);
 
         cursor.close();
