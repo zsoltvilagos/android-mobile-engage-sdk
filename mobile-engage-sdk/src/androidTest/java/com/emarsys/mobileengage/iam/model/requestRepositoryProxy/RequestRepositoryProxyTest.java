@@ -24,7 +24,6 @@ import com.emarsys.mobileengage.testUtil.DatabaseTestUtils;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 import com.emarsys.mobileengage.util.RequestUtils;
 
-import org.json.JSONArray;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -228,8 +227,8 @@ public class RequestRepositoryProxyTest {
                     event3.put("name", "event3");
                     event3.put("timestamp", TimestampUtils.formatTimestampWithUTC(1200));
 
-                    put("viewed_messages", new JSONArray());
-                    put("clicks", new JSONArray());
+                    put("viewed_messages", Collections.emptyList());
+                    put("clicks", Collections.emptyList());
                     put("events", Arrays.asList(event1, event2, event3));
                     put("hardware_id", new DeviceInfo(context).getHwid());
                 }},
@@ -267,39 +266,42 @@ public class RequestRepositoryProxyTest {
         buttonClickedRepository.add(buttonClicked2);
         buttonClickedRepository.add(buttonClicked3);
 
-        DisplayedIam displayedIam1 = new DisplayedIam("campaign1", 100, "");
-        DisplayedIam displayedIam2 = new DisplayedIam("campaign2", 1500, "");
-        DisplayedIam displayedIam3 = new DisplayedIam("campaign3", 30000, "");
+        DisplayedIam displayedIam1 = new DisplayedIam("campaign1", 100);
+        DisplayedIam displayedIam2 = new DisplayedIam("campaign2", 1500);
+        DisplayedIam displayedIam3 = new DisplayedIam("campaign3", 30000);
 
         displayedIamRepository.add(displayedIam1);
         displayedIamRepository.add(displayedIam2);
         displayedIamRepository.add(displayedIam3);
 
+        HashMap<String, String> eventAttributes = new HashMap<>();
+        eventAttributes.put("key1", "value1");
+        eventAttributes.put("key2", "value2");
+
+        Map<String, Object> event1 = new HashMap<>();
+        event1.put("type", "custom");
+        event1.put("name", "event1");
+        event1.put("timestamp", TimestampUtils.formatTimestampWithUTC(1000));
+        event1.put("attributes", eventAttributes);
+
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("clicks", IamConversionUtils.buttonClicksToArray(Arrays.asList(
+                new ButtonClicked("campaign1", "button1", 200),
+                new ButtonClicked("campaign1", "button2", 300),
+                new ButtonClicked("campaign2", "button1", 2000)
+        )));
+        payload.put("viewed_messages", IamConversionUtils.displayedIamsToArray(Arrays.asList(
+                new DisplayedIam("campaign1", 100),
+                new DisplayedIam("campaign2", 1500),
+                new DisplayedIam("campaign3", 30000)
+        )));
+        payload.put("events", Collections.singletonList(event1));
+        payload.put("hardware_id", new DeviceInfo(context).getHwid());
+
         RequestModel expectedComposite = new CompositeRequestModel(
                 RequestUtils.createEventUrl_V3(MEID),
                 RequestMethod.POST,
-                new HashMap<String, Object>() {{
-                    Map<String, Object> event1 = new HashMap<>();
-                    event1.put("type", "custom");
-                    event1.put("name", "event1");
-                    event1.put("timestamp", TimestampUtils.formatTimestampWithUTC(1000));
-                    event1.put("attributes", new HashMap<String, String>() {{
-                        put("key1", "value1");
-                        put("key2", "value2");
-                    }});
-                    put("viewed_messages", IamConversionUtils.displayedIamsToArray(Arrays.asList(
-                            new DisplayedIam("campaign1", 100, ""),
-                            new DisplayedIam("campaign2", 1500, ""),
-                            new DisplayedIam("campaign3", 30000, "")
-                    )));
-                    put("clicks", IamConversionUtils.buttonClicksToArray(Arrays.asList(
-                            new ButtonClicked("campaign1", "button1", 200),
-                            new ButtonClicked("campaign1", "button2", 300),
-                            new ButtonClicked("campaign2", "button1", 2000)
-                    )));
-                    put("events", Collections.singletonList(event1));
-                    put("hardware_id", new DeviceInfo(context).getHwid());
-                }},
+                payload,
                 customEvent1.getHeaders(),
                 TIMESTAMP,
                 Long.MAX_VALUE,
@@ -308,7 +310,8 @@ public class RequestRepositoryProxyTest {
 
         List<RequestModel> expected = Collections.singletonList(expectedComposite);
 
-        assertEquals(expected.toString(), compositeRepository.query(new QueryAll(RequestContract.TABLE_NAME)).toString());
+        assertEquals(expected, compositeRepository.query(new QueryAll(RequestContract.TABLE_NAME)));
+
     }
 
     @Test
@@ -342,9 +345,9 @@ public class RequestRepositoryProxyTest {
         buttonClickedRepository.add(buttonClicked2);
         buttonClickedRepository.add(buttonClicked3);
 
-        DisplayedIam displayedIam1 = new DisplayedIam("campaign1", 100, "");
-        DisplayedIam displayedIam2 = new DisplayedIam("campaign2", 1500, "");
-        DisplayedIam displayedIam3 = new DisplayedIam("campaign3", 30000, "");
+        DisplayedIam displayedIam1 = new DisplayedIam("campaign1", 100);
+        DisplayedIam displayedIam2 = new DisplayedIam("campaign2", 1500);
+        DisplayedIam displayedIam3 = new DisplayedIam("campaign3", 30000);
 
         displayedIamRepository.add(displayedIam1);
         displayedIamRepository.add(displayedIam2);
@@ -375,9 +378,9 @@ public class RequestRepositoryProxyTest {
                     event3.put("timestamp", TimestampUtils.formatTimestampWithUTC(1200));
 
                     put("viewed_messages", IamConversionUtils.displayedIamsToArray(Arrays.asList(
-                            new DisplayedIam("campaign1", 100, ""),
-                            new DisplayedIam("campaign2", 1500, ""),
-                            new DisplayedIam("campaign3", 30000, "")
+                            new DisplayedIam("campaign1", 100),
+                            new DisplayedIam("campaign2", 1500),
+                            new DisplayedIam("campaign3", 30000)
                     )));
                     put("clicks", IamConversionUtils.buttonClicksToArray(Arrays.asList(
                             new ButtonClicked("campaign1", "button1", 200),
@@ -399,7 +402,7 @@ public class RequestRepositoryProxyTest {
                 expectedComposite,
                 request3);
 
-        assertEquals(expected.toString(), compositeRepository.query(new QueryAll(RequestContract.TABLE_NAME)).toString());
+        assertEquals(expected, compositeRepository.query(new QueryAll(RequestContract.TABLE_NAME)));
     }
 
     private RequestRepositoryProxy compositeRepositoryWithRealRepositories() {
