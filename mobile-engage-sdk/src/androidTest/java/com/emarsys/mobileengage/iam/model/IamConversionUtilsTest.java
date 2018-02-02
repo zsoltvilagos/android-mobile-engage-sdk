@@ -3,11 +3,14 @@ package com.emarsys.mobileengage.iam.model;
 import com.emarsys.core.util.TimestampUtils;
 import com.emarsys.mobileengage.iam.model.buttonclicked.ButtonClicked;
 import com.emarsys.mobileengage.iam.model.displayediam.DisplayedIam;
+import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 
 import java.util.Arrays;
 
@@ -22,6 +25,9 @@ public class IamConversionUtilsTest {
     private DisplayedIam displayedIam1;
     private DisplayedIam displayedIam2;
     private DisplayedIam displayedIam3;
+
+    @Rule
+    public TestRule timeout = TimeoutUtils.getTimeoutRule();
 
     @Before
     public void init() {
