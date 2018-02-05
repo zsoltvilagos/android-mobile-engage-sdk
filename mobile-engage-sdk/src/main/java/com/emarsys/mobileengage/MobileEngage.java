@@ -36,6 +36,7 @@ import com.emarsys.mobileengage.inbox.ResetBadgeCountResultListener;
 import com.emarsys.mobileengage.inbox.model.Notification;
 import com.emarsys.mobileengage.inbox.model.NotificationInboxStatus;
 import com.emarsys.mobileengage.responsehandler.AbstractResponseHandler;
+import com.emarsys.mobileengage.responsehandler.InAppCleanUpResponseHandler;
 import com.emarsys.mobileengage.responsehandler.InAppMessageResponseHandler;
 import com.emarsys.mobileengage.responsehandler.MeIdResponseHandler;
 import com.emarsys.mobileengage.storage.AppLoginStorage;
@@ -100,6 +101,10 @@ public class MobileEngage {
                     new InAppMessageHandlerProvider(),
                     new IamDialogProvider(),
                     new ButtonClickedRepository(application)));
+            responseHandlers.add(new InAppCleanUpResponseHandler(
+                    new DisplayedIamRepository(application),
+                    new ButtonClickedRepository(application)
+            ));
         }
 
         completionHandler = new MobileEngageCoreCompletionHandler(responseHandlers, config.getStatusListener());

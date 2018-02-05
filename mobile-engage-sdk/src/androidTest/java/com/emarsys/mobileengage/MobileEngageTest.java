@@ -20,6 +20,7 @@ import com.emarsys.mobileengage.inbox.InboxResultListener;
 import com.emarsys.mobileengage.inbox.ResetBadgeCountResultListener;
 import com.emarsys.mobileengage.inbox.model.Notification;
 import com.emarsys.mobileengage.responsehandler.AbstractResponseHandler;
+import com.emarsys.mobileengage.responsehandler.InAppCleanUpResponseHandler;
 import com.emarsys.mobileengage.responsehandler.InAppMessageResponseHandler;
 import com.emarsys.mobileengage.responsehandler.MeIdResponseHandler;
 import com.emarsys.mobileengage.storage.AppLoginStorage;
@@ -145,6 +146,28 @@ public class MobileEngageTest {
         MobileEngageCoreCompletionHandler coreCompletionHandler = MobileEngage.completionHandler;
         assertNotNull(coreCompletionHandler);
         assertEquals(0, numberOfElementsIn(coreCompletionHandler.responseHandlers, InAppMessageResponseHandler.class));
+    }
+
+    @Test
+    public void testSetup_initializesCoreCompletionHandler_withInAppCleanUpResponseHandler() {
+        MobileEngage.completionHandler = null;
+        MobileEngage.setup(baseConfig);
+
+        MobileEngageCoreCompletionHandler coreCompletionHandler = MobileEngage.completionHandler;
+        assertNotNull(coreCompletionHandler);
+        assertEquals(1, numberOfElementsIn(coreCompletionHandler.responseHandlers, InAppCleanUpResponseHandler.class));
+    }
+
+    @Test
+    public void testSetup_whenInAppMessagingFlipperIsOff_initializesCoreCompletionHandler_withoutInAppCleanUpResponseHandler() throws Exception {
+        ExperimentalTestUtils.resetExperimentalFeatures();
+
+        MobileEngage.completionHandler = null;
+        MobileEngage.setup(baseConfig);
+
+        MobileEngageCoreCompletionHandler coreCompletionHandler = MobileEngage.completionHandler;
+        assertNotNull(coreCompletionHandler);
+        assertEquals(0, numberOfElementsIn(coreCompletionHandler.responseHandlers, InAppCleanUpResponseHandler.class));
     }
 
     @Test
