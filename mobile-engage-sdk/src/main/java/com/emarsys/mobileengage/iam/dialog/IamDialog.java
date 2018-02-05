@@ -21,7 +21,7 @@ import com.emarsys.mobileengage.iam.webview.IamWebViewProvider;
 @RequiresApi(api = Build.VERSION_CODES.KITKAT)
 public class IamDialog extends DialogFragment {
 
-    public static final String TAG = "IAM_DIALOG_TAG";
+    public static final String TAG = "MOBILE_ENGAGE_IAM_DIALOG_TAG";
     public static final String CAMPAIGN_ID = "campaign_id";
 
     private OnDialogShownAction action;
