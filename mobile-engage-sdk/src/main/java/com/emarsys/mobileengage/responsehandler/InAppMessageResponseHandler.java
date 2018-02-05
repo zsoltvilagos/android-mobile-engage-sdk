@@ -1,5 +1,6 @@
 package com.emarsys.mobileengage.responsehandler;
 
+import android.annotation.TargetApi;
 import android.os.Build;
 import android.os.Handler;
 
@@ -43,38 +44,40 @@ public class InAppMessageResponseHandler extends AbstractResponseHandler {
     @Override
     protected boolean shouldHandleResponse(ResponseModel responseModel) {
         JSONObject responseBody = responseModel.getParsedBody();
-        if (responseBody == null) {
-            return false;
+        boolean responseBodyNotNull = responseBody != null;
+        boolean kitkatOrAbove = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
+        boolean shouldHandle = false;
+
+        if (kitkatOrAbove && responseBodyNotNull) {
+            try {
+                JSONObject message = responseBody.getJSONObject("message");
+                shouldHandle = message.has("html");
+            } catch (JSONException ignored) {
+            }
         }
 
-        try {
-            JSONObject message = responseBody.getJSONObject("message");
-            return message.has("html");
-        } catch (JSONException je) {
-            return false;
-        }
+        return shouldHandle;
     }
 
     @Override
+    @TargetApi(Build.VERSION_CODES.KITKAT)
     protected void handleResponse(ResponseModel responseModel) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            JSONObject responseBody = responseModel.getParsedBody();
-            try {
-                JSONObject message = responseBody.getJSONObject("message");
-                String html = message.getString("html");
-                String id = message.getString("id");
+        JSONObject responseBody = responseModel.getParsedBody();
+        try {
+            JSONObject message = responseBody.getJSONObject("message");
+            String html = message.getString("html");
+            String id = message.getString("id");
 
-                IamDialog iamDialog = dialogProvider.provideDialog(id);
-                OnDialogShownAction action = new OnDialogShownAction(
-                        coreSdkHandler,
-                        new DisplayedIamRepository(iamDialog.getActivity()));
-                iamDialog.setAction(action);
+            IamDialog iamDialog = dialogProvider.provideDialog(id);
+            OnDialogShownAction action = new OnDialogShownAction(
+                    coreSdkHandler,
+                    new DisplayedIamRepository(iamDialog.getActivity()));
+            iamDialog.setAction(action);
 
-                DefaultMessageLoadedListener listener = new DefaultMessageLoadedListener(iamDialog);
-                webViewProvider.loadMessageAsync(html, new IamJsBridge(iamDialog, messageHandlerProvider, repository, id, coreSdkHandler), listener);
-            } catch (JSONException je) {
-                EMSLogger.log(MobileEngageTopic.IN_APP_MESSAGE, "Exception occurred, exception: %s json: %s", je, responseBody);
-            }
+            DefaultMessageLoadedListener listener = new DefaultMessageLoadedListener(iamDialog);
+            webViewProvider.loadMessageAsync(html, new IamJsBridge(iamDialog, messageHandlerProvider, repository, id, coreSdkHandler), listener);
+        } catch (JSONException je) {
+            EMSLogger.log(MobileEngageTopic.IN_APP_MESSAGE, "Exception occurred, exception: %s json: %s", je, responseBody);
         }
     }
 }
