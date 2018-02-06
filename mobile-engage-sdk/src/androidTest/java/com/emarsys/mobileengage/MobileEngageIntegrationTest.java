@@ -46,6 +46,7 @@ public class MobileEngageIntegrationTest {
     @Before
     public void setup() {
         DatabaseTestUtils.deleteCoreDatabase();
+        DatabaseTestUtils.deleteMobileEngageDatabase();
 
         context = (Application) InstrumentationRegistry.getTargetContext().getApplicationContext();
         clearStorages();
