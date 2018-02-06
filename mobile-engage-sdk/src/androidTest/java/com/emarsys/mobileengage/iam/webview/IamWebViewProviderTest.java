@@ -31,8 +31,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 class TestJSInterface extends IamJsBridge {
-    public TestJSInterface(IamDialog iamDialog, InAppMessageHandlerProvider inAppMessageHandlerProvider, ButtonClickedRepository repository, String campaignId, Handler coreSdkHandler) {
-        super(iamDialog, inAppMessageHandlerProvider, repository, campaignId, coreSdkHandler);
+    public TestJSInterface(InAppMessageHandlerProvider inAppMessageHandlerProvider, ButtonClickedRepository repository, String campaignId, Handler coreSdkHandler) {
+        super(inAppMessageHandlerProvider, repository, campaignId, coreSdkHandler);
     }
 
     @JavascriptInterface
@@ -81,7 +81,7 @@ public class IamWebViewProviderTest {
 
         handler = new Handler(Looper.getMainLooper());
         latch = new CountDownLatch(1);
-        dummyJsBridge = new IamJsBridge(mock(IamDialog.class), mock(InAppMessageHandlerProvider.class), mock(ButtonClickedRepository.class), "123", mock(Handler.class));
+        dummyJsBridge = new IamJsBridge(mock(InAppMessageHandlerProvider.class), mock(ButtonClickedRepository.class), "123", mock(Handler.class));
     }
 
     @Test(expected = IllegalArgumentException.class)

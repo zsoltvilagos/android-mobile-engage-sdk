@@ -1,9 +1,11 @@
 package com.emarsys.mobileengage.iam.jsbridge;
 
+import android.app.Activity;
 import android.os.Handler;
 import android.support.test.filters.SdkSuppress;
 import android.webkit.WebView;
 
+import com.emarsys.core.activity.CurrentActivityWatchdog;
 import com.emarsys.core.concurrency.CoreSdkHandlerProvider;
 import com.emarsys.core.database.repository.Repository;
 import com.emarsys.core.database.repository.SqlSpecification;
@@ -24,6 +26,9 @@ import org.junit.rules.TestRule;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
@@ -43,6 +48,7 @@ public class IamJsBridgeTest {
         mock(IamDialog.class);
         mock(WebView.class);
         mock(Handler.class);
+        mock(Activity.class);
     }
 
     private IamJsBridge jsBridge;
@@ -65,57 +71,53 @@ public class IamJsBridgeTest {
         repository = mock(Repository.class);
         campaignId = "123";
         coreSdkHandler = new CoreSdkHandlerProvider().provideHandler();
-        jsBridge = new IamJsBridge(dialog, provider, repository, campaignId, coreSdkHandler);
+        jsBridge = new IamJsBridge(provider, repository, campaignId, coreSdkHandler);
         webView = mock(WebView.class);
         jsBridge.setWebView(webView);
     }
 
     @After
-    public void tearDown() {
+    public void tearDown() throws Exception {
         coreSdkHandler.getLooper().quit();
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testConstructor_dialog_shouldNotAcceptNull() {
-        new IamJsBridge(null, mock(InAppMessageHandlerProvider.class), repository, campaignId, mock(Handler.class));
+        resetActivityWatchdog();
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_messageHandlerProvider_shouldNotAcceptNull() {
-        new IamJsBridge(mock(IamDialog.class), null, repository, campaignId, mock(Handler.class));
+        new IamJsBridge(null, repository, campaignId, mock(Handler.class));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_buttonClickedRepository_shouldNotAcceptNull() {
-        new IamJsBridge(mock(IamDialog.class), mock(InAppMessageHandlerProvider.class), null, campaignId, mock(Handler.class));
+        new IamJsBridge(mock(InAppMessageHandlerProvider.class), null, campaignId, mock(Handler.class));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_campaignId_shouldNotAcceptNull() {
-        new IamJsBridge(mock(IamDialog.class), mock(InAppMessageHandlerProvider.class), repository, null, mock(Handler.class));
+        new IamJsBridge(mock(InAppMessageHandlerProvider.class), repository, null, mock(Handler.class));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_coreSdkHandler_shouldNotAcceptNull() {
-        new IamJsBridge(mock(IamDialog.class), mock(InAppMessageHandlerProvider.class), repository, campaignId, null);
+        new IamJsBridge(mock(InAppMessageHandlerProvider.class), repository, campaignId, null);
     }
 
     @Test
-    public void testClose_shouldInvokeCloseOnTheDialogOfTheMessageHandler() {
-        IamDialog iamDialog = mock(IamDialog.class);
+    public void testClose_shouldInvokeCloseOnTheDialogOfTheMessageHandler() throws Exception {
+        IamDialog iamDialog = initializeActivityWatchdogWithIamDialog();
 
-        IamJsBridge jsBridge = new IamJsBridge(iamDialog, mock(InAppMessageHandlerProvider.class), mock(ButtonClickedRepository.class), campaignId, mock(Handler.class));
+        IamJsBridge jsBridge = new IamJsBridge(mock(InAppMessageHandlerProvider.class), mock(ButtonClickedRepository.class), campaignId, mock(Handler.class));
         jsBridge.close("");
         verify(iamDialog, Mockito.timeout(1000)).dismiss();
     }
 
     @Test
-    public void testClose_calledOnMainThread() throws InterruptedException {
-        IamDialog iamDialog = mock(IamDialog.class);
+    public void testClose_calledOnMainThread() throws Exception {
+        IamDialog iamDialog = initializeActivityWatchdogWithIamDialog();
         ThreadSpy threadSpy = new ThreadSpy();
         doAnswer(threadSpy).when(iamDialog).dismiss();
 
-        IamJsBridge jsBridge = new IamJsBridge(iamDialog, mock(InAppMessageHandlerProvider.class), repository, campaignId, mock(Handler.class));
+        IamJsBridge jsBridge = new IamJsBridge(mock(InAppMessageHandlerProvider.class), repository, campaignId, mock(Handler.class));
         jsBridge.close("");
 
         threadSpy.verifyCalledOnMainThread();
@@ -138,7 +140,7 @@ public class IamJsBridgeTest {
         InAppMessageHandlerProvider messageHandlerProvider = mock(InAppMessageHandlerProvider.class);
         when(messageHandlerProvider.provideHandler()).thenReturn(inAppMessageHandler);
 
-        IamJsBridge jsBridge = new IamJsBridge(mock(IamDialog.class), messageHandlerProvider, repository, campaignId, mock(Handler.class));
+        IamJsBridge jsBridge = new IamJsBridge(messageHandlerProvider, repository, campaignId, mock(Handler.class));
         jsBridge.setWebView(webView);
         jsBridge.triggerAppEvent(json.toString());
 
@@ -157,7 +159,7 @@ public class IamJsBridgeTest {
         InAppMessageHandlerProvider messageHandlerProvider = mock(InAppMessageHandlerProvider.class);
         when(messageHandlerProvider.provideHandler()).thenReturn(null);
 
-        IamJsBridge jsBridge = new IamJsBridge(mock(IamDialog.class), messageHandlerProvider, repository, campaignId, mock(Handler.class));
+        IamJsBridge jsBridge = new IamJsBridge(messageHandlerProvider, repository, campaignId, mock(Handler.class));
         jsBridge.triggerAppEvent(json.toString());
     }
 
@@ -172,7 +174,7 @@ public class IamJsBridgeTest {
         InAppMessageHandlerProvider messageHandlerProvider = mock(InAppMessageHandlerProvider.class);
         when(messageHandlerProvider.provideHandler()).thenReturn(messageHandler);
 
-        IamJsBridge jsBridge = new IamJsBridge(mock(IamDialog.class), messageHandlerProvider, repository, campaignId, mock(Handler.class));
+        IamJsBridge jsBridge = new IamJsBridge(messageHandlerProvider, repository, campaignId, mock(Handler.class));
         jsBridge.setWebView(webView);
         jsBridge.triggerAppEvent(json.toString());
 
@@ -280,5 +282,27 @@ public class IamJsBridgeTest {
         jsBridge.sendResult(json);
 
         verify(webView, Mockito.timeout(1000)).evaluateJavascript(String.format("MEIAM.handleResponse(%s);", json), null);
+    }
+
+    private IamDialog initializeActivityWatchdogWithIamDialog() throws Exception {
+        Activity activity = mock(Activity.class, Mockito.RETURNS_DEEP_STUBS);
+        IamDialog iamDialog = mock(IamDialog.class);
+        when(activity.getFragmentManager().findFragmentByTag(IamDialog.TAG)).thenReturn(iamDialog);
+
+        Field currentActivityField = CurrentActivityWatchdog.class.getDeclaredField("currentActivity");
+        currentActivityField.setAccessible(true);
+        currentActivityField.set(null, activity);
+
+        Field isRegisteredField = CurrentActivityWatchdog.class.getDeclaredField("isRegistered");
+        isRegisteredField.setAccessible(true);
+        isRegisteredField.set(null, true);
+
+        return iamDialog;
+    }
+
+    private void resetActivityWatchdog() throws Exception {
+        Method resetMethod = CurrentActivityWatchdog.class.getDeclaredMethod("reset");
+        resetMethod.setAccessible(true);
+        resetMethod.invoke(null);
     }
 }

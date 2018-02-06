@@ -75,7 +75,7 @@ public class InAppMessageResponseHandler extends AbstractResponseHandler {
             iamDialog.setAction(action);
 
             DefaultMessageLoadedListener listener = new DefaultMessageLoadedListener(iamDialog);
-            webViewProvider.loadMessageAsync(html, new IamJsBridge(iamDialog, messageHandlerProvider, repository, id, coreSdkHandler), listener);
+            webViewProvider.loadMessageAsync(html, new IamJsBridge(messageHandlerProvider, repository, id, coreSdkHandler), listener);
         } catch (JSONException je) {
             EMSLogger.log(MobileEngageTopic.IN_APP_MESSAGE, "Exception occurred, exception: %s json: %s", je, responseBody);
         }

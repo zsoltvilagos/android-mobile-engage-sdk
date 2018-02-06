@@ -26,7 +26,6 @@ import org.json.JSONObject;
 @RequiresApi(api = Build.VERSION_CODES.KITKAT)
 public class IamJsBridge {
 
-    private IamDialog iamDialog;
     private InAppMessageHandlerProvider messageHandlerProvider;
     private WebView webView;
     private Handler uiHandler;
@@ -34,13 +33,11 @@ public class IamJsBridge {
     private String campaignId;
     private Handler coreSdkHandler;
 
-    public IamJsBridge(IamDialog iamDialog, InAppMessageHandlerProvider messageHandlerProvider, Repository<ButtonClicked, SqlSpecification> repository, String campaignId, Handler coreSdkHandler) {
-        Assert.notNull(iamDialog, "IamDialog must not be null!");
+    public IamJsBridge(InAppMessageHandlerProvider messageHandlerProvider, Repository<ButtonClicked, SqlSpecification> repository, String campaignId, Handler coreSdkHandler) {
         Assert.notNull(messageHandlerProvider, "MessageHandlerProvider must not be null!");
         Assert.notNull(repository, "Repository must not be null!");
         Assert.notNull(campaignId, "CampaignId must not be null!");
         Assert.notNull(coreSdkHandler, "CoreSdkHandler must not be null!");
-        this.iamDialog = iamDialog;
         this.messageHandlerProvider = messageHandlerProvider;
         this.uiHandler = new Handler(Looper.getMainLooper());
         this.repository = repository;
