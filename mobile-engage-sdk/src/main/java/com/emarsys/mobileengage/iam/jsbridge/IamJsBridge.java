@@ -3,6 +3,8 @@ package com.emarsys.mobileengage.iam.jsbridge;
 import android.app.Activity;
 import android.app.DialogFragment;
 import android.app.Fragment;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
@@ -117,6 +119,58 @@ public class IamJsBridge {
             sendResult(result);
         } catch (JSONException je) {
             EMSLogger.log(MobileEngageTopic.IN_APP_MESSAGE, "Exception occurred, exception: %s json: %s", je, jsonString);
+        }
+    }
+
+    @JavascriptInterface
+    public void openExternalLink(String jsonString) {
+        try {
+            JSONObject json = new JSONObject(jsonString);
+            final String id = json.getString("id");
+
+            if (json.has("url")) {
+                final Uri link = Uri.parse(json.getString("url"));
+                uiHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        Activity activity = CurrentActivityWatchdog.getCurrentActivity();
+                        if (activity != null) {
+                            Intent intent = new Intent(Intent.ACTION_VIEW, link);
+                            if (intent.resolveActivity(activity.getPackageManager()) != null) {
+                                activity.startActivity(intent);
+                                sendSuccess(id);
+                            } else {
+                                sendError(id, "Url cannot be handled by any application!");
+                            }
+                        } else {
+                            sendError(id, "UI unavailable!");
+                        }
+                    }
+                });
+            } else {
+                sendError(id, "Missing url!");
+            }
+        } catch (JSONException je) {
+            EMSLogger.log(MobileEngageTopic.IN_APP_MESSAGE, "Exception occurred, exception: %s json: %s", je, jsonString);
+        }
+    }
+
+    void sendSuccess(String id) {
+        try {
+            sendResult(new JSONObject()
+                    .put("id", id)
+                    .put("success", true));
+        } catch (JSONException ignore) {
+        }
+    }
+
+    void sendError(String id, String error) {
+        try {
+            sendResult(new JSONObject()
+                    .put("id", id)
+                    .put("success", false)
+                    .put("error", error));
+        } catch (JSONException ignore) {
         }
     }
 
