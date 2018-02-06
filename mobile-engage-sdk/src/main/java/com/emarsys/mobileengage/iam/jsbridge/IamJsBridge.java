@@ -1,5 +1,8 @@
 package com.emarsys.mobileengage.iam.jsbridge;
 
+import android.app.Activity;
+import android.app.DialogFragment;
+import android.app.Fragment;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
@@ -7,6 +10,7 @@ import android.support.annotation.RequiresApi;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 
+import com.emarsys.core.activity.CurrentActivityWatchdog;
 import com.emarsys.core.database.repository.Repository;
 import com.emarsys.core.database.repository.SqlSpecification;
 import com.emarsys.core.util.Assert;
@@ -53,7 +57,13 @@ public class IamJsBridge {
         uiHandler.post(new Runnable() {
             @Override
             public void run() {
-                iamDialog.dismiss();
+                Activity currentActivity = CurrentActivityWatchdog.getCurrentActivity();
+                if (currentActivity != null) {
+                    Fragment fragment = currentActivity.getFragmentManager().findFragmentByTag(IamDialog.TAG);
+                    if (fragment instanceof DialogFragment) {
+                        ((DialogFragment) fragment).dismiss();
+                    }
+                }
             }
         });
     }
