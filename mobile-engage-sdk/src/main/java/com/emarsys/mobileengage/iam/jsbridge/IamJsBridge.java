@@ -68,87 +68,75 @@ public class IamJsBridge {
     }
 
     @JavascriptInterface
-    public void triggerAppEvent(String jsonString) {
+    public void triggerAppEvent(final String jsonString) {
         final InAppMessageHandler inAppMessageHandler = messageHandlerProvider.provideHandler();
 
         if (inAppMessageHandler != null) {
-            try {
-                final JSONObject json = new JSONObject(jsonString);
-                final JSONObject result = new JSONObject().put("id", json.getString("id"));
-
-                if (json.has("name")) {
-                    final String eventName = json.getString("name");
-                    final JSONObject payload = json.has("payload") ? json.getJSONObject("payload") : null;
-                    uiHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            inAppMessageHandler.handleApplicationEvent(eventName, payload);
-                        }
-                    });
-                    result.put("success", true);
-                } else {
-                    result.put("success", false)
-                            .put("error", "Missing name!");
+            handleJsBridgeEvent(jsonString, "name", uiHandler, new JsBridgeEventAction() {
+                @Override
+                public void execute(String property, JSONObject json) throws Exception {
+                    final JSONObject payload = json.optJSONObject("payload");
+                    inAppMessageHandler.handleApplicationEvent(property, payload);
                 }
-                sendResult(result);
-            } catch (JSONException je) {
-                EMSLogger.log(MobileEngageTopic.IN_APP_MESSAGE, "Exception occurred, exception: %s json: %s", je, jsonString);
-            }
+            });
         }
     }
 
     @JavascriptInterface
     public void buttonClicked(String jsonString) {
-        try {
-            final JSONObject json = new JSONObject(jsonString);
-            final JSONObject result = new JSONObject().put("id", json.getString("id"));
-
-            if (json.has("buttonId")) {
-                final String buttonId = json.getString("buttonId");
-                coreSdkHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        repository.add(new ButtonClicked(campaignId, buttonId, System.currentTimeMillis()));
-                    }
-                });
-                result.put("success", true);
-            } else {
-                result.put("success", false)
-                        .put("error", "Missing buttonId!");
+        handleJsBridgeEvent(jsonString, "buttonId", coreSdkHandler, new JsBridgeEventAction() {
+            @Override
+            public void execute(String property, JSONObject json) {
+                repository.add(new ButtonClicked(campaignId, property, System.currentTimeMillis()));
             }
-            sendResult(result);
-        } catch (JSONException je) {
-            EMSLogger.log(MobileEngageTopic.IN_APP_MESSAGE, "Exception occurred, exception: %s json: %s", je, jsonString);
-        }
+        });
     }
 
     @JavascriptInterface
     public void openExternalLink(String jsonString) {
+        handleJsBridgeEvent(jsonString, "url", uiHandler, new JsBridgeEventAction() {
+            @Override
+            public void execute(String property, JSONObject json) throws Exception {
+                Activity activity = CurrentActivityWatchdog.getCurrentActivity();
+                if (activity != null) {
+                    Uri link = Uri.parse(property);
+                    Intent intent = new Intent(Intent.ACTION_VIEW, link);
+                    if (intent.resolveActivity(activity.getPackageManager()) != null) {
+                        activity.startActivity(intent);
+                    } else {
+                        throw new Exception("Url cannot be handled by any application!");
+                    }
+                } else {
+                    throw new Exception("UI unavailable!");
+                }
+            }
+        });
+    }
+
+    private interface JsBridgeEventAction {
+        void execute(String property, JSONObject json) throws Exception;
+    }
+
+    private void handleJsBridgeEvent(String jsonString, final String property, Handler handler, final JsBridgeEventAction jsBridgeEventAction) {
         try {
-            JSONObject json = new JSONObject(jsonString);
+            final JSONObject json = new JSONObject(jsonString);
             final String id = json.getString("id");
 
-            if (json.has("url")) {
-                final Uri link = Uri.parse(json.getString("url"));
-                uiHandler.post(new Runnable() {
+            if (json.has(property)) {
+                final String propertyValue = json.getString(property);
+                handler.post(new Runnable() {
                     @Override
                     public void run() {
-                        Activity activity = CurrentActivityWatchdog.getCurrentActivity();
-                        if (activity != null) {
-                            Intent intent = new Intent(Intent.ACTION_VIEW, link);
-                            if (intent.resolveActivity(activity.getPackageManager()) != null) {
-                                activity.startActivity(intent);
-                                sendSuccess(id);
-                            } else {
-                                sendError(id, "Url cannot be handled by any application!");
-                            }
-                        } else {
-                            sendError(id, "UI unavailable!");
+                        try {
+                            jsBridgeEventAction.execute(propertyValue, json);
+                            sendSuccess(id);
+                        } catch (Exception e) {
+                            sendError(id, e.getMessage());
                         }
                     }
                 });
             } else {
-                sendError(id, "Missing url!");
+                sendError(id, String.format("Missing %s!", property));
             }
         } catch (JSONException je) {
             EMSLogger.log(MobileEngageTopic.IN_APP_MESSAGE, "Exception occurred, exception: %s json: %s", je, jsonString);
