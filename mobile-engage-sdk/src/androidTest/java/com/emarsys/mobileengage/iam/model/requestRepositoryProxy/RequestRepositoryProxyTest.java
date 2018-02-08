@@ -15,7 +15,6 @@ import com.emarsys.core.request.model.RequestModelRepository;
 import com.emarsys.core.request.model.specification.QueryNewestRequestModel;
 import com.emarsys.core.timestamp.TimestampProvider;
 import com.emarsys.core.util.TimestampUtils;
-import com.emarsys.mobileengage.iam.model.IamConversionUtils;
 import com.emarsys.mobileengage.iam.model.buttonclicked.ButtonClicked;
 import com.emarsys.mobileengage.iam.model.buttonclicked.ButtonClickedRepository;
 import com.emarsys.mobileengage.iam.model.displayediam.DisplayedIam;
@@ -203,35 +202,36 @@ public class RequestRepositoryProxyTest {
         requestModelRepository.add(request3);
         requestModelRepository.add(customEvent3);
 
+        Map<String, Object> event1 = new HashMap<>();
+        event1.put("type", "custom");
+        event1.put("name", "event1");
+        event1.put("timestamp", TimestampUtils.formatTimestampWithUTC(900));
+
+        Map<String, Object> event2 = new HashMap<>();
+        event2.put("type", "custom");
+        event2.put("name", "event2");
+        event2.put("timestamp", TimestampUtils.formatTimestampWithUTC(1000));
+        event2.put("attributes", new HashMap<String, String>() {{
+            put("key1", "value1");
+            put("key2", "value2");
+        }});
+
+        Map<String, Object> event3 = new HashMap<>();
+        event3.put("type", "custom");
+        event3.put("name", "event3");
+        event3.put("timestamp", TimestampUtils.formatTimestampWithUTC(1200));
+
+        Map<String, Object> payload = RequestUtils.createCompositeRequestModelPayload(
+                Arrays.asList(event1, event2, event3),
+                Collections.<DisplayedIam>emptyList(),
+                Collections.<ButtonClicked>emptyList(),
+                deviceInfo
+        );
+
         RequestModel expectedComposite = new CompositeRequestModel(
                 RequestUtils.createEventUrl_V3(MEID),
                 RequestMethod.POST,
-                new HashMap<String, Object>() {{
-
-                    Map<String, Object> event1 = new HashMap<>();
-                    event1.put("type", "custom");
-                    event1.put("name", "event1");
-                    event1.put("timestamp", TimestampUtils.formatTimestampWithUTC(900));
-
-                    Map<String, Object> event2 = new HashMap<>();
-                    event2.put("type", "custom");
-                    event2.put("name", "event2");
-                    event2.put("timestamp", TimestampUtils.formatTimestampWithUTC(1000));
-                    event2.put("attributes", new HashMap<String, String>() {{
-                        put("key1", "value1");
-                        put("key2", "value2");
-                    }});
-
-                    Map<String, Object> event3 = new HashMap<>();
-                    event3.put("type", "custom");
-                    event3.put("name", "event3");
-                    event3.put("timestamp", TimestampUtils.formatTimestampWithUTC(1200));
-
-                    put("viewed_messages", Collections.emptyList());
-                    put("clicks", Collections.emptyList());
-                    put("events", Arrays.asList(event1, event2, event3));
-                    put("hardware_id", new DeviceInfo(context).getHwid());
-                }},
+                payload,
                 customEvent1.getHeaders(),
                 TIMESTAMP,
                 Long.MAX_VALUE,
@@ -284,19 +284,20 @@ public class RequestRepositoryProxyTest {
         event1.put("timestamp", TimestampUtils.formatTimestampWithUTC(1000));
         event1.put("attributes", eventAttributes);
 
-        Map<String, Object> payload = new HashMap<>();
-        payload.put("clicks", IamConversionUtils.buttonClicksToArray(Arrays.asList(
-                new ButtonClicked("campaign1", "button1", 200),
-                new ButtonClicked("campaign1", "button2", 300),
-                new ButtonClicked("campaign2", "button1", 2000)
-        )));
-        payload.put("viewed_messages", IamConversionUtils.displayedIamsToArray(Arrays.asList(
-                new DisplayedIam("campaign1", 100),
-                new DisplayedIam("campaign2", 1500),
-                new DisplayedIam("campaign3", 30000)
-        )));
-        payload.put("events", Collections.singletonList(event1));
-        payload.put("hardware_id", new DeviceInfo(context).getHwid());
+        Map<String, Object> payload = RequestUtils.createCompositeRequestModelPayload(
+                Collections.singletonList(event1),
+                Arrays.asList(
+                        new DisplayedIam("campaign1", 100),
+                        new DisplayedIam("campaign2", 1500),
+                        new DisplayedIam("campaign3", 30000)
+                ),
+                Arrays.asList(
+                        new ButtonClicked("campaign1", "button1", 200),
+                        new ButtonClicked("campaign1", "button2", 300),
+                        new ButtonClicked("campaign2", "button1", 2000)
+                ),
+                deviceInfo
+        );
 
         RequestModel expectedComposite = new CompositeRequestModel(
                 RequestUtils.createEventUrl_V3(MEID),
@@ -353,43 +354,44 @@ public class RequestRepositoryProxyTest {
         displayedIamRepository.add(displayedIam2);
         displayedIamRepository.add(displayedIam3);
 
+        Map<String, Object> event1 = new HashMap<>();
+        event1.put("type", "custom");
+        event1.put("name", "event1");
+        event1.put("timestamp", TimestampUtils.formatTimestampWithUTC(900));
+
+        Map<String, Object> event2 = new HashMap<>();
+        event2.put("type", "custom");
+        event2.put("name", "event2");
+        event2.put("timestamp", TimestampUtils.formatTimestampWithUTC(1000));
+        event2.put("attributes", new HashMap<String, String>() {{
+            put("key1", "value1");
+            put("key2", "value2");
+        }});
+
+        Map<String, Object> event3 = new HashMap<>();
+        event3.put("type", "custom");
+        event3.put("name", "event3");
+        event3.put("timestamp", TimestampUtils.formatTimestampWithUTC(1200));
+
+        Map<String, Object> payload = RequestUtils.createCompositeRequestModelPayload(
+                Arrays.asList(event1, event2, event3),
+                Arrays.asList(
+                        new DisplayedIam("campaign1", 100),
+                        new DisplayedIam("campaign2", 1500),
+                        new DisplayedIam("campaign3", 30000)
+                ),
+                Arrays.asList(
+                        new ButtonClicked("campaign1", "button1", 200),
+                        new ButtonClicked("campaign1", "button2", 300),
+                        new ButtonClicked("campaign2", "button1", 2000)
+                ),
+                deviceInfo
+        );
+
         RequestModel expectedComposite = new CompositeRequestModel(
                 RequestUtils.createEventUrl_V3(MEID),
                 RequestMethod.POST,
-                new HashMap<String, Object>() {{
-
-                    Map<String, Object> event1 = new HashMap<>();
-                    event1.put("type", "custom");
-                    event1.put("name", "event1");
-                    event1.put("timestamp", TimestampUtils.formatTimestampWithUTC(900));
-
-                    Map<String, Object> event2 = new HashMap<>();
-                    event2.put("type", "custom");
-                    event2.put("name", "event2");
-                    event2.put("timestamp", TimestampUtils.formatTimestampWithUTC(1000));
-                    event2.put("attributes", new HashMap<String, String>() {{
-                        put("key1", "value1");
-                        put("key2", "value2");
-                    }});
-
-                    Map<String, Object> event3 = new HashMap<>();
-                    event3.put("type", "custom");
-                    event3.put("name", "event3");
-                    event3.put("timestamp", TimestampUtils.formatTimestampWithUTC(1200));
-
-                    put("viewed_messages", IamConversionUtils.displayedIamsToArray(Arrays.asList(
-                            new DisplayedIam("campaign1", 100),
-                            new DisplayedIam("campaign2", 1500),
-                            new DisplayedIam("campaign3", 30000)
-                    )));
-                    put("clicks", IamConversionUtils.buttonClicksToArray(Arrays.asList(
-                            new ButtonClicked("campaign1", "button1", 200),
-                            new ButtonClicked("campaign1", "button2", 300),
-                            new ButtonClicked("campaign2", "button1", 2000)
-                    )));
-                    put("events", Arrays.asList(event1, event2, event3));
-                    put("hardware_id", new DeviceInfo(context).getHwid());
-                }},
+                payload,
                 customEvent1.getHeaders(),
                 TIMESTAMP,
                 Long.MAX_VALUE,

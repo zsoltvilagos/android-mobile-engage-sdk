@@ -4,13 +4,18 @@ import com.emarsys.core.DeviceInfo;
 import com.emarsys.core.util.Assert;
 import com.emarsys.core.util.HeaderUtils;
 import com.emarsys.mobileengage.BuildConfig;
+import com.emarsys.mobileengage.MobileEngageInternal;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
+import com.emarsys.mobileengage.iam.model.IamConversionUtils;
+import com.emarsys.mobileengage.iam.model.buttonclicked.ButtonClicked;
+import com.emarsys.mobileengage.iam.model.displayediam.DisplayedIam;
 import com.emarsys.mobileengage.storage.MeIdSignatureStorage;
 import com.emarsys.mobileengage.storage.MeIdStorage;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static com.emarsys.mobileengage.endpoint.Endpoint.ME_BASE_V2;
@@ -87,6 +92,27 @@ public class RequestUtils {
             payload.put(entry.getKey(), entry.getValue());
         }
         return payload;
+    }
+
+    public static Map<String, Object> createCompositeRequestModelPayload(
+            List<?> events,
+            List<DisplayedIam> displayedIams,
+            List<ButtonClicked> buttonClicks,
+            DeviceInfo deviceInfo) {
+        Assert.notNull(events, "Events must not be null!");
+        Assert.notNull(displayedIams, "DisplayedIams must not be null!");
+        Assert.notNull(buttonClicks, "ButtonClicks must not be null!");
+        Assert.notNull(deviceInfo, "DeviceInfo must not be null!");
+
+        Map<String, Object> compositePayload = new HashMap<>();
+        compositePayload.put("viewed_messages", IamConversionUtils.displayedIamsToArray(displayedIams));
+        compositePayload.put("clicks", IamConversionUtils.buttonClicksToArray(buttonClicks));
+        compositePayload.put("events", events);
+        compositePayload.put("hardware_id", deviceInfo.getHwid());
+        compositePayload.put("language", deviceInfo.getLanguage());
+        compositePayload.put("application_version", deviceInfo.getApplicationVersion());
+        compositePayload.put("ems_sdk", MobileEngageInternal.MOBILEENGAGE_SDK_VERSION);
+        return compositePayload;
     }
 
 }

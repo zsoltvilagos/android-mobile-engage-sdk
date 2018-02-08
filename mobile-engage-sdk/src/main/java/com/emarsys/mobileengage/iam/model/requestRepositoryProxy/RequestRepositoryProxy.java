@@ -10,11 +10,11 @@ import com.emarsys.core.request.model.specification.FilterByUrlPattern;
 import com.emarsys.core.timestamp.TimestampProvider;
 import com.emarsys.core.util.Assert;
 import com.emarsys.mobileengage.endpoint.Endpoint;
-import com.emarsys.mobileengage.iam.model.IamConversionUtils;
 import com.emarsys.mobileengage.iam.model.buttonclicked.ButtonClicked;
 import com.emarsys.mobileengage.iam.model.buttonclicked.ButtonClickedContract;
 import com.emarsys.mobileengage.iam.model.displayediam.DisplayedIam;
 import com.emarsys.mobileengage.iam.model.displayediam.DisplayedIamContract;
+import com.emarsys.mobileengage.util.RequestUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -134,12 +134,12 @@ public class RequestRepositoryProxy implements Repository<RequestModel, SqlSpeci
             }
         }
 
-        payload.put("clicks", IamConversionUtils.buttonClicksToArray(buttonClickedRepository.query(new QueryAll(ButtonClickedContract.TABLE_NAME))));
-        payload.put("viewed_messages", IamConversionUtils.displayedIamsToArray(iamRepository.query(new QueryAll(DisplayedIamContract.TABLE_NAME))));
-        payload.put("events", events);
-        payload.put("hardware_id", deviceInfo.getHwid());
-
-        return payload;
+        return RequestUtils.createCompositeRequestModelPayload(
+                events,
+                iamRepository.query(new QueryAll(DisplayedIamContract.TABLE_NAME)),
+                buttonClickedRepository.query(new QueryAll(ButtonClickedContract.TABLE_NAME)),
+                deviceInfo
+        );
     }
 
     private String[] collectRequestIds(List<RequestModel> models) {

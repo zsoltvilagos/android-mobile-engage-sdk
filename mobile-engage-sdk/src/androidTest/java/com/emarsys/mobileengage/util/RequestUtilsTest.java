@@ -7,8 +7,12 @@ import android.support.test.InstrumentationRegistry;
 import com.emarsys.core.DeviceInfo;
 import com.emarsys.core.util.HeaderUtils;
 import com.emarsys.mobileengage.BuildConfig;
+import com.emarsys.mobileengage.MobileEngageInternal;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
+import com.emarsys.mobileengage.iam.model.IamConversionUtils;
+import com.emarsys.mobileengage.iam.model.buttonclicked.ButtonClicked;
+import com.emarsys.mobileengage.iam.model.displayediam.DisplayedIam;
 import com.emarsys.mobileengage.storage.MeIdSignatureStorage;
 import com.emarsys.mobileengage.storage.MeIdStorage;
 import com.emarsys.mobileengage.testUtil.ApplicationTestUtils;
@@ -20,8 +24,13 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Random;
+import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -236,5 +245,92 @@ public class RequestUtilsTest {
         Map<String, Object> result = RequestUtils.createBasePayload(realConfig, null);
 
         assertEquals(expected, result);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testCreateCompositeRequestModelPayload_eventsMustNotBeNull() {
+        RequestUtils.createCompositeRequestModelPayload(
+                null,
+                Collections.<DisplayedIam>emptyList(),
+                Collections.<ButtonClicked>emptyList(),
+                deviceInfo);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testCreateCompositeRequestModelPayload_displayedIamsMustNotBeNull() {
+        RequestUtils.createCompositeRequestModelPayload(
+                Collections.emptyList(),
+                null,
+                Collections.<ButtonClicked>emptyList(),
+                deviceInfo);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testCreateCompositeRequestModelPayload_buttonClicksMustNotBeNull() {
+        RequestUtils.createCompositeRequestModelPayload(
+                Collections.emptyList(),
+                Collections.<DisplayedIam>emptyList(),
+                null,
+                deviceInfo);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testCreateCompositeRequestModelPayload_deviceInfoMustNotBeNull() {
+        RequestUtils.createCompositeRequestModelPayload(
+                Collections.emptyList(),
+                Collections.<DisplayedIam>emptyList(),
+                Collections.<ButtonClicked>emptyList(),
+                null);
+    }
+
+    @Test
+    public void testCreateCompositeRequestModelPayload() {
+        List<Object> events = Arrays.asList(
+                randomMap(),
+                randomMap(),
+                randomMap()
+        );
+        List<DisplayedIam> displayedIams = Arrays.asList(
+                randomDisplayedIam(),
+                randomDisplayedIam()
+        );
+        List<ButtonClicked> buttonClicks = Arrays.asList(
+                randomButtonClick(),
+                randomButtonClick(),
+                randomButtonClick()
+        );
+        Map<String, Object> expectedPayload = new HashMap<>();
+        expectedPayload.put("events", events);
+        expectedPayload.put("viewed_messages", IamConversionUtils.displayedIamsToArray(displayedIams));
+        expectedPayload.put("clicks", IamConversionUtils.buttonClicksToArray(buttonClicks));
+        expectedPayload.put("hardware_id", deviceInfo.getHwid());
+        expectedPayload.put("language", deviceInfo.getLanguage());
+        expectedPayload.put("application_version", deviceInfo.getApplicationVersion());
+        expectedPayload.put("ems_sdk", MobileEngageInternal.MOBILEENGAGE_SDK_VERSION);
+
+        Map<String, Object> resultPayload = RequestUtils.createCompositeRequestModelPayload(
+                events,
+                displayedIams,
+                buttonClicks,
+                deviceInfo
+        );
+
+        assertEquals(expectedPayload, resultPayload);
+    }
+
+    private Object randomMap() {
+        Map<String, Object> map = new HashMap<>();
+        map.put(UUID.randomUUID().toString(), new Random().nextInt());
+        map.put(UUID.randomUUID().toString(), new Random().nextBoolean());
+        map.put(UUID.randomUUID().toString(), UUID.randomUUID().toString());
+        return map;
+    }
+
+    private DisplayedIam randomDisplayedIam() {
+        return new DisplayedIam(UUID.randomUUID().toString(), new Random().nextLong());
+    }
+
+    private ButtonClicked randomButtonClick() {
+        return new ButtonClicked(UUID.randomUUID().toString(), UUID.randomUUID().toString(), new Random().nextLong());
     }
 }
