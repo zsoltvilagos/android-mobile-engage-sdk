@@ -17,7 +17,6 @@ import com.emarsys.mobileengage.iam.model.displayediam.DisplayedIamContract;
 import com.emarsys.mobileengage.util.RequestUtils;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -123,8 +122,6 @@ public class RequestRepositoryProxy implements Repository<RequestModel, SqlSpeci
     }
 
     private Map<String, Object> createCompositePayload(List<RequestModel> models) {
-        Map<String, Object> payload = new HashMap<>();
-
         List<Object> events = new ArrayList<>();
 
         for (RequestModel model : models) {
