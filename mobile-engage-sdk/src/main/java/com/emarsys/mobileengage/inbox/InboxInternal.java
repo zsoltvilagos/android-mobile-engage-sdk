@@ -119,6 +119,7 @@ public class InboxInternal {
         RequestModel model = new RequestModel.Builder()
                 .url(RequestUtils.createEventUrl_V2("message_open"))
                 .payload(payload)
+                .headers(RequestUtils.createBaseHeaders_V2(config))
                 .build();
 
         manager.submit(model);
@@ -168,6 +169,7 @@ public class InboxInternal {
         result.put("x-ems-me-contact-field-value", appLoginParameters.getContactFieldValue());
 
         result.putAll(RequestUtils.createDefaultHeaders(config));
+        result.putAll(RequestUtils.createBaseHeaders_V2(config));
 
         return result;
     }

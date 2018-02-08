@@ -633,6 +633,7 @@ public class InboxInternalTest {
         headers.put("x-ems-me-contact-field-id", String.valueOf(appLoginParameters_withCredentials.getContactFieldId()));
         headers.put("x-ems-me-contact-field-value", appLoginParameters_withCredentials.getContactFieldValue());
         headers.putAll(RequestUtils.createDefaultHeaders(config));
+        headers.putAll(RequestUtils.createBaseHeaders_V2(config));
 
         return new RequestModel.Builder()
                 .url(path)

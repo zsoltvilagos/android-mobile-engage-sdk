@@ -40,6 +40,7 @@ import com.emarsys.mobileengage.responsehandler.InAppCleanUpResponseHandler;
 import com.emarsys.mobileengage.responsehandler.InAppMessageResponseHandler;
 import com.emarsys.mobileengage.responsehandler.MeIdResponseHandler;
 import com.emarsys.mobileengage.storage.AppLoginStorage;
+import com.emarsys.mobileengage.storage.MeIdSignatureStorage;
 import com.emarsys.mobileengage.storage.MeIdStorage;
 import com.emarsys.mobileengage.util.log.MobileEngageTopic;
 
@@ -94,7 +95,9 @@ public class MobileEngage {
 
         List<AbstractResponseHandler> responseHandlers = new ArrayList<>();
         if (MobileEngageExperimental.isFeatureEnabled(MobileEngageFeature.IN_APP_MESSAGING)) {
-            responseHandlers.add(new MeIdResponseHandler(new MeIdStorage(application)));
+            responseHandlers.add(new MeIdResponseHandler(
+                    new MeIdStorage(application),
+                    new MeIdSignatureStorage(application)));
             responseHandlers.add(new InAppMessageResponseHandler(
                     coreSdkHandler,
                     new IamWebViewProvider(),

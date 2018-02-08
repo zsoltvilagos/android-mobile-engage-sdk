@@ -95,9 +95,9 @@ public class NotificationInboxIntegrationTest {
         MobileEngage.Inbox.fetchNotifications(inboxListener);
         inboxLatch.await();
 
+        assertNull(inboxListener.errorCause);
         assertEquals(1, inboxListener.successCount);
         assertEquals(0, inboxListener.errorCount);
-        assertNull(inboxListener.errorCause);
         assertNotNull(inboxListener.resultStatus);
     }
 
@@ -109,8 +109,8 @@ public class NotificationInboxIntegrationTest {
         MobileEngage.Inbox.resetBadgeCount(resetListener);
         resetLatch.await();
 
+        assertNull(resetListener.errorCause);
         assertEquals(1, resetListener.successCount);
         assertEquals(0, resetListener.errorCount);
-        assertNull(resetListener.errorCause);
     }
 }

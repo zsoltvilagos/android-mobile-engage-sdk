@@ -112,16 +112,20 @@ public class MobileEngageInternal {
         Integer storedHashCode = appLoginStorage.get();
         int currentHashCode = payload.hashCode();
 
+        Map<String, String> headers = RequestUtils.createBaseHeaders_V2(config);
+
         if (storedHashCode == null || currentHashCode != storedHashCode) {
             model = new RequestModel.Builder()
                     .url(ME_LOGIN_V2)
                     .payload(payload)
+                    .headers(headers)
                     .build();
             appLoginStorage.set(currentHashCode);
         } else {
             model = new RequestModel.Builder()
                     .url(ME_LAST_MOBILE_ACTIVITY_V2)
                     .payload(RequestUtils.createBasePayload(config, appLoginParameters))
+                    .headers(headers)
                     .build();
         }
 
@@ -136,6 +140,7 @@ public class MobileEngageInternal {
         RequestModel model = new RequestModel.Builder()
                 .url(ME_LOGOUT_V2)
                 .payload(RequestUtils.createBasePayload(config, appLoginParameters))
+                .headers(RequestUtils.createBaseHeaders_V2(config))
                 .build();
 
         MobileEngageUtils.incrementIdlingResource();
@@ -165,6 +170,7 @@ public class MobileEngageInternal {
         RequestModel model = new RequestModel.Builder()
                 .url(RequestUtils.createEventUrl_V2(eventName))
                 .payload(payload)
+                .headers(RequestUtils.createBaseHeaders_V2(config))
                 .build();
 
         MobileEngageUtils.incrementIdlingResource();
@@ -193,6 +199,7 @@ public class MobileEngageInternal {
         RequestModel model = new RequestModel.Builder()
                 .url(RequestUtils.createEventUrl_V3(meIdStorage.get()))
                 .payload(payload)
+                .headers(RequestUtils.createBaseHeaders_V3(config))
                 .build();
 
         MobileEngageUtils.incrementIdlingResource();
@@ -229,6 +236,7 @@ public class MobileEngageInternal {
             RequestModel model = new RequestModel.Builder()
                     .url(RequestUtils.createEventUrl_V2("message_open"))
                     .payload(payload)
+                    .headers(RequestUtils.createBaseHeaders_V2(config))
                     .build();
 
             MobileEngageUtils.incrementIdlingResource();
