@@ -21,14 +21,14 @@ public class MobileEngageUtils {
         return idlingResource;
     }
 
-    static void incrementIdlingResource() {
+    public static void incrementIdlingResource() {
         if(idlingResourceEnabled){
             EMSLogger.log(MobileEngageTopic.IDLING_RESOURCE, "Incremented");
             idlingResource.increment();
         }
     }
 
-    static void decrementIdlingResource() {
+    public static void decrementIdlingResource() {
         if(idlingResourceEnabled){
             EMSLogger.log(MobileEngageTopic.IDLING_RESOURCE, "Decremented");
             idlingResource.decrement();
