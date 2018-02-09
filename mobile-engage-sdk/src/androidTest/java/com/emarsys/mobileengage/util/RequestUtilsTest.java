@@ -16,6 +16,7 @@ import com.emarsys.mobileengage.iam.model.displayediam.DisplayedIam;
 import com.emarsys.mobileengage.storage.MeIdSignatureStorage;
 import com.emarsys.mobileengage.storage.MeIdStorage;
 import com.emarsys.mobileengage.testUtil.ApplicationTestUtils;
+import com.emarsys.mobileengage.testUtil.RandomTestUtils;
 import com.emarsys.mobileengage.testUtil.SharedPrefsUtils;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
@@ -29,11 +30,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
-import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.mock;
 
 public class RequestUtilsTest {
     private static final String APPLICATION_CODE = "applicationCode";
@@ -116,22 +116,37 @@ public class RequestUtilsTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testCreateBaseHeaders_V3_configShouldNotBeNull() {
-        RequestUtils.createBaseHeaders_V3(null);
+        RequestUtils.createBaseHeaders_V3(null, mock(MeIdStorage.class), mock(MeIdSignatureStorage.class));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testCreateBaseHeaders_V3_meIdStorageShouldNotBeNull() {
+        RequestUtils.createBaseHeaders_V3(realConfig, null, mock(MeIdSignatureStorage.class));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testCreateBaseHeaders_V3_meIdSignatureStorageShouldNotBeNull() {
+        RequestUtils.createBaseHeaders_V3(realConfig, mock(MeIdStorage.class), null);
     }
 
     @Test
     public void testCreateBaseHeaders_V3_shouldReturnCorrectMap() {
         String meId = "meid";
         String meIdSignature = "meidsignature";
-        new MeIdStorage(context).set(meId);
-        new MeIdSignatureStorage(context).set(meIdSignature);
+        MeIdStorage meIdStorage = new MeIdStorage(context);
+        meIdStorage.set(meId);
+        MeIdSignatureStorage meIdSignatureStorage = new MeIdSignatureStorage(context);
+        meIdSignatureStorage.set(meIdSignature);
 
         Map<String, String> expected = new HashMap<>();
         expected.put("X-ME-ID", meId);
         expected.put("X-ME-ID-SIGNATURE", meIdSignature);
         expected.put("X-ME-APPLICATIONCODE", APPLICATION_CODE);
 
-        Map<String, String> result = RequestUtils.createBaseHeaders_V3(realConfig);
+        Map<String, String> result = RequestUtils.createBaseHeaders_V3(
+                realConfig,
+                meIdStorage,
+                meIdSignatureStorage);
 
         assertEquals(expected, result);
     }
@@ -286,18 +301,18 @@ public class RequestUtilsTest {
     @Test
     public void testCreateCompositeRequestModelPayload() {
         List<Object> events = Arrays.asList(
-                randomMap(),
-                randomMap(),
-                randomMap()
+                RandomTestUtils.randomMap(),
+                RandomTestUtils.randomMap(),
+                RandomTestUtils.randomMap()
         );
         List<DisplayedIam> displayedIams = Arrays.asList(
-                randomDisplayedIam(),
-                randomDisplayedIam()
+                RandomTestUtils.randomDisplayedIam(),
+                RandomTestUtils.randomDisplayedIam()
         );
         List<ButtonClicked> buttonClicks = Arrays.asList(
-                randomButtonClick(),
-                randomButtonClick(),
-                randomButtonClick()
+                RandomTestUtils.randomButtonClick(),
+                RandomTestUtils.randomButtonClick(),
+                RandomTestUtils.randomButtonClick()
         );
         Map<String, Object> expectedPayload = new HashMap<>();
         expectedPayload.put("events", events);
@@ -316,21 +331,5 @@ public class RequestUtilsTest {
         );
 
         assertEquals(expectedPayload, resultPayload);
-    }
-
-    private Object randomMap() {
-        Map<String, Object> map = new HashMap<>();
-        map.put(UUID.randomUUID().toString(), new Random().nextInt());
-        map.put(UUID.randomUUID().toString(), new Random().nextBoolean());
-        map.put(UUID.randomUUID().toString(), UUID.randomUUID().toString());
-        return map;
-    }
-
-    private DisplayedIam randomDisplayedIam() {
-        return new DisplayedIam(UUID.randomUUID().toString(), new Random().nextLong());
-    }
-
-    private ButtonClicked randomButtonClick() {
-        return new ButtonClicked(UUID.randomUUID().toString(), UUID.randomUUID().toString(), new Random().nextLong());
     }
 }

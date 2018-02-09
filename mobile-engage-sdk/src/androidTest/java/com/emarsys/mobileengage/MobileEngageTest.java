@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
+import com.emarsys.core.activity.ApplicationStartAction;
+import com.emarsys.core.activity.ApplicationStartWatchdog;
 import com.emarsys.core.activity.CurrentActivityWatchdog;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.request.model.RequestModelRepository;
@@ -14,6 +16,7 @@ import com.emarsys.mobileengage.experimental.MobileEngageExperimental;
 import com.emarsys.mobileengage.experimental.MobileEngageFeature;
 import com.emarsys.mobileengage.fake.FakeRequestManager;
 import com.emarsys.mobileengage.fake.FakeStatusListener;
+import com.emarsys.mobileengage.iam.InAppStartAction;
 import com.emarsys.mobileengage.iam.model.requestRepositoryProxy.RequestRepositoryProxy;
 import com.emarsys.mobileengage.inbox.InboxInternal;
 import com.emarsys.mobileengage.inbox.InboxResultListener;
@@ -37,6 +40,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -51,11 +56,19 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 @RunWith(AndroidJUnit4.class)
 public class MobileEngageTest {
+
+    static {
+        mock(Application.class);
+    }
+
     private static final String appID = "56789876";
     private static final String appSecret = "secret";
 
@@ -200,7 +213,7 @@ public class MobileEngageTest {
     }
 
     @Test
-    public void testSetup_registersCurrentActivityWatchDog() throws Exception {
+    public void testSetup_registers_currentActivityWatchDog() throws Exception {
         ConnectivityWatchdogTestUtils.resetCurrentActivityWatchdog();
 
         MobileEngage.setup(baseConfig);
@@ -210,6 +223,45 @@ public class MobileEngageTest {
         } catch (Exception e) {
             fail("getCurrentActivity should not fail: " + e.getMessage());
         }
+    }
+
+    @Test
+    public void testSetup_doesNotRegister_applicationStartWatchDog_ifIamFlipperIsTurnedOff() throws Exception {
+        ExperimentalTestUtils.resetExperimentalFeatures();
+
+        MobileEngageConfig config = createConfigWithSpyApplication();
+        Application spyApplication = config.getApplication();
+
+        MobileEngage.setup(config);
+
+        verify(spyApplication, times(0))
+                .registerActivityLifecycleCallbacks(
+                        any(ApplicationStartWatchdog.class));
+    }
+
+    @Test
+    public void testSetup_registers_applicationStartWatchDog() throws Exception {
+        MobileEngageConfig config = createConfigWithSpyApplication();
+        Application spyApplication = config.getApplication();
+
+        MobileEngage.setup(config);
+
+        verify(spyApplication).registerActivityLifecycleCallbacks(any(ApplicationStartWatchdog.class));
+    }
+
+    @Test
+    public void testSetup_registers_applicationStartWatchDog_withInAppStartAction() throws Exception {
+        ArgumentCaptor<ApplicationStartWatchdog> captor = ArgumentCaptor.forClass(ApplicationStartWatchdog.class);
+
+        MobileEngageConfig config = createConfigWithSpyApplication();
+        Application spyApplication = config.getApplication();
+
+        MobileEngage.setup(config);
+
+        verify(spyApplication, Mockito.atLeastOnce()).registerActivityLifecycleCallbacks(captor.capture());
+        ApplicationStartAction[] actions = captor.getValue().getApplicationStartActions();
+
+        assertEquals(1, numberOfElementsIn(actions, InAppStartAction.class));
     }
 
     @Test
@@ -403,11 +455,31 @@ public class MobileEngageTest {
         verify(inboxInternal).resetBadgeCount(null);
     }
 
-    private int numberOfElementsIn(List list, Class klass) {
+    private MobileEngageConfig createConfigWithSpyApplication() {
+        return new MobileEngageConfig.Builder()
+                .application(spy(application))
+                .credentials(appID, appSecret)
+                .disableDefaultChannel()
+                .build();
+    }
+
+    private int numberOfElementsIn(List list, Class type) {
         int count = 0;
 
         for (Object object : list) {
-            if (object.getClass().equals(klass)) {
+            if (object.getClass().equals(type)) {
+                count++;
+            }
+        }
+
+        return count;
+    }
+
+    private int numberOfElementsIn(Object[] array, Class type) {
+        int count = 0;
+
+        for (Object object : array) {
+            if (object.getClass().equals(type)) {
                 count++;
             }
         }

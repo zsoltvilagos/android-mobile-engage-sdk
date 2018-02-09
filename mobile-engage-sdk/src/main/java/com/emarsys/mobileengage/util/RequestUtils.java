@@ -43,10 +43,13 @@ public class RequestUtils {
         return baseHeaders;
     }
 
-    public static Map<String, String> createBaseHeaders_V3(MobileEngageConfig config) {
+    public static Map<String, String> createBaseHeaders_V3(
+            MobileEngageConfig config,
+            MeIdStorage meIdStorage,
+            MeIdSignatureStorage meIdSignatureStorage) {
         Assert.notNull(config, "Config must not be null!");
-        MeIdStorage meIdStorage = new MeIdStorage(config.getApplication());
-        MeIdSignatureStorage meIdSignatureStorage = new MeIdSignatureStorage(config.getApplication());
+        Assert.notNull(meIdStorage, "MeIdStorage must not be null!");
+        Assert.notNull(meIdSignatureStorage, "MeIdSignatureStorage must not be null!");
 
         Map<String, String> baseHeaders = new HashMap<>();
         baseHeaders.put("X-ME-ID", meIdStorage.get());

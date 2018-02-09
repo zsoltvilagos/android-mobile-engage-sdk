@@ -20,6 +20,7 @@ import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
 import com.emarsys.mobileengage.experimental.MobileEngageExperimental;
 import com.emarsys.mobileengage.experimental.MobileEngageFeature;
 import com.emarsys.mobileengage.storage.AppLoginStorage;
+import com.emarsys.mobileengage.storage.MeIdSignatureStorage;
 import com.emarsys.mobileengage.storage.MeIdStorage;
 import com.emarsys.mobileengage.util.RequestUtils;
 import com.emarsys.mobileengage.util.log.MobileEngageTopic;
@@ -51,6 +52,7 @@ public class MobileEngageInternal {
     Handler handler;
     MobileEngageCoreCompletionHandler coreCompletionHandler;
     MeIdStorage meIdStorage;
+    MeIdSignatureStorage meIdSignatureStorage;
     TimestampProvider timestampProvider;
 
     MobileEngageInternal(MobileEngageConfig config, RequestManager manager, AppLoginStorage appLoginStorage, MobileEngageCoreCompletionHandler coreCompletionHandler) {
@@ -78,6 +80,7 @@ public class MobileEngageInternal {
 
         this.handler = new Handler(Looper.getMainLooper());
         this.meIdStorage = new MeIdStorage(application);
+        this.meIdSignatureStorage = new MeIdSignatureStorage(application);
         this.timestampProvider = new TimestampProvider();
     }
 
@@ -199,7 +202,7 @@ public class MobileEngageInternal {
         RequestModel model = new RequestModel.Builder()
                 .url(RequestUtils.createEventUrl_V3(meIdStorage.get()))
                 .payload(payload)
-                .headers(RequestUtils.createBaseHeaders_V3(config))
+                .headers(RequestUtils.createBaseHeaders_V3(config, meIdStorage, meIdSignatureStorage))
                 .build();
 
         MobileEngageUtils.incrementIdlingResource();

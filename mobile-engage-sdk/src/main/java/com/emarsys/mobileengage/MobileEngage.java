@@ -8,6 +8,8 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.emarsys.core.DeviceInfo;
+import com.emarsys.core.activity.ApplicationStartAction;
+import com.emarsys.core.activity.ApplicationStartWatchdog;
 import com.emarsys.core.activity.CurrentActivityWatchdog;
 import com.emarsys.core.concurrency.CoreSdkHandlerProvider;
 import com.emarsys.core.connection.ConnectionWatchDog;
@@ -24,6 +26,7 @@ import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
 import com.emarsys.mobileengage.experimental.FlipperFeature;
 import com.emarsys.mobileengage.experimental.MobileEngageExperimental;
 import com.emarsys.mobileengage.experimental.MobileEngageFeature;
+import com.emarsys.mobileengage.iam.InAppStartAction;
 import com.emarsys.mobileengage.iam.dialog.IamDialogProvider;
 import com.emarsys.mobileengage.iam.jsbridge.InAppMessageHandlerProvider;
 import com.emarsys.mobileengage.iam.model.buttonclicked.ButtonClickedRepository;
@@ -117,6 +120,22 @@ public class MobileEngage {
                 new ConnectionWatchDog(application, coreSdkHandler),
                 createRequestModelRepository(application),
                 completionHandler);
+
+        MeIdStorage meIdStorage = new MeIdStorage(application);
+        MeIdSignatureStorage meIdSignatureStorage = new MeIdSignatureStorage(application);
+
+        if (MobileEngageExperimental.isFeatureEnabled(MobileEngageFeature.IN_APP_MESSAGING)) {
+            ApplicationStartAction[] applicationStartActions = new ApplicationStartAction[]{
+                    new InAppStartAction(
+                            requestManager,
+                            config,
+                            meIdStorage,
+                            meIdSignatureStorage,
+                            new TimestampProvider()
+                    )
+            };
+            application.registerActivityLifecycleCallbacks(new ApplicationStartWatchdog(applicationStartActions));
+        }
 
         instance = new MobileEngageInternal(config, requestManager, new AppLoginStorage(application), completionHandler);
         inboxInstance = new InboxInternal(config, requestManager);

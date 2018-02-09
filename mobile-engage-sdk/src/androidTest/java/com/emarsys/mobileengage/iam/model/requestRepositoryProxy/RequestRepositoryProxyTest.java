@@ -20,6 +20,7 @@ import com.emarsys.mobileengage.iam.model.buttonclicked.ButtonClickedRepository;
 import com.emarsys.mobileengage.iam.model.displayediam.DisplayedIam;
 import com.emarsys.mobileengage.iam.model.displayediam.DisplayedIamRepository;
 import com.emarsys.mobileengage.testUtil.DatabaseTestUtils;
+import com.emarsys.mobileengage.testUtil.RandomTestUtils;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 import com.emarsys.mobileengage.util.RequestUtils;
 
@@ -34,7 +35,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
@@ -444,7 +444,7 @@ public class RequestRepositoryProxyTest {
 
     private RequestModel requestModel() {
         Map<String, Object> payload = new HashMap<>();
-        payload.put("key", randomString());
+        payload.put("key", RandomTestUtils.randomString());
 
         Map<String, String> headers = new HashMap<>();
         headers.put("header1", "value1");
@@ -455,10 +455,6 @@ public class RequestRepositoryProxyTest {
                 .payload(payload)
                 .headers(headers)
                 .build();
-    }
-
-    private String randomString() {
-        return UUID.randomUUID().toString();
     }
 
 }
