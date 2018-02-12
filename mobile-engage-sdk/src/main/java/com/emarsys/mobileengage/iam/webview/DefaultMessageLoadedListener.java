@@ -23,11 +23,14 @@ public class DefaultMessageLoadedListener implements MessageLoadedListener {
     @Override
     public void onMessageLoaded() {
         Activity currentActivity = CurrentActivityWatchdog.getCurrentActivity();
-        FragmentManager fragmentManager = currentActivity.getFragmentManager();
-        Fragment fragment = fragmentManager.findFragmentByTag(IamDialog.TAG);
-        if (fragment == null) {
-            iamDialog.show(fragmentManager, IamDialog.TAG);
+        if (currentActivity != null) {
+            FragmentManager fragmentManager = currentActivity.getFragmentManager();
+            Fragment fragment = fragmentManager.findFragmentByTag(IamDialog.TAG);
+            if (fragment == null) {
+                iamDialog.show(fragmentManager, IamDialog.TAG);
+            }
         }
     }
-
 }
+
+

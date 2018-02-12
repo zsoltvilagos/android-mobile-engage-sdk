@@ -6,7 +6,7 @@ import android.app.FragmentManager;
 import android.support.test.filters.SdkSuppress;
 
 import com.emarsys.mobileengage.iam.dialog.IamDialog;
-import com.emarsys.mobileengage.testUtil.ConnectivityWatchdogTestUtils;
+import com.emarsys.mobileengage.testUtil.CurrentActivityWatchdogTestUtils;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
 import org.junit.After;
@@ -48,14 +48,14 @@ public class DefaultMessageLoadedListenerTest {
         currentActivity = mock(Activity.class);
         fragmentManager = mock(FragmentManager.class);
         when(currentActivity.getFragmentManager()).thenReturn(fragmentManager);
-        ConnectivityWatchdogTestUtils.setActivityWatchdogState(currentActivity);
+        CurrentActivityWatchdogTestUtils.setActivityWatchdogState(currentActivity);
         dialog = mock(IamDialog.class);
         listener.iamDialog = dialog;
     }
 
     @After
     public void tearDown() throws Exception {
-        ConnectivityWatchdogTestUtils.resetCurrentActivityWatchdog();
+        CurrentActivityWatchdogTestUtils.resetCurrentActivityWatchdog();
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -76,7 +76,16 @@ public class DefaultMessageLoadedListenerTest {
     }
 
     @Test
-    public void testOnMessageLoaded_shouldNotCallShowOnDialog_whenThereIsAlreadyAFragmentWithSameTag() {
+    public void testOnMessageLoaded_shouldNotShowDialog_whenThereIsNoAvailableActivity() throws Exception {
+        CurrentActivityWatchdogTestUtils.setActivityWatchdogState(null);
+
+        listener.onMessageLoaded();
+
+        verify(dialog, times(0)).show(fragmentManager, IamDialog.TAG);
+    }
+
+    @Test
+    public void testOnMessageLoaded_shouldNotShowDialog_whenThereIsAlreadyAFragmentWithSameTag() {
         Fragment fragment = mock(Fragment.class);
         when(fragmentManager.findFragmentByTag(IamDialog.TAG)).thenReturn(fragment);
 
