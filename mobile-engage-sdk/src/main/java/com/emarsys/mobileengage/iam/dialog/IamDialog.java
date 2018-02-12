@@ -58,7 +58,6 @@ public class IamDialog extends DialogFragment {
 
         webView = new IamWebViewProvider().provideWebView();
         webViewContainer = v.findViewById(R.id.mobileEngageInAppMessageContainer);
-        webViewContainer.addView(webView);
 
         return v;
     }
@@ -66,6 +65,8 @@ public class IamDialog extends DialogFragment {
     @Override
     public void onStart() {
         super.onStart();
+
+        webViewContainer.addView(webView);
 
         getDialog().getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
