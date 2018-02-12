@@ -27,7 +27,7 @@ import com.emarsys.mobileengage.responsehandler.InAppCleanUpResponseHandler;
 import com.emarsys.mobileengage.responsehandler.InAppMessageResponseHandler;
 import com.emarsys.mobileengage.responsehandler.MeIdResponseHandler;
 import com.emarsys.mobileengage.storage.AppLoginStorage;
-import com.emarsys.mobileengage.testUtil.ConnectivityWatchdogTestUtils;
+import com.emarsys.mobileengage.testUtil.CurrentActivityWatchdogTestUtils;
 import com.emarsys.mobileengage.testUtil.DatabaseTestUtils;
 import com.emarsys.mobileengage.testUtil.ExperimentalTestUtils;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
@@ -101,7 +101,7 @@ public class MobileEngageTest {
         MobileEngage.instance = mobileEngageInternal;
         MobileEngage.completionHandler = coreCompletionHandler;
 
-        ConnectivityWatchdogTestUtils.resetCurrentActivityWatchdog();
+        CurrentActivityWatchdogTestUtils.resetCurrentActivityWatchdog();
     }
 
     @After
@@ -214,7 +214,7 @@ public class MobileEngageTest {
 
     @Test
     public void testSetup_registers_currentActivityWatchDog() throws Exception {
-        ConnectivityWatchdogTestUtils.resetCurrentActivityWatchdog();
+        CurrentActivityWatchdogTestUtils.resetCurrentActivityWatchdog();
 
         MobileEngage.setup(baseConfig);
 
