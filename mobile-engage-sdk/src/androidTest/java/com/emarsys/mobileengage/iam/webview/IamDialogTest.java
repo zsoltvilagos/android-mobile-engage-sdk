@@ -11,7 +11,7 @@ import android.webkit.WebView;
 
 import com.emarsys.mobileengage.fake.FakeActivity;
 import com.emarsys.mobileengage.iam.dialog.IamDialog;
-import com.emarsys.mobileengage.iam.dialog.OnDialogShownAction;
+import com.emarsys.mobileengage.iam.dialog.action.OnDialogShownAction;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
 import org.junit.After;
@@ -21,6 +21,8 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.mockito.ArgumentCaptor;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import static android.os.Build.VERSION_CODES.KITKAT;
@@ -107,34 +109,36 @@ public class IamDialogTest {
     }
 
     @Test
-    public void testOnResume_callsAction_ifProvided() throws InterruptedException {
+    public void testOnResume_callsActions_ifProvided() throws InterruptedException {
         ArgumentCaptor<Long> timestampCaptor = ArgumentCaptor.forClass(Long.class);
 
         Bundle args = new Bundle();
         args.putString("campaign_id", "123456789");
         dialog.setArguments(args);
 
-        OnDialogShownAction action = mock(OnDialogShownAction.class);
-        dialog.setAction(action);
+        List<OnDialogShownAction> actions = createMockActions();
+        dialog.setActions(actions);
 
         long before = System.currentTimeMillis();
         displayDialog();
         latch.await();
         long after = System.currentTimeMillis();
 
-        verify(action).execute(eq("123456789"), timestampCaptor.capture());
+        for (OnDialogShownAction action : actions) {
+            verify(action).execute(eq("123456789"), timestampCaptor.capture());
 
-        long timestamp = timestampCaptor.getValue();
-        assertThat(timestamp, allOf(
-                greaterThanOrEqualTo(before),
-                lessThanOrEqualTo(after)
-        ));
+            long timestamp = timestampCaptor.getValue();
+            assertThat(timestamp, allOf(
+                    greaterThanOrEqualTo(before),
+                    lessThanOrEqualTo(after)
+            ));
+        }
     }
 
     @Test
-    public void testOnResume_callsAction_onlyOnce() throws InterruptedException {
-        OnDialogShownAction action = mock(OnDialogShownAction.class);
-        dialog.setAction(action);
+    public void testOnResume_callsActions_onlyOnce() throws InterruptedException {
+        List<OnDialogShownAction> actions = createMockActions();
+        dialog.setActions(actions);
 
         displayDialog();
         latch.await();
@@ -147,7 +151,9 @@ public class IamDialogTest {
         displayDialog();
         latch.await();
 
-        verify(action, times(1)).execute(any(String.class), any(Long.class));
+        for (OnDialogShownAction action : actions) {
+            verify(action, times(1)).execute(any(String.class), any(Long.class));
+        }
     }
 
     private void displayDialog() {
@@ -182,6 +188,14 @@ public class IamDialogTest {
         });
 
         initLatch.await();
+    }
+
+    private List<OnDialogShownAction> createMockActions() {
+        return Arrays.asList(
+                mock(OnDialogShownAction.class),
+                mock(OnDialogShownAction.class),
+                mock(OnDialogShownAction.class)
+        );
     }
 
 }

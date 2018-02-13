@@ -10,7 +10,9 @@ import com.emarsys.core.timestamp.TimestampProvider;
 import com.emarsys.core.util.log.EMSLogger;
 import com.emarsys.mobileengage.iam.dialog.IamDialog;
 import com.emarsys.mobileengage.iam.dialog.IamDialogProvider;
-import com.emarsys.mobileengage.iam.dialog.OnDialogShownAction;
+import com.emarsys.mobileengage.iam.dialog.action.OnDialogShownAction;
+import com.emarsys.mobileengage.iam.dialog.action.SaveDisplayedIamAction;
+import com.emarsys.mobileengage.iam.dialog.action.SendDisplayedIamAction;
 import com.emarsys.mobileengage.iam.jsbridge.IamJsBridge;
 import com.emarsys.mobileengage.iam.jsbridge.InAppMessageHandlerProvider;
 import com.emarsys.mobileengage.iam.model.buttonclicked.ButtonClickedRepository;
@@ -23,6 +25,8 @@ import com.emarsys.mobileengage.util.log.MobileEngageTopic;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.Arrays;
 
 public class InAppMessageResponseHandler extends AbstractResponseHandler {
 
@@ -88,10 +92,7 @@ public class InAppMessageResponseHandler extends AbstractResponseHandler {
             String id = message.getString("id");
 
             IamDialog iamDialog = dialogProvider.provideDialog(id);
-            OnDialogShownAction action = new OnDialogShownAction(
-                    coreSdkHandler,
-                    new DisplayedIamRepository(iamDialog.getActivity()));
-            iamDialog.setAction(action);
+            setupDialogWithActions(iamDialog);
 
             DefaultMessageLoadedListener listener = new DefaultMessageLoadedListener(iamDialog);
             IamJsBridge jsBridge = new IamJsBridge(
@@ -108,5 +109,24 @@ public class InAppMessageResponseHandler extends AbstractResponseHandler {
         } catch (JSONException je) {
             EMSLogger.log(MobileEngageTopic.IN_APP_MESSAGE, "Exception occurred, exception: %s json: %s", je, responseBody);
         }
+    }
+
+    @TargetApi(Build.VERSION_CODES.KITKAT)
+    private void setupDialogWithActions(IamDialog iamDialog) {
+        OnDialogShownAction saveDisplayedIamAction = new SaveDisplayedIamAction(
+                coreSdkHandler,
+                new DisplayedIamRepository(iamDialog.getActivity()));
+
+        OnDialogShownAction sendDisplayedIamAction = new SendDisplayedIamAction(
+                coreSdkHandler,
+                requestManager,
+                applicationCode,
+                meIdStorage,
+                meIdSignatureStorage,
+                timestampProvider);
+
+        iamDialog.setActions(Arrays.asList(
+                saveDisplayedIamAction,
+                sendDisplayedIamAction));
     }
 }

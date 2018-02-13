@@ -6,7 +6,7 @@ import android.support.test.filters.SdkSuppress;
 import com.emarsys.core.concurrency.CoreSdkHandlerProvider;
 import com.emarsys.core.database.repository.Repository;
 import com.emarsys.core.database.repository.SqlSpecification;
-import com.emarsys.mobileengage.iam.dialog.OnDialogShownAction;
+import com.emarsys.mobileengage.iam.dialog.action.SaveDisplayedIamAction;
 import com.emarsys.mobileengage.iam.model.displayediam.DisplayedIam;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 import com.emarsys.mobileengage.testUtil.mockito.ThreadSpy;
@@ -24,13 +24,13 @@ import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 
 @SdkSuppress(minSdkVersion = KITKAT)
-public class OnDialogShownActionTest {
+public class SaveDisplayedIamActionTest {
 
     private static final String ID = "id";
     private static final long TIMESTAMP = 123;
     private static final DisplayedIam IAM = new DisplayedIam(ID, TIMESTAMP);
 
-    private OnDialogShownAction action;
+    private SaveDisplayedIamAction action;
     private Repository<DisplayedIam, SqlSpecification> repository;
     private ThreadSpy threadSpy;
     private Handler handler;
@@ -46,7 +46,7 @@ public class OnDialogShownActionTest {
         handler = new CoreSdkHandlerProvider().provideHandler();
 
         doAnswer(threadSpy).when(repository).add(IAM);
-        action = new OnDialogShownAction(handler, repository);
+        action = new SaveDisplayedIamAction(handler, repository);
     }
 
     @After
@@ -56,12 +56,12 @@ public class OnDialogShownActionTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_handlerMustNotBeNull() {
-        new OnDialogShownAction(null, repository);
+        new SaveDisplayedIamAction(null, repository);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_repositoryMustNotBeNull() {
-        new OnDialogShownAction(handler, null);
+        new SaveDisplayedIamAction(handler, null);
     }
 
     @Test(expected = IllegalArgumentException.class)

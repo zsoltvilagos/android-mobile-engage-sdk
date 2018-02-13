@@ -27,6 +27,7 @@ import com.emarsys.mobileengage.responsehandler.InAppCleanUpResponseHandler;
 import com.emarsys.mobileengage.responsehandler.InAppMessageResponseHandler;
 import com.emarsys.mobileengage.responsehandler.MeIdResponseHandler;
 import com.emarsys.mobileengage.storage.AppLoginStorage;
+import com.emarsys.mobileengage.testUtil.CollectionTestUtils;
 import com.emarsys.mobileengage.testUtil.CurrentActivityWatchdogTestUtils;
 import com.emarsys.mobileengage.testUtil.DatabaseTestUtils;
 import com.emarsys.mobileengage.testUtil.ExperimentalTestUtils;
@@ -47,7 +48,6 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
@@ -124,7 +124,7 @@ public class MobileEngageTest {
 
         MobileEngageCoreCompletionHandler coreCompletionHandler = MobileEngage.completionHandler;
         assertNotNull(coreCompletionHandler);
-        assertEquals(1, numberOfElementsIn(coreCompletionHandler.responseHandlers, MeIdResponseHandler.class));
+        assertEquals(1, CollectionTestUtils.numberOfElementsIn(coreCompletionHandler.responseHandlers, MeIdResponseHandler.class));
     }
 
     @Test
@@ -136,7 +136,7 @@ public class MobileEngageTest {
 
         MobileEngageCoreCompletionHandler coreCompletionHandler = MobileEngage.completionHandler;
         assertNotNull(coreCompletionHandler);
-        assertEquals(0, numberOfElementsIn(coreCompletionHandler.responseHandlers, MeIdResponseHandler.class));
+        assertEquals(0, CollectionTestUtils.numberOfElementsIn(coreCompletionHandler.responseHandlers, MeIdResponseHandler.class));
     }
 
     @Test
@@ -146,7 +146,7 @@ public class MobileEngageTest {
 
         MobileEngageCoreCompletionHandler coreCompletionHandler = MobileEngage.completionHandler;
         assertNotNull(coreCompletionHandler);
-        assertEquals(1, numberOfElementsIn(coreCompletionHandler.responseHandlers, InAppMessageResponseHandler.class));
+        assertEquals(1, CollectionTestUtils.numberOfElementsIn(coreCompletionHandler.responseHandlers, InAppMessageResponseHandler.class));
     }
 
     @Test
@@ -158,7 +158,7 @@ public class MobileEngageTest {
 
         MobileEngageCoreCompletionHandler coreCompletionHandler = MobileEngage.completionHandler;
         assertNotNull(coreCompletionHandler);
-        assertEquals(0, numberOfElementsIn(coreCompletionHandler.responseHandlers, InAppMessageResponseHandler.class));
+        assertEquals(0, CollectionTestUtils.numberOfElementsIn(coreCompletionHandler.responseHandlers, InAppMessageResponseHandler.class));
     }
 
     @Test
@@ -168,7 +168,7 @@ public class MobileEngageTest {
 
         MobileEngageCoreCompletionHandler coreCompletionHandler = MobileEngage.completionHandler;
         assertNotNull(coreCompletionHandler);
-        assertEquals(1, numberOfElementsIn(coreCompletionHandler.responseHandlers, InAppCleanUpResponseHandler.class));
+        assertEquals(1, CollectionTestUtils.numberOfElementsIn(coreCompletionHandler.responseHandlers, InAppCleanUpResponseHandler.class));
     }
 
     @Test
@@ -180,7 +180,7 @@ public class MobileEngageTest {
 
         MobileEngageCoreCompletionHandler coreCompletionHandler = MobileEngage.completionHandler;
         assertNotNull(coreCompletionHandler);
-        assertEquals(0, numberOfElementsIn(coreCompletionHandler.responseHandlers, InAppCleanUpResponseHandler.class));
+        assertEquals(0, CollectionTestUtils.numberOfElementsIn(coreCompletionHandler.responseHandlers, InAppCleanUpResponseHandler.class));
     }
 
     @Test
@@ -261,7 +261,7 @@ public class MobileEngageTest {
         verify(spyApplication, Mockito.atLeastOnce()).registerActivityLifecycleCallbacks(captor.capture());
         ApplicationStartAction[] actions = captor.getValue().getApplicationStartActions();
 
-        assertEquals(1, numberOfElementsIn(actions, InAppStartAction.class));
+        assertEquals(1, CollectionTestUtils.numberOfElementsIn(actions, InAppStartAction.class));
     }
 
     @Test
@@ -461,29 +461,5 @@ public class MobileEngageTest {
                 .credentials(appID, appSecret)
                 .disableDefaultChannel()
                 .build();
-    }
-
-    private int numberOfElementsIn(List list, Class type) {
-        int count = 0;
-
-        for (Object object : list) {
-            if (object.getClass().equals(type)) {
-                count++;
-            }
-        }
-
-        return count;
-    }
-
-    private int numberOfElementsIn(Object[] array, Class type) {
-        int count = 0;
-
-        for (Object object : array) {
-            if (object.getClass().equals(type)) {
-                count++;
-            }
-        }
-
-        return count;
     }
 }

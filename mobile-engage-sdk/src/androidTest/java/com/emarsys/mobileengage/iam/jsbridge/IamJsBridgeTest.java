@@ -21,6 +21,7 @@ import com.emarsys.mobileengage.iam.dialog.IamDialog;
 import com.emarsys.mobileengage.iam.model.buttonclicked.ButtonClicked;
 import com.emarsys.mobileengage.storage.MeIdSignatureStorage;
 import com.emarsys.mobileengage.storage.MeIdStorage;
+import com.emarsys.mobileengage.testUtil.RequestModelTestUtils;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 import com.emarsys.mobileengage.testUtil.mockito.ThreadSpy;
 import com.emarsys.mobileengage.util.RequestUtils;
@@ -388,7 +389,7 @@ public class IamJsBridgeTest {
 
     @Test
     public void testButtonClicked_shouldSendInternalEvent_throughRequestManager() throws Exception {
-        ArgumentCaptor<RequestModel> buttonClickedArgumentCaptor = ArgumentCaptor.forClass(RequestModel.class);
+        ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
 
         String id = "12346789";
         String buttonId = "987654321";
@@ -396,8 +397,8 @@ public class IamJsBridgeTest {
 
         jsBridge.buttonClicked(json.toString());
 
-        verify(requestManager, Mockito.timeout(1000)).submit(buttonClickedArgumentCaptor.capture());
-        RequestModel actual = buttonClickedArgumentCaptor.getValue();
+        verify(requestManager, Mockito.timeout(1000)).submit(captor.capture());
+        RequestModel actual = captor.getValue();
 
         Map<String, String> attributes = new HashMap<>();
         attributes.put("message_id", CAMPAIGN_ID);
@@ -411,7 +412,7 @@ public class IamJsBridgeTest {
                 meIdSignatureStorage,
                 timestampProvider);
 
-        assertEqualsExceptId(expected, actual);
+        RequestModelTestUtils.assertEqualsExceptId(expected, actual);
     }
 
     @Test
@@ -597,14 +598,5 @@ public class IamJsBridgeTest {
         Method resetMethod = CurrentActivityWatchdog.class.getDeclaredMethod("reset");
         resetMethod.setAccessible(true);
         resetMethod.invoke(null);
-    }
-
-    private void assertEqualsExceptId(RequestModel expected, RequestModel actual) {
-        assertEquals(expected.getUrl(), actual.getUrl());
-        assertEquals(expected.getMethod(), actual.getMethod());
-        assertEquals(expected.getPayload(), actual.getPayload());
-        assertEquals(expected.getHeaders(), actual.getHeaders());
-        assertEquals(expected.getTimestamp(), actual.getTimestamp());
-        assertEquals(expected.getTtl(), actual.getTtl());
     }
 }

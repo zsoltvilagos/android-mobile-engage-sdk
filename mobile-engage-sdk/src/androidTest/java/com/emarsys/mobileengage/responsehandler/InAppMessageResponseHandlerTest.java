@@ -10,7 +10,9 @@ import com.emarsys.core.response.ResponseModel;
 import com.emarsys.core.timestamp.TimestampProvider;
 import com.emarsys.mobileengage.iam.dialog.IamDialog;
 import com.emarsys.mobileengage.iam.dialog.IamDialogProvider;
-import com.emarsys.mobileengage.iam.dialog.OnDialogShownAction;
+import com.emarsys.mobileengage.iam.dialog.action.OnDialogShownAction;
+import com.emarsys.mobileengage.iam.dialog.action.SaveDisplayedIamAction;
+import com.emarsys.mobileengage.iam.dialog.action.SendDisplayedIamAction;
 import com.emarsys.mobileengage.iam.jsbridge.IamJsBridge;
 import com.emarsys.mobileengage.iam.jsbridge.InAppMessageHandlerProvider;
 import com.emarsys.mobileengage.iam.model.buttonclicked.ButtonClickedRepository;
@@ -18,12 +20,16 @@ import com.emarsys.mobileengage.iam.webview.DefaultMessageLoadedListener;
 import com.emarsys.mobileengage.iam.webview.IamWebViewProvider;
 import com.emarsys.mobileengage.storage.MeIdSignatureStorage;
 import com.emarsys.mobileengage.storage.MeIdStorage;
+import com.emarsys.mobileengage.testUtil.CollectionTestUtils;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
+import org.mockito.ArgumentCaptor;
+
+import java.util.List;
 
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static junit.framework.Assert.assertEquals;
@@ -123,15 +129,39 @@ public class InAppMessageResponseHandlerTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     @SdkSuppress(minSdkVersion = KITKAT)
-    public void testHandleResponse_setsAction_onDialog() {
+    public void testHandleResponse_setsSaveDisplayIamAction_onDialog() {
+        ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
+
         String html = "<p>hello</p>";
         String responseBody = String.format("{'message': {'html':'%s', 'id': '123'} }", html);
         ResponseModel response = buildResponseModel(responseBody);
 
         handler.handleResponse(response);
 
-        verify(dialog).setAction(any(OnDialogShownAction.class));
+        verify(dialog).setActions(captor.capture());
+        List<OnDialogShownAction> actions = captor.getValue();
+
+        assertEquals(1, CollectionTestUtils.numberOfElementsIn(actions, SaveDisplayedIamAction.class));
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    @SdkSuppress(minSdkVersion = KITKAT)
+    public void testHandleResponse_setsSendDisplayIamAction_onDialog() {
+        ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
+
+        String html = "<p>hello</p>";
+        String responseBody = String.format("{'message': {'html':'%s', 'id': '123'} }", html);
+        ResponseModel response = buildResponseModel(responseBody);
+
+        handler.handleResponse(response);
+
+        verify(dialog).setActions(captor.capture());
+        List<OnDialogShownAction> actions = captor.getValue();
+
+        assertEquals(1, CollectionTestUtils.numberOfElementsIn(actions, SendDisplayedIamAction.class));
     }
 
     private ResponseModel buildResponseModel(String responseBody) {
