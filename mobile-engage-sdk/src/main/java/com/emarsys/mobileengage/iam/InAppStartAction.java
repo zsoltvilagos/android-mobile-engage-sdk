@@ -5,17 +5,10 @@ import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.request.model.RequestModel;
 import com.emarsys.core.timestamp.TimestampProvider;
 import com.emarsys.core.util.Assert;
-import com.emarsys.core.util.TimestampUtils;
 import com.emarsys.mobileengage.MobileEngageUtils;
-import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.storage.MeIdSignatureStorage;
 import com.emarsys.mobileengage.storage.MeIdStorage;
 import com.emarsys.mobileengage.util.RequestUtils;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 public class InAppStartAction implements ApplicationStartAction {
 
@@ -23,16 +16,16 @@ public class InAppStartAction implements ApplicationStartAction {
     private final TimestampProvider timestampProvider;
     private final MeIdStorage meIdStorage;
     private final MeIdSignatureStorage meIdSignatureStorage;
-    private final MobileEngageConfig config;
+    private final String applicationCode;
 
     public InAppStartAction(
             RequestManager requestManager,
-            MobileEngageConfig config,
+            String applicationCode,
             MeIdStorage meIdStorage,
             MeIdSignatureStorage meIdSignatureStorage,
             TimestampProvider timestampProvider) {
         Assert.notNull(requestManager, "RequestManager must not be null!");
-        Assert.notNull(config, "Config must not be null!");
+        Assert.notNull(applicationCode, "ApplicationCode must not be null!");
         Assert.notNull(meIdStorage, "MeIdStorage must not be null!");
         Assert.notNull(meIdSignatureStorage, "MeIdSignatureStorage must not be null!");
         Assert.notNull(timestampProvider, "TimestampProvider must not be null!");
@@ -40,30 +33,13 @@ public class InAppStartAction implements ApplicationStartAction {
         this.meIdStorage = meIdStorage;
         this.meIdSignatureStorage = meIdSignatureStorage;
         this.timestampProvider = timestampProvider;
-        this.config = config;
+        this.applicationCode = applicationCode;
     }
 
     @Override
     public void execute() {
         if (meIdStorage.get() != null && meIdSignatureStorage.get() != null) {
-            Map<String, Object> event = new HashMap<>();
-            event.put("type", "internal");
-            event.put("name", "inapp:start");
-            event.put("timestamp", TimestampUtils.formatTimestampWithUTC(timestampProvider.provideTimestamp()));
-
-            Map<String, Object> payload = new HashMap<>();
-            payload.put("clicks", new ArrayList<>());
-            payload.put("viewed_messages", new ArrayList<>());
-            payload.put("events", Collections.singletonList(event));
-
-            RequestModel model = new RequestModel.Builder()
-                    .url(RequestUtils.createEventUrl_V3(meIdStorage.get()))
-                    .payload(payload)
-                    .headers(RequestUtils.createBaseHeaders_V3(
-                            config.getApplicationCode(),
-                            meIdStorage,
-                            meIdSignatureStorage))
-                    .build();
+            RequestModel model = RequestUtils.createInternalCustomEvent("inapp:start", applicationCode, meIdStorage, meIdSignatureStorage, timestampProvider);
 
             MobileEngageUtils.incrementIdlingResource();
             manager.submit(model);

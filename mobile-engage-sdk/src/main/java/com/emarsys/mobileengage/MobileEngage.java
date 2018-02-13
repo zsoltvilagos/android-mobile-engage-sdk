@@ -128,7 +128,7 @@ public class MobileEngage {
             ApplicationStartAction[] applicationStartActions = new ApplicationStartAction[]{
                     new InAppStartAction(
                             requestManager,
-                            config,
+                            config.getApplicationCode(),
                             meIdStorage,
                             meIdSignatureStorage,
                             new TimestampProvider()

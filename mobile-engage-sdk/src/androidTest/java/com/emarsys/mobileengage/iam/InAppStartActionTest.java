@@ -77,7 +77,7 @@ public class InAppStartActionTest {
 
         startAction = new InAppStartAction(
                 requestManager,
-                config,
+                APPLICATION_CODE,
                 meIdStorage,
                 meIdSignatureStorage,
                 timestampProvider);
@@ -94,7 +94,7 @@ public class InAppStartActionTest {
     public void testConstructor_requestManagerMustNotBeNull() {
         new InAppStartAction(
                 null,
-                config,
+                APPLICATION_CODE,
                 meIdStorage,
                 meIdSignatureStorage,
                 timestampProvider);
@@ -114,7 +114,7 @@ public class InAppStartActionTest {
     public void testConstructor_meIdStorageMustNotBeNull() {
         new InAppStartAction(
                 requestManager,
-                config,
+                APPLICATION_CODE,
                 null,
                 meIdSignatureStorage,
                 timestampProvider);
@@ -124,7 +124,7 @@ public class InAppStartActionTest {
     public void testConstructor_meIdStorageSignatureMustNotBeNull() {
         new InAppStartAction(
                 requestManager,
-                config,
+                APPLICATION_CODE,
                 meIdStorage,
                 null,
                 timestampProvider);
@@ -134,7 +134,7 @@ public class InAppStartActionTest {
     public void testConstructor_timestampProviderMustNotBeNull() {
         new InAppStartAction(
                 requestManager,
-                config,
+                APPLICATION_CODE,
                 meIdStorage,
                 meIdSignatureStorage,
                 null);
