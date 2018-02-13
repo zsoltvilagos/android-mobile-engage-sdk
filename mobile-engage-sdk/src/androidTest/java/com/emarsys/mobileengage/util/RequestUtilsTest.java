@@ -101,7 +101,7 @@ public class RequestUtilsTest {
     @Test
     public void testCreateEventUrl_V3_shouldReturnTheCorrectEventUrl() {
         String url = RequestUtils.createEventUrl_V3("meId");
-        String expected = "https://me-deviceevent.eservice.emarsys.net/v3/devices/meId/events";
+        String expected = "https://mobile-events.eservice.emarsys.net/v3/devices/meId/events";
         assertEquals(expected, url);
     }
 

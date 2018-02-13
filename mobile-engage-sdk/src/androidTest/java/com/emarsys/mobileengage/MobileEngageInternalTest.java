@@ -51,7 +51,7 @@ public class MobileEngageInternalTest {
     private static String APPLICATION_ID = "user";
     private static String APPLICATION_SECRET = "pass";
     private static String ENDPOINT_BASE_V2 = "https://push.eservice.emarsys.net/api/mobileengage/v2/";
-    private static String ENDPOINT_BASE_V3 = "https://me-deviceevent.eservice.emarsys.net/v3/devices/";
+    private static String ENDPOINT_BASE_V3 = "https://mobile-events.eservice.emarsys.net/v3/devices/";
     private static String ENDPOINT_LOGIN = ENDPOINT_BASE_V2 + "users/login";
     private static String ENDPOINT_LOGOUT = ENDPOINT_BASE_V2 + "users/logout";
     private static String ENDPOINT_LAST_MOBILE_ACTIVITY = ENDPOINT_BASE_V2 + "events/ems_lastMobileActivity";
