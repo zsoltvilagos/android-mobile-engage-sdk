@@ -44,17 +44,17 @@ public class RequestUtils {
     }
 
     public static Map<String, String> createBaseHeaders_V3(
-            MobileEngageConfig config,
+            String applicationCode,
             MeIdStorage meIdStorage,
             MeIdSignatureStorage meIdSignatureStorage) {
-        Assert.notNull(config, "Config must not be null!");
+        Assert.notNull(applicationCode, "ApplicationCode must not be null!");
         Assert.notNull(meIdStorage, "MeIdStorage must not be null!");
         Assert.notNull(meIdSignatureStorage, "MeIdSignatureStorage must not be null!");
 
         Map<String, String> baseHeaders = new HashMap<>();
         baseHeaders.put("X-ME-ID", meIdStorage.get());
         baseHeaders.put("X-ME-ID-SIGNATURE", meIdSignatureStorage.get());
-        baseHeaders.put("X-ME-APPLICATIONCODE", config.getApplicationCode());
+        baseHeaders.put("X-ME-APPLICATIONCODE", applicationCode);
 
         return baseHeaders;
     }

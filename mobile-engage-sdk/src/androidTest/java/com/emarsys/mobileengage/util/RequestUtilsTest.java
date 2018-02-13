@@ -121,12 +121,12 @@ public class RequestUtilsTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testCreateBaseHeaders_V3_meIdStorageShouldNotBeNull() {
-        RequestUtils.createBaseHeaders_V3(realConfig, null, mock(MeIdSignatureStorage.class));
+        RequestUtils.createBaseHeaders_V3("1234-ABCD", null, mock(MeIdSignatureStorage.class));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testCreateBaseHeaders_V3_meIdSignatureStorageShouldNotBeNull() {
-        RequestUtils.createBaseHeaders_V3(realConfig, mock(MeIdStorage.class), null);
+        RequestUtils.createBaseHeaders_V3("1234-ABCD", mock(MeIdStorage.class), null);
     }
 
     @Test
@@ -144,7 +144,7 @@ public class RequestUtilsTest {
         expected.put("X-ME-APPLICATIONCODE", APPLICATION_CODE);
 
         Map<String, String> result = RequestUtils.createBaseHeaders_V3(
-                realConfig,
+                APPLICATION_CODE,
                 meIdStorage,
                 meIdSignatureStorage);
 

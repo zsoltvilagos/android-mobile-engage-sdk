@@ -188,7 +188,7 @@ public class InAppStartActionTest {
                 RequestMethod.POST,
                 payload,
                 RequestUtils.createBaseHeaders_V3(
-                        config,
+                        APPLICATION_CODE,
                         meIdStorage,
                         meIdSignatureStorage),
                 timestamp,

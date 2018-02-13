@@ -202,7 +202,10 @@ public class MobileEngageInternal {
         RequestModel model = new RequestModel.Builder()
                 .url(RequestUtils.createEventUrl_V3(meIdStorage.get()))
                 .payload(payload)
-                .headers(RequestUtils.createBaseHeaders_V3(config, meIdStorage, meIdSignatureStorage))
+                .headers(RequestUtils.createBaseHeaders_V3(
+                        config.getApplicationCode(),
+                        meIdStorage,
+                        meIdSignatureStorage))
                 .build();
 
         MobileEngageUtils.incrementIdlingResource();
