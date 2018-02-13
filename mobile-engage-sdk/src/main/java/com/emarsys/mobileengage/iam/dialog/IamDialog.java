@@ -93,8 +93,7 @@ public class IamDialog extends DialogFragment {
         if (actions != null && notShown) {
             for (OnDialogShownAction action : actions) {
                 String campaignId = args.getString(CAMPAIGN_ID);
-                long timestamp = System.currentTimeMillis();
-                action.execute(campaignId, timestamp);
+                action.execute(campaignId);
                 args.putBoolean("isShown", true);
             }
         }

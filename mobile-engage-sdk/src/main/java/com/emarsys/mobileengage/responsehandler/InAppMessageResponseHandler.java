@@ -115,7 +115,8 @@ public class InAppMessageResponseHandler extends AbstractResponseHandler {
     private void setupDialogWithActions(IamDialog iamDialog) {
         OnDialogShownAction saveDisplayedIamAction = new SaveDisplayedIamAction(
                 coreSdkHandler,
-                new DisplayedIamRepository(iamDialog.getActivity()));
+                new DisplayedIamRepository(iamDialog.getActivity()),
+                timestampProvider);
 
         OnDialogShownAction sendDisplayedIamAction = new SendDisplayedIamAction(
                 coreSdkHandler,

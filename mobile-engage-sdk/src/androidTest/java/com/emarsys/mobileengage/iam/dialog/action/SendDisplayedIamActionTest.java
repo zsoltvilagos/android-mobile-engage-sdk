@@ -146,14 +146,14 @@ public class SendDisplayedIamActionTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testExecute_campaignIdMustNotBeNull() {
-        action.execute(null, 0);
+        action.execute(null);
     }
 
     @Test
     public void testExecute_callsRequestManager() {
         ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
 
-        action.execute(CAMPAIGN_ID, TIMESTAMP);
+        action.execute(CAMPAIGN_ID);
         verify(requestManager, timeout(1000)).submit(captor.capture());
 
         RequestModel actual = captor.getValue();
@@ -177,7 +177,7 @@ public class SendDisplayedIamActionTest {
         ThreadSpy threadSpy = new ThreadSpy();
         doAnswer(threadSpy).when(requestManager).submit(any(RequestModel.class));
 
-        action.execute(CAMPAIGN_ID, TIMESTAMP);
+        action.execute(CAMPAIGN_ID);
 
         threadSpy.verifyCalledOnCoreSdkThread();
     }

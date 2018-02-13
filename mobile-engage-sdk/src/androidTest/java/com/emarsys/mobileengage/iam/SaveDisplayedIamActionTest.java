@@ -6,6 +6,7 @@ import android.support.test.filters.SdkSuppress;
 import com.emarsys.core.concurrency.CoreSdkHandlerProvider;
 import com.emarsys.core.database.repository.Repository;
 import com.emarsys.core.database.repository.SqlSpecification;
+import com.emarsys.core.timestamp.TimestampProvider;
 import com.emarsys.mobileengage.iam.dialog.action.SaveDisplayedIamAction;
 import com.emarsys.mobileengage.iam.model.displayediam.DisplayedIam;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
@@ -22,6 +23,7 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @SdkSuppress(minSdkVersion = KITKAT)
 public class SaveDisplayedIamActionTest {
@@ -34,6 +36,7 @@ public class SaveDisplayedIamActionTest {
     private Repository<DisplayedIam, SqlSpecification> repository;
     private ThreadSpy threadSpy;
     private Handler handler;
+    private TimestampProvider timestampProvider;
 
     @Rule
     public TestRule timeout = TimeoutUtils.getTimeoutRule();
@@ -44,9 +47,11 @@ public class SaveDisplayedIamActionTest {
         threadSpy = new ThreadSpy();
         repository = mock(Repository.class);
         handler = new CoreSdkHandlerProvider().provideHandler();
+        timestampProvider = mock(TimestampProvider.class);
+        when(timestampProvider.provideTimestamp()).thenReturn(TIMESTAMP);
 
         doAnswer(threadSpy).when(repository).add(IAM);
-        action = new SaveDisplayedIamAction(handler, repository);
+        action = new SaveDisplayedIamAction(handler, repository, timestampProvider);
     }
 
     @After
@@ -56,28 +61,33 @@ public class SaveDisplayedIamActionTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_handlerMustNotBeNull() {
-        new SaveDisplayedIamAction(null, repository);
+        new SaveDisplayedIamAction(null, repository, timestampProvider);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_repositoryMustNotBeNull() {
-        new SaveDisplayedIamAction(handler, null);
+        new SaveDisplayedIamAction(handler, null, timestampProvider);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructor_timestampProviderMustNotBeNull() {
+        new SaveDisplayedIamAction(handler, repository, null);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testExecute_campaignIdMustNotBeNull() {
-        action.execute(null, 0);
+        action.execute(null);
     }
 
     @Test
     public void testExecute_callsRepository() {
-        action.execute(ID, TIMESTAMP);
+        action.execute(ID);
         verify(repository, timeout(1000)).add(IAM);
     }
 
     @Test
     public void testExecute_callsRepository_onCoreSdkThread() throws InterruptedException {
-        action.execute(ID, TIMESTAMP);
+        action.execute(ID);
         threadSpy.verifyCalledOnCoreSdkThread();
     }
 

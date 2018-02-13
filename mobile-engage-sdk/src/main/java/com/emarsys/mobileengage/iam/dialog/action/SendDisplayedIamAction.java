@@ -43,7 +43,7 @@ public class SendDisplayedIamAction implements OnDialogShownAction {
     }
 
     @Override
-    public void execute(final String campaignId, final long timestamp) {
+    public void execute(final String campaignId) {
         Assert.notNull(campaignId, "CampaignId must not be null!");
         handler.post(new Runnable() {
             @Override

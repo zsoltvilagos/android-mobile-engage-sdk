@@ -19,7 +19,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
-import org.mockito.ArgumentCaptor;
 
 import java.util.Arrays;
 import java.util.List;
@@ -27,11 +26,7 @@ import java.util.concurrent.CountDownLatch;
 
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static junit.framework.Assert.assertNotNull;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -110,8 +105,6 @@ public class IamDialogTest {
 
     @Test
     public void testOnResume_callsActions_ifProvided() throws InterruptedException {
-        ArgumentCaptor<Long> timestampCaptor = ArgumentCaptor.forClass(Long.class);
-
         Bundle args = new Bundle();
         args.putString("campaign_id", "123456789");
         dialog.setArguments(args);
@@ -119,19 +112,11 @@ public class IamDialogTest {
         List<OnDialogShownAction> actions = createMockActions();
         dialog.setActions(actions);
 
-        long before = System.currentTimeMillis();
         displayDialog();
         latch.await();
-        long after = System.currentTimeMillis();
 
         for (OnDialogShownAction action : actions) {
-            verify(action).execute(eq("123456789"), timestampCaptor.capture());
-
-            long timestamp = timestampCaptor.getValue();
-            assertThat(timestamp, allOf(
-                    greaterThanOrEqualTo(before),
-                    lessThanOrEqualTo(after)
-            ));
+            verify(action).execute(eq("123456789"));
         }
     }
 
@@ -152,7 +137,7 @@ public class IamDialogTest {
         latch.await();
 
         for (OnDialogShownAction action : actions) {
-            verify(action, times(1)).execute(any(String.class), any(Long.class));
+            verify(action, times(1)).execute(any(String.class));
         }
     }
 
