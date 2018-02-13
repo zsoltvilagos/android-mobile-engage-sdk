@@ -124,7 +124,11 @@ public class RequestUtils {
 
     public static RequestModel createInternalCustomEvent(
             String eventName,
-            String applicationCode, MeIdStorage meIdStorage, MeIdSignatureStorage meIdSignatureStorage, TimestampProvider timestampProvider) {
+            Map<String, String> attributes,
+            String applicationCode,
+            MeIdStorage meIdStorage,
+            MeIdSignatureStorage meIdSignatureStorage,
+            TimestampProvider timestampProvider) {
         Assert.notNull(eventName, "EventName must not be null!");
         Assert.notNull(timestampProvider, "TimestampProvider must not be null!");
         Assert.notNull(meIdStorage, "MeIdStorage must not be null!");
@@ -135,6 +139,9 @@ public class RequestUtils {
         event.put("type", "internal");
         event.put("name", eventName);
         event.put("timestamp", TimestampUtils.formatTimestampWithUTC(timestampProvider.provideTimestamp()));
+        if (attributes != null && !attributes.isEmpty()) {
+            event.put("attributes", attributes);
+        }
 
         Map<String, Object> payload = new HashMap<>();
         payload.put("clicks", Collections.emptyList());

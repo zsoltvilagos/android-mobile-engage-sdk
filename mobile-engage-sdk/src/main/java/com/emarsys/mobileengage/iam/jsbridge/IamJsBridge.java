@@ -15,40 +15,68 @@ import android.webkit.WebView;
 import com.emarsys.core.activity.CurrentActivityWatchdog;
 import com.emarsys.core.database.repository.Repository;
 import com.emarsys.core.database.repository.SqlSpecification;
+import com.emarsys.core.request.RequestManager;
+import com.emarsys.core.timestamp.TimestampProvider;
 import com.emarsys.core.util.Assert;
 import com.emarsys.core.util.log.EMSLogger;
 import com.emarsys.mobileengage.iam.InAppMessageHandler;
 import com.emarsys.mobileengage.iam.dialog.IamDialog;
 import com.emarsys.mobileengage.iam.model.buttonclicked.ButtonClicked;
+import com.emarsys.mobileengage.storage.MeIdSignatureStorage;
+import com.emarsys.mobileengage.storage.MeIdStorage;
+import com.emarsys.mobileengage.util.RequestUtils;
 import com.emarsys.mobileengage.util.log.MobileEngageTopic;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RequiresApi(api = Build.VERSION_CODES.KITKAT)
 public class IamJsBridge {
 
     private InAppMessageHandlerProvider messageHandlerProvider;
+    private RequestManager requestManager;
     private WebView webView;
     private Handler uiHandler;
-    private Repository<ButtonClicked, SqlSpecification> repository;
+    private Repository<ButtonClicked, SqlSpecification> buttonClickedRepository;
     private String campaignId;
     private Handler coreSdkHandler;
+    private MeIdStorage meIdStorage;
+    private MeIdSignatureStorage meIdSignatureStorage;
+    private TimestampProvider timestampProvider;
+    private String applicationCode;
 
     public IamJsBridge(
             InAppMessageHandlerProvider messageHandlerProvider,
-            Repository<ButtonClicked, SqlSpecification> buttonClickedSqlSpecificationRepository,
+            RequestManager requestManager,
+            String applicationCode,
+            Repository<ButtonClicked, SqlSpecification> buttonClickedRepository,
             String campaignId,
-            Handler coreSdkHandler) {
+            Handler coreSdkHandler,
+            MeIdStorage meIdStorage,
+            MeIdSignatureStorage meIdSignatureStorage,
+            TimestampProvider timestampProvider) {
         Assert.notNull(messageHandlerProvider, "MessageHandlerProvider must not be null!");
-        Assert.notNull(buttonClickedSqlSpecificationRepository, "Repository must not be null!");
+        Assert.notNull(requestManager, "RequestManager must not be null!");
+        Assert.notNull(applicationCode, "ApplicationCode must not be null!");
+        Assert.notNull(buttonClickedRepository, "ButtonClickedRepository must not be null!");
         Assert.notNull(campaignId, "CampaignId must not be null!");
         Assert.notNull(coreSdkHandler, "CoreSdkHandler must not be null!");
+        Assert.notNull(meIdStorage, "MeIdStorage must not be null!");
+        Assert.notNull(meIdSignatureStorage, "MeIdSignatureStorage must not be null!");
+        Assert.notNull(timestampProvider, "TimestampProvider must not be null!");
         this.messageHandlerProvider = messageHandlerProvider;
+        this.requestManager = requestManager;
+        this.applicationCode = applicationCode;
         this.uiHandler = new Handler(Looper.getMainLooper());
-        this.repository = buttonClickedSqlSpecificationRepository;
+        this.buttonClickedRepository = buttonClickedRepository;
         this.campaignId = campaignId;
         this.coreSdkHandler = coreSdkHandler;
+        this.meIdStorage = meIdStorage;
+        this.meIdSignatureStorage = meIdSignatureStorage;
+        this.timestampProvider = timestampProvider;
     }
 
     public void setWebView(WebView webView) {
@@ -91,8 +119,20 @@ public class IamJsBridge {
         handleJsBridgeEvent(jsonString, "buttonId", coreSdkHandler, new JsBridgeEventAction() {
             @Override
             public void execute(String property, JSONObject json) {
-                repository.add(new ButtonClicked(campaignId, property, System.currentTimeMillis()));
-                //manager.submit(RUtils.internal);
+                buttonClickedRepository.add(new ButtonClicked(campaignId, property, System.currentTimeMillis()));
+
+                Map<String, String> attributes = new HashMap<>();
+                attributes.put("message_id", campaignId);
+                attributes.put("button_id", property);
+
+                requestManager.submit(RequestUtils.createInternalCustomEvent(
+                        "inapp:click",
+                        attributes,
+                        applicationCode,
+                        meIdStorage,
+                        meIdSignatureStorage,
+                        timestampProvider
+                ));
             }
         });
     }

@@ -8,6 +8,7 @@ import com.emarsys.mobileengage.responsehandler.AbstractResponseHandler;
 import com.emarsys.mobileengage.util.log.MobileEngageTopic;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.List;
 
 public class MobileEngageCoreCompletionHandler implements CoreCompletionHandler {
@@ -21,6 +22,10 @@ public class MobileEngageCoreCompletionHandler implements CoreCompletionHandler 
         this.weakStatusListener = new WeakReference<>(listener);
     }
 
+    public MobileEngageCoreCompletionHandler(MobileEngageStatusListener listener) {
+        this(new ArrayList<AbstractResponseHandler>(), listener);
+    }
+
     MobileEngageStatusListener getStatusListener() {
         return weakStatusListener.get();
     }
@@ -28,6 +33,10 @@ public class MobileEngageCoreCompletionHandler implements CoreCompletionHandler 
     void setStatusListener(MobileEngageStatusListener listener) {
         EMSLogger.log(MobileEngageTopic.MOBILE_ENGAGE, "Argument: %s", listener);
         this.weakStatusListener = new WeakReference<>(listener);
+    }
+
+    public void addResponseHandlers(List<AbstractResponseHandler> additionalResponseHandlers) {
+        this.responseHandlers.addAll(additionalResponseHandlers);
     }
 
     @Override

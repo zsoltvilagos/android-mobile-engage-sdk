@@ -4,7 +4,9 @@ import android.annotation.TargetApi;
 import android.os.Build;
 import android.os.Handler;
 
+import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.response.ResponseModel;
+import com.emarsys.core.timestamp.TimestampProvider;
 import com.emarsys.core.util.log.EMSLogger;
 import com.emarsys.mobileengage.iam.dialog.IamDialog;
 import com.emarsys.mobileengage.iam.dialog.IamDialogProvider;
@@ -15,6 +17,8 @@ import com.emarsys.mobileengage.iam.model.buttonclicked.ButtonClickedRepository;
 import com.emarsys.mobileengage.iam.model.displayediam.DisplayedIamRepository;
 import com.emarsys.mobileengage.iam.webview.DefaultMessageLoadedListener;
 import com.emarsys.mobileengage.iam.webview.IamWebViewProvider;
+import com.emarsys.mobileengage.storage.MeIdSignatureStorage;
+import com.emarsys.mobileengage.storage.MeIdStorage;
 import com.emarsys.mobileengage.util.log.MobileEngageTopic;
 
 import org.json.JSONException;
@@ -22,23 +26,38 @@ import org.json.JSONObject;
 
 public class InAppMessageResponseHandler extends AbstractResponseHandler {
 
+    private Handler coreSdkHandler;
     private IamWebViewProvider webViewProvider;
     private InAppMessageHandlerProvider messageHandlerProvider;
     private IamDialogProvider dialogProvider;
-    private Handler coreSdkHandler;
     private ButtonClickedRepository repository;
+    private RequestManager requestManager;
+    private String applicationCode;
+    private MeIdStorage meIdStorage;
+    private MeIdSignatureStorage meIdSignatureStorage;
+    private TimestampProvider timestampProvider;
 
     public InAppMessageResponseHandler(
             Handler coreSdkHandler,
             IamWebViewProvider webViewProvider,
             InAppMessageHandlerProvider messageHandlerProvider,
             IamDialogProvider dialogProvider,
-            ButtonClickedRepository repository) {
-        this.coreSdkHandler = coreSdkHandler;
+            ButtonClickedRepository repository,
+            RequestManager requestManager,
+            String applicationCode,
+            MeIdStorage meIdStorage,
+            MeIdSignatureStorage meIdSignatureStorage,
+            TimestampProvider timestampProvider) {
         this.webViewProvider = webViewProvider;
         this.messageHandlerProvider = messageHandlerProvider;
         this.dialogProvider = dialogProvider;
+        this.coreSdkHandler = coreSdkHandler;
         this.repository = repository;
+        this.requestManager = requestManager;
+        this.applicationCode = applicationCode;
+        this.meIdStorage = meIdStorage;
+        this.meIdSignatureStorage = meIdSignatureStorage;
+        this.timestampProvider = timestampProvider;
     }
 
     @Override
@@ -75,7 +94,17 @@ public class InAppMessageResponseHandler extends AbstractResponseHandler {
             iamDialog.setAction(action);
 
             DefaultMessageLoadedListener listener = new DefaultMessageLoadedListener(iamDialog);
-            webViewProvider.loadMessageAsync(html, new IamJsBridge(messageHandlerProvider, repository, id, coreSdkHandler), listener);
+            IamJsBridge jsBridge = new IamJsBridge(
+                    messageHandlerProvider,
+                    requestManager,
+                    applicationCode,
+                    repository,
+                    id,
+                    coreSdkHandler,
+                    meIdStorage,
+                    meIdSignatureStorage,
+                    timestampProvider);
+            webViewProvider.loadMessageAsync(html, jsBridge, listener);
         } catch (JSONException je) {
             EMSLogger.log(MobileEngageTopic.IN_APP_MESSAGE, "Exception occurred, exception: %s json: %s", je, responseBody);
         }

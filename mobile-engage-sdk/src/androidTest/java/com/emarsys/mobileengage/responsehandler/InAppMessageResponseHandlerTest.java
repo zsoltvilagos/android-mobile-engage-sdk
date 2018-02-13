@@ -4,8 +4,10 @@ import android.os.Build;
 import android.os.Handler;
 import android.support.test.filters.SdkSuppress;
 
+import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.request.model.RequestModel;
 import com.emarsys.core.response.ResponseModel;
+import com.emarsys.core.timestamp.TimestampProvider;
 import com.emarsys.mobileengage.iam.dialog.IamDialog;
 import com.emarsys.mobileengage.iam.dialog.IamDialogProvider;
 import com.emarsys.mobileengage.iam.dialog.OnDialogShownAction;
@@ -14,6 +16,8 @@ import com.emarsys.mobileengage.iam.jsbridge.InAppMessageHandlerProvider;
 import com.emarsys.mobileengage.iam.model.buttonclicked.ButtonClickedRepository;
 import com.emarsys.mobileengage.iam.webview.DefaultMessageLoadedListener;
 import com.emarsys.mobileengage.iam.webview.IamWebViewProvider;
+import com.emarsys.mobileengage.storage.MeIdSignatureStorage;
+import com.emarsys.mobileengage.storage.MeIdStorage;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
 import org.junit.Before;
@@ -37,9 +41,12 @@ public class InAppMessageResponseHandlerTest {
         mock(Handler.class);
     }
 
+    private static final String APPLICATION_CODE = "applicationcode";
+
     private InAppMessageResponseHandler handler;
     private IamWebViewProvider webViewProvider;
     private IamDialog dialog;
+    private RequestManager requestManager;
 
     @Rule
     public TestRule timeout = TimeoutUtils.getTimeoutRule();
@@ -47,16 +54,24 @@ public class InAppMessageResponseHandlerTest {
     @Before
     public void init() {
         webViewProvider = mock(IamWebViewProvider.class);
+
         dialog = mock(IamDialog.class);
         IamDialogProvider dialogProvider = mock(IamDialogProvider.class);
         when(dialogProvider.provideDialog(any(String.class))).thenReturn(dialog);
+
+        requestManager = mock(RequestManager.class);
 
         handler = new InAppMessageResponseHandler(
                 mock(Handler.class),
                 webViewProvider,
                 mock(InAppMessageHandlerProvider.class),
                 dialogProvider,
-                mock(ButtonClickedRepository.class));
+                mock(ButtonClickedRepository.class),
+                requestManager,
+                APPLICATION_CODE,
+                mock(MeIdStorage.class),
+                mock(MeIdSignatureStorage.class),
+                mock(TimestampProvider.class));
     }
 
     @Test

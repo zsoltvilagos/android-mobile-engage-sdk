@@ -39,7 +39,13 @@ public class InAppStartAction implements ApplicationStartAction {
     @Override
     public void execute() {
         if (meIdStorage.get() != null && meIdSignatureStorage.get() != null) {
-            RequestModel model = RequestUtils.createInternalCustomEvent("inapp:start", applicationCode, meIdStorage, meIdSignatureStorage, timestampProvider);
+            RequestModel model = RequestUtils.createInternalCustomEvent(
+                    "inapp:start",
+                    null,
+                    applicationCode,
+                    meIdStorage,
+                    meIdSignatureStorage,
+                    timestampProvider);
 
             MobileEngageUtils.incrementIdlingResource();
             manager.submit(model);

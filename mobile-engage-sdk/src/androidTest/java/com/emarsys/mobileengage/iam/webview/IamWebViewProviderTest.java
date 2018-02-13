@@ -8,6 +8,8 @@ import android.support.test.filters.SdkSuppress;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 
+import com.emarsys.core.request.RequestManager;
+import com.emarsys.core.timestamp.TimestampProvider;
 import com.emarsys.mobileengage.MobileEngage;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.fake.FakeMessageLoadedListener;
@@ -15,6 +17,8 @@ import com.emarsys.mobileengage.iam.dialog.IamDialog;
 import com.emarsys.mobileengage.iam.jsbridge.IamJsBridge;
 import com.emarsys.mobileengage.iam.jsbridge.InAppMessageHandlerProvider;
 import com.emarsys.mobileengage.iam.model.buttonclicked.ButtonClickedRepository;
+import com.emarsys.mobileengage.storage.MeIdSignatureStorage;
+import com.emarsys.mobileengage.storage.MeIdStorage;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
 import org.junit.Before;
@@ -31,8 +35,17 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 class TestJSInterface extends IamJsBridge {
-    public TestJSInterface(InAppMessageHandlerProvider inAppMessageHandlerProvider, ButtonClickedRepository repository, String campaignId, Handler coreSdkHandler) {
-        super(inAppMessageHandlerProvider, repository, campaignId, coreSdkHandler);
+    public TestJSInterface() {
+        super(
+                mock(InAppMessageHandlerProvider.class),
+                mock(RequestManager.class),
+                "appcode",
+                mock(ButtonClickedRepository.class),
+                "123",
+                mock(Handler.class),
+                mock(MeIdStorage.class),
+                mock(MeIdSignatureStorage.class),
+                mock(TimestampProvider.class));
     }
 
     @JavascriptInterface
@@ -81,7 +94,7 @@ public class IamWebViewProviderTest {
 
         handler = new Handler(Looper.getMainLooper());
         latch = new CountDownLatch(1);
-        dummyJsBridge = new IamJsBridge(mock(InAppMessageHandlerProvider.class), mock(ButtonClickedRepository.class), "123", mock(Handler.class));
+        dummyJsBridge = new TestJSInterface();
     }
 
     @Test(expected = IllegalArgumentException.class)

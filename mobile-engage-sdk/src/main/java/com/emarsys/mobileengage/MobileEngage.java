@@ -96,6 +96,18 @@ public class MobileEngage {
         Application application = config.getApplication();
         CurrentActivityWatchdog.registerApplication(application);
 
+        MeIdStorage meIdStorage = new MeIdStorage(application);
+        MeIdSignatureStorage meIdSignatureStorage = new MeIdSignatureStorage(application);
+        TimestampProvider timestampProvider = new TimestampProvider();
+
+        completionHandler = new MobileEngageCoreCompletionHandler(config.getStatusListener());
+
+        RequestManager requestManager = new RequestManager(
+                coreSdkHandler,
+                new ConnectionWatchDog(application, coreSdkHandler),
+                createRequestModelRepository(application),
+                completionHandler);
+
         List<AbstractResponseHandler> responseHandlers = new ArrayList<>();
         if (MobileEngageExperimental.isFeatureEnabled(MobileEngageFeature.IN_APP_MESSAGING)) {
             responseHandlers.add(new MeIdResponseHandler(
@@ -106,23 +118,19 @@ public class MobileEngage {
                     new IamWebViewProvider(),
                     new InAppMessageHandlerProvider(),
                     new IamDialogProvider(),
-                    new ButtonClickedRepository(application)));
+                    new ButtonClickedRepository(application),
+                    requestManager,
+                    config.getApplicationCode(),
+                    meIdStorage,
+                    meIdSignatureStorage,
+                    timestampProvider));
             responseHandlers.add(new InAppCleanUpResponseHandler(
                     new DisplayedIamRepository(application),
                     new ButtonClickedRepository(application)
             ));
         }
 
-        completionHandler = new MobileEngageCoreCompletionHandler(responseHandlers, config.getStatusListener());
-
-        RequestManager requestManager = new RequestManager(
-                coreSdkHandler,
-                new ConnectionWatchDog(application, coreSdkHandler),
-                createRequestModelRepository(application),
-                completionHandler);
-
-        MeIdStorage meIdStorage = new MeIdStorage(application);
-        MeIdSignatureStorage meIdSignatureStorage = new MeIdSignatureStorage(application);
+        completionHandler.addResponseHandlers(responseHandlers);
 
         if (MobileEngageExperimental.isFeatureEnabled(MobileEngageFeature.IN_APP_MESSAGING)) {
             ApplicationStartAction[] applicationStartActions = new ApplicationStartAction[]{
@@ -131,7 +139,7 @@ public class MobileEngage {
                             config.getApplicationCode(),
                             meIdStorage,
                             meIdSignatureStorage,
-                            new TimestampProvider()
+                            timestampProvider
                     )
             };
             application.registerActivityLifecycleCallbacks(new ApplicationStartWatchdog(applicationStartActions));

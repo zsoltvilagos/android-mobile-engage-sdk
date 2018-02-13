@@ -340,34 +340,14 @@ public class RequestUtilsTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testCreateInternalCustomEvent_nameShouldNotBeNull() {
+    public void testCreateInternalCustomEvent_eventNameShouldNotBeNull() {
         RequestUtils.createInternalCustomEvent(
                 null,
-                APPLICATION_CODE, mock(MeIdStorage.class), mock(MeIdSignatureStorage.class), mock(TimestampProvider.class)
-        );
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testCreateInternalCustomEvent_timestampProviderShouldNotBeNull() {
-        RequestUtils.createInternalCustomEvent(
-                "eventname",
-                APPLICATION_CODE, mock(MeIdStorage.class), mock(MeIdSignatureStorage.class), null
-        );
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testCreateInternalCustomEvent_meIdStorageShouldNotBeNull() {
-        RequestUtils.createInternalCustomEvent(
-                "eventname",
-                APPLICATION_CODE, null, mock(MeIdSignatureStorage.class), mock(TimestampProvider.class)
-        );
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testCreateInternalCustomEvent_meIdSignatureStorageShouldNotBeNull() {
-        RequestUtils.createInternalCustomEvent(
-                "eventname",
-                APPLICATION_CODE, mock(MeIdStorage.class), null, mock(TimestampProvider.class)
+                new HashMap<String, String>(),
+                APPLICATION_CODE,
+                mock(MeIdStorage.class),
+                mock(MeIdSignatureStorage.class),
+                mock(TimestampProvider.class)
         );
     }
 
@@ -375,12 +355,52 @@ public class RequestUtilsTest {
     public void testCreateInternalCustomEvent_applicationCodeShouldNotBeNull() {
         RequestUtils.createInternalCustomEvent(
                 "eventname",
-                null, mock(MeIdStorage.class), mock(MeIdSignatureStorage.class), mock(TimestampProvider.class)
+                new HashMap<String, String>(),
+                null,
+                mock(MeIdStorage.class),
+                mock(MeIdSignatureStorage.class),
+                mock(TimestampProvider.class)
+        );
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testCreateInternalCustomEvent_meIdStorageShouldNotBeNull() {
+        RequestUtils.createInternalCustomEvent(
+                "eventname",
+                new HashMap<String, String>(),
+                APPLICATION_CODE,
+                null,
+                mock(MeIdSignatureStorage.class),
+                mock(TimestampProvider.class)
+        );
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testCreateInternalCustomEvent_meIdSignatureStorageShouldNotBeNull() {
+        RequestUtils.createInternalCustomEvent(
+                "eventname",
+                new HashMap<String, String>(),
+                APPLICATION_CODE,
+                mock(MeIdStorage.class),
+                null,
+                mock(TimestampProvider.class)
+        );
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testCreateInternalCustomEvent_timestampProviderShouldNotBeNull() {
+        RequestUtils.createInternalCustomEvent(
+                "eventname",
+                new HashMap<String, String>(),
+                APPLICATION_CODE,
+                mock(MeIdStorage.class),
+                mock(MeIdSignatureStorage.class),
+                null
         );
     }
 
     @Test
-    public void testCreateInternalCustomEvent() {
+    public void testCreateInternalCustomEvent_withoutAttributes() {
         long timestamp = 90_000;
         TimestampProvider timestampProvider = mock(TimestampProvider.class);
         when(timestampProvider.provideTimestamp()).thenReturn(timestamp);
@@ -402,7 +422,62 @@ public class RequestUtilsTest {
         payload.put("viewed_messages", new ArrayList<>());
         payload.put("events", Collections.singletonList(event));
 
-        RequestModel actual = RequestUtils.createInternalCustomEvent(eventName, APPLICATION_CODE, meIdStorage, meIdSignatureStorage, timestampProvider);
+        RequestModel actual = RequestUtils.createInternalCustomEvent(
+                eventName,
+                null,
+                APPLICATION_CODE,
+                meIdStorage,
+                meIdSignatureStorage,
+                timestampProvider);
+
+        RequestModel expected = new RequestModel(
+                RequestUtils.createEventUrl_V3(meId),
+                RequestMethod.POST,
+                payload,
+                RequestUtils.createBaseHeaders_V3(APPLICATION_CODE, meIdStorage, meIdSignatureStorage),
+                timestamp,
+                Long.MAX_VALUE,
+                actual.getId());
+
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testCreateInternalCustomEvent_withAttributes() {
+        long timestamp = 90_000;
+        TimestampProvider timestampProvider = mock(TimestampProvider.class);
+        when(timestampProvider.provideTimestamp()).thenReturn(timestamp);
+        String eventName = "name";
+        String meId = "12345";
+        String meIdSignature = "12345";
+        MeIdStorage meIdStorage = mock(MeIdStorage.class);
+        when(meIdStorage.get()).thenReturn(meId);
+        MeIdSignatureStorage meIdSignatureStorage = mock(MeIdSignatureStorage.class);
+        when(meIdSignatureStorage.get()).thenReturn(meIdSignature);
+
+        Map<String, String> attributes = new HashMap<>();
+        attributes.put("key1", "value1");
+        attributes.put("key2", "value2");
+        attributes.put("key3", "value3");
+
+        Map<String, Object> event = new HashMap<>();
+        event.put("type", "internal");
+        event.put("name", eventName);
+        event.put("timestamp", TimestampUtils.formatTimestampWithUTC(timestamp));
+        event.put("attributes", attributes);
+
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("clicks", new ArrayList<>());
+        payload.put("viewed_messages", new ArrayList<>());
+        payload.put("events", Collections.singletonList(event));
+
+        RequestModel actual = RequestUtils.createInternalCustomEvent(
+                eventName,
+                attributes,
+                APPLICATION_CODE,
+                meIdStorage,
+                meIdSignatureStorage,
+                timestampProvider);
 
         RequestModel expected = new RequestModel(
                 RequestUtils.createEventUrl_V3(meId),
