@@ -5,6 +5,8 @@ import android.content.Context;
 import android.os.Build;
 import android.os.Handler;
 
+import com.emarsys.core.database.repository.Repository;
+import com.emarsys.core.database.repository.SqlSpecification;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.response.ResponseModel;
 import com.emarsys.core.timestamp.TimestampProvider;
@@ -17,7 +19,7 @@ import com.emarsys.mobileengage.iam.dialog.action.SaveDisplayedIamAction;
 import com.emarsys.mobileengage.iam.dialog.action.SendDisplayedIamAction;
 import com.emarsys.mobileengage.iam.jsbridge.IamJsBridge;
 import com.emarsys.mobileengage.iam.jsbridge.InAppMessageHandlerProvider;
-import com.emarsys.mobileengage.iam.model.buttonclicked.ButtonClickedRepository;
+import com.emarsys.mobileengage.iam.model.buttonclicked.ButtonClicked;
 import com.emarsys.mobileengage.iam.model.displayediam.DisplayedIamRepository;
 import com.emarsys.mobileengage.iam.webview.DefaultMessageLoadedListener;
 import com.emarsys.mobileengage.iam.webview.IamWebViewProvider;
@@ -37,7 +39,7 @@ public class InAppMessageResponseHandler extends AbstractResponseHandler {
     private IamWebViewProvider webViewProvider;
     private InAppMessageHandlerProvider messageHandlerProvider;
     private IamDialogProvider dialogProvider;
-    private ButtonClickedRepository repository;
+    Repository<ButtonClicked, SqlSpecification> buttonClickedRepository;
     private RequestManager requestManager;
     private String applicationCode;
     private MeIdStorage meIdStorage;
@@ -50,7 +52,7 @@ public class InAppMessageResponseHandler extends AbstractResponseHandler {
             IamWebViewProvider webViewProvider,
             InAppMessageHandlerProvider messageHandlerProvider,
             IamDialogProvider dialogProvider,
-            ButtonClickedRepository repository,
+            Repository<ButtonClicked, SqlSpecification> buttonClickedRepository,
             RequestManager requestManager,
             String applicationCode,
             MeIdStorage meIdStorage,
@@ -61,7 +63,7 @@ public class InAppMessageResponseHandler extends AbstractResponseHandler {
         Assert.notNull(messageHandlerProvider, "MessageHandlerProvider must not be null!");
         Assert.notNull(dialogProvider, "DialogProvider must not be null!");
         Assert.notNull(coreSdkHandler, "CoreSdkHandler must not be null!");
-        Assert.notNull(repository, "ButtonClickRepository must not be null!");
+        Assert.notNull(buttonClickedRepository, "ButtonClickRepository must not be null!");
         Assert.notNull(requestManager, "RequestManager must not be null!");
         Assert.notNull(applicationCode, "ApplicationCode must not be null!");
         Assert.notNull(meIdStorage, "MeIdStorage must not be null!");
@@ -72,7 +74,7 @@ public class InAppMessageResponseHandler extends AbstractResponseHandler {
         this.messageHandlerProvider = messageHandlerProvider;
         this.dialogProvider = dialogProvider;
         this.coreSdkHandler = coreSdkHandler;
-        this.repository = repository;
+        this.buttonClickedRepository = buttonClickedRepository;
         this.requestManager = requestManager;
         this.applicationCode = applicationCode;
         this.meIdStorage = meIdStorage;
@@ -115,7 +117,7 @@ public class InAppMessageResponseHandler extends AbstractResponseHandler {
                     messageHandlerProvider,
                     requestManager,
                     applicationCode,
-                    repository,
+                    buttonClickedRepository,
                     id,
                     coreSdkHandler,
                     meIdStorage,
