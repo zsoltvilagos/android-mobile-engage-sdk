@@ -1,12 +1,14 @@
 package com.emarsys.mobileengage.responsehandler;
 
 import android.annotation.TargetApi;
+import android.content.Context;
 import android.os.Build;
 import android.os.Handler;
 
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.response.ResponseModel;
 import com.emarsys.core.timestamp.TimestampProvider;
+import com.emarsys.core.util.Assert;
 import com.emarsys.core.util.log.EMSLogger;
 import com.emarsys.mobileengage.iam.dialog.IamDialog;
 import com.emarsys.mobileengage.iam.dialog.IamDialogProvider;
@@ -30,6 +32,7 @@ import java.util.Arrays;
 
 public class InAppMessageResponseHandler extends AbstractResponseHandler {
 
+    Context context;
     private Handler coreSdkHandler;
     private IamWebViewProvider webViewProvider;
     private InAppMessageHandlerProvider messageHandlerProvider;
@@ -42,6 +45,7 @@ public class InAppMessageResponseHandler extends AbstractResponseHandler {
     private TimestampProvider timestampProvider;
 
     public InAppMessageResponseHandler(
+            Context context,
             Handler coreSdkHandler,
             IamWebViewProvider webViewProvider,
             InAppMessageHandlerProvider messageHandlerProvider,
@@ -52,6 +56,18 @@ public class InAppMessageResponseHandler extends AbstractResponseHandler {
             MeIdStorage meIdStorage,
             MeIdSignatureStorage meIdSignatureStorage,
             TimestampProvider timestampProvider) {
+        Assert.notNull(context, "Context must not be null!");
+        Assert.notNull(webViewProvider, "WebViewProvider must not be null!");
+        Assert.notNull(messageHandlerProvider, "MessageHandlerProvider must not be null!");
+        Assert.notNull(dialogProvider, "DialogProvider must not be null!");
+        Assert.notNull(coreSdkHandler, "CoreSdkHandler must not be null!");
+        Assert.notNull(repository, "ButtonClickRepository must not be null!");
+        Assert.notNull(requestManager, "RequestManager must not be null!");
+        Assert.notNull(applicationCode, "ApplicationCode must not be null!");
+        Assert.notNull(meIdStorage, "MeIdStorage must not be null!");
+        Assert.notNull(meIdSignatureStorage, "MeIdSignatureStorage must not be null!");
+        Assert.notNull(timestampProvider, "TimestampProvider must not be null!");
+        this.context = context;
         this.webViewProvider = webViewProvider;
         this.messageHandlerProvider = messageHandlerProvider;
         this.dialogProvider = dialogProvider;
@@ -115,7 +131,7 @@ public class InAppMessageResponseHandler extends AbstractResponseHandler {
     private void setupDialogWithActions(IamDialog iamDialog) {
         OnDialogShownAction saveDisplayedIamAction = new SaveDisplayedIamAction(
                 coreSdkHandler,
-                new DisplayedIamRepository(iamDialog.getActivity()),
+                new DisplayedIamRepository(context),
                 timestampProvider);
 
         OnDialogShownAction sendDisplayedIamAction = new SendDisplayedIamAction(
