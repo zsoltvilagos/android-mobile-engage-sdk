@@ -175,7 +175,7 @@ public class InAppStartActionTest {
     private RequestModel createInternalEvent(long timestamp, String id) {
         Map<String, Object> event = new HashMap<>();
         event.put("type", "internal");
-        event.put("name", "inapp:start");
+        event.put("name", "app:start");
         event.put("timestamp", TimestampUtils.formatTimestampWithUTC(TIMESTAMP));
 
         Map<String, Object> payload = new HashMap<>();

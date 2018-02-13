@@ -40,7 +40,7 @@ public class InAppStartAction implements ApplicationStartAction {
     public void execute() {
         if (meIdStorage.get() != null && meIdSignatureStorage.get() != null) {
             RequestModel model = RequestUtils.createInternalCustomEvent(
-                    "inapp:start",
+                    "app:start",
                     null,
                     applicationCode,
                     meIdStorage,
