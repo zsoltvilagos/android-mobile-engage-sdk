@@ -35,14 +35,18 @@ public class IamJsBridge {
     private String campaignId;
     private Handler coreSdkHandler;
 
-    public IamJsBridge(InAppMessageHandlerProvider messageHandlerProvider, Repository<ButtonClicked, SqlSpecification> repository, String campaignId, Handler coreSdkHandler) {
+    public IamJsBridge(
+            InAppMessageHandlerProvider messageHandlerProvider,
+            Repository<ButtonClicked, SqlSpecification> buttonClickedSqlSpecificationRepository,
+            String campaignId,
+            Handler coreSdkHandler) {
         Assert.notNull(messageHandlerProvider, "MessageHandlerProvider must not be null!");
-        Assert.notNull(repository, "Repository must not be null!");
+        Assert.notNull(buttonClickedSqlSpecificationRepository, "Repository must not be null!");
         Assert.notNull(campaignId, "CampaignId must not be null!");
         Assert.notNull(coreSdkHandler, "CoreSdkHandler must not be null!");
         this.messageHandlerProvider = messageHandlerProvider;
         this.uiHandler = new Handler(Looper.getMainLooper());
-        this.repository = repository;
+        this.repository = buttonClickedSqlSpecificationRepository;
         this.campaignId = campaignId;
         this.coreSdkHandler = coreSdkHandler;
     }
@@ -88,6 +92,7 @@ public class IamJsBridge {
             @Override
             public void execute(String property, JSONObject json) {
                 repository.add(new ButtonClicked(campaignId, property, System.currentTimeMillis()));
+                //manager.submit(RUtils.internal);
             }
         });
     }
