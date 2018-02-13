@@ -1,8 +1,12 @@
 package com.emarsys.mobileengage.util;
 
 import com.emarsys.core.DeviceInfo;
+import com.emarsys.core.request.model.RequestMethod;
+import com.emarsys.core.request.model.RequestModel;
+import com.emarsys.core.timestamp.TimestampProvider;
 import com.emarsys.core.util.Assert;
 import com.emarsys.core.util.HeaderUtils;
+import com.emarsys.core.util.TimestampUtils;
 import com.emarsys.mobileengage.BuildConfig;
 import com.emarsys.mobileengage.MobileEngageInternal;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
@@ -116,6 +120,35 @@ public class RequestUtils {
         compositePayload.put("application_version", deviceInfo.getApplicationVersion());
         compositePayload.put("ems_sdk", MobileEngageInternal.MOBILEENGAGE_SDK_VERSION);
         return compositePayload;
+    }
+
+    public static RequestModel createInternalCustomEvent(
+            String eventName,
+            String applicationCode, MeIdStorage meIdStorage, MeIdSignatureStorage meIdSignatureStorage, TimestampProvider timestampProvider) {
+        Assert.notNull(eventName, "EventName must not be null!");
+        Assert.notNull(timestampProvider, "TimestampProvider must not be null!");
+        Assert.notNull(meIdStorage, "MeIdStorage must not be null!");
+        Assert.notNull(meIdSignatureStorage, "MeIdSignatureStorage must not be null!");
+        Assert.notNull(applicationCode, "ApplicationCode must not be null!");
+
+        Map<String, Object> event = new HashMap<>();
+        event.put("type", "internal");
+        event.put("name", eventName);
+        event.put("timestamp", TimestampUtils.formatTimestampWithUTC(timestampProvider.provideTimestamp()));
+
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("clicks", Collections.emptyList());
+        payload.put("viewed_messages", Collections.emptyList());
+        payload.put("events", Collections.singletonList(event));
+
+        return new RequestModel(
+                RequestUtils.createEventUrl_V3(meIdStorage.get()),
+                RequestMethod.POST,
+                payload,
+                RequestUtils.createBaseHeaders_V3(applicationCode, meIdStorage, meIdSignatureStorage),
+                timestampProvider.provideTimestamp(),
+                Long.MAX_VALUE,
+                RequestModel.nextId());
     }
 
 }
