@@ -1,7 +1,9 @@
 package com.emarsys.mobileengage.responsehandler;
 
+import android.content.Context;
 import android.os.Build;
 import android.os.Handler;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SdkSuppress;
 
 import com.emarsys.core.request.RequestManager;
@@ -53,12 +55,15 @@ public class InAppMessageResponseHandlerTest {
     private IamWebViewProvider webViewProvider;
     private IamDialog dialog;
     private RequestManager requestManager;
+    private Context context;
 
     @Rule
     public TestRule timeout = TimeoutUtils.getTimeoutRule();
 
     @Before
     public void init() {
+        context = InstrumentationRegistry.getTargetContext().getApplicationContext();
+
         webViewProvider = mock(IamWebViewProvider.class);
 
         dialog = mock(IamDialog.class);
@@ -68,6 +73,7 @@ public class InAppMessageResponseHandlerTest {
         requestManager = mock(RequestManager.class);
 
         handler = new InAppMessageResponseHandler(
+                context,
                 mock(Handler.class),
                 webViewProvider,
                 mock(InAppMessageHandlerProvider.class),
@@ -78,6 +84,182 @@ public class InAppMessageResponseHandlerTest {
                 mock(MeIdStorage.class),
                 mock(MeIdSignatureStorage.class),
                 mock(TimestampProvider.class));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructor_context_shouldNotBeNull() {
+        new InAppMessageResponseHandler(
+                null,
+                mock(Handler.class),
+                mock(IamWebViewProvider.class),
+                mock(InAppMessageHandlerProvider.class),
+                mock(IamDialogProvider.class),
+                mock(ButtonClickedRepository.class),
+                mock(RequestManager.class),
+                APPLICATION_CODE,
+                mock(MeIdStorage.class),
+                mock(MeIdSignatureStorage.class),
+                mock(TimestampProvider.class));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructor_coreSdkHandler_shouldNotBeNull() {
+        new InAppMessageResponseHandler(
+                context,
+                null,
+                mock(IamWebViewProvider.class),
+                mock(InAppMessageHandlerProvider.class),
+                mock(IamDialogProvider.class),
+                mock(ButtonClickedRepository.class),
+                mock(RequestManager.class),
+                APPLICATION_CODE,
+                mock(MeIdStorage.class),
+                mock(MeIdSignatureStorage.class),
+                mock(TimestampProvider.class));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructor_webViewProvider_shouldNotBeNull() {
+        new InAppMessageResponseHandler(
+                context,
+                mock(Handler.class),
+                null,
+                mock(InAppMessageHandlerProvider.class),
+                mock(IamDialogProvider.class),
+                mock(ButtonClickedRepository.class),
+                mock(RequestManager.class),
+                APPLICATION_CODE,
+                mock(MeIdStorage.class),
+                mock(MeIdSignatureStorage.class),
+                mock(TimestampProvider.class));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructor_messageHandlerProvider_shouldNotBeNull() {
+        new InAppMessageResponseHandler(
+                context,
+                mock(Handler.class),
+                mock(IamWebViewProvider.class),
+                null,
+                mock(IamDialogProvider.class),
+                mock(ButtonClickedRepository.class),
+                mock(RequestManager.class),
+                APPLICATION_CODE,
+                mock(MeIdStorage.class),
+                mock(MeIdSignatureStorage.class),
+                mock(TimestampProvider.class));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructor_dialogProvider_shouldNotBeNull() {
+        new InAppMessageResponseHandler(
+                context,
+                mock(Handler.class),
+                mock(IamWebViewProvider.class),
+                mock(InAppMessageHandlerProvider.class),
+                null,
+                mock(ButtonClickedRepository.class),
+                mock(RequestManager.class),
+                APPLICATION_CODE,
+                mock(MeIdStorage.class),
+                mock(MeIdSignatureStorage.class),
+                mock(TimestampProvider.class));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructor_buttonClickedRepository_shouldNotBeNull() {
+        new InAppMessageResponseHandler(
+                context,
+                mock(Handler.class),
+                mock(IamWebViewProvider.class),
+                mock(InAppMessageHandlerProvider.class),
+                mock(IamDialogProvider.class),
+                null,
+                mock(RequestManager.class),
+                APPLICATION_CODE,
+                mock(MeIdStorage.class),
+                mock(MeIdSignatureStorage.class),
+                mock(TimestampProvider.class));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructor_requestManager_shouldNotBeNull() {
+        new InAppMessageResponseHandler(
+                context,
+                mock(Handler.class),
+                mock(IamWebViewProvider.class),
+                mock(InAppMessageHandlerProvider.class),
+                mock(IamDialogProvider.class),
+                mock(ButtonClickedRepository.class),
+                null,
+                APPLICATION_CODE,
+                mock(MeIdStorage.class),
+                mock(MeIdSignatureStorage.class),
+                mock(TimestampProvider.class));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructor_applicationCode_shouldNotBeNull() {
+        new InAppMessageResponseHandler(
+                context,
+                mock(Handler.class),
+                mock(IamWebViewProvider.class),
+                mock(InAppMessageHandlerProvider.class),
+                mock(IamDialogProvider.class),
+                mock(ButtonClickedRepository.class),
+                mock(RequestManager.class),
+                null,
+                mock(MeIdStorage.class),
+                mock(MeIdSignatureStorage.class),
+                mock(TimestampProvider.class));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructor_meIdStorage_shouldNotBeNull() {
+        new InAppMessageResponseHandler(
+                context,
+                mock(Handler.class),
+                mock(IamWebViewProvider.class),
+                mock(InAppMessageHandlerProvider.class),
+                mock(IamDialogProvider.class),
+                mock(ButtonClickedRepository.class),
+                mock(RequestManager.class),
+                APPLICATION_CODE,
+                null,
+                mock(MeIdSignatureStorage.class),
+                mock(TimestampProvider.class));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructor_meIdSignatureStorage_shouldNotBeNull() {
+        new InAppMessageResponseHandler(
+                context,
+                mock(Handler.class),
+                mock(IamWebViewProvider.class),
+                mock(InAppMessageHandlerProvider.class),
+                mock(IamDialogProvider.class),
+                mock(ButtonClickedRepository.class),
+                mock(RequestManager.class),
+                APPLICATION_CODE,
+                mock(MeIdStorage.class),
+                null,
+                mock(TimestampProvider.class));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructor_timestampProvider_shouldNotBeNull() {
+        new InAppMessageResponseHandler(
+                context,
+                mock(Handler.class),
+                mock(IamWebViewProvider.class),
+                mock(InAppMessageHandlerProvider.class),
+                mock(IamDialogProvider.class),
+                mock(ButtonClickedRepository.class),
+                mock(RequestManager.class),
+                APPLICATION_CODE,
+                mock(MeIdStorage.class),
+                mock(MeIdSignatureStorage.class),
+                null);
     }
 
     @Test
