@@ -2,9 +2,9 @@ package com.emarsys.mobileengage;
 
 import android.app.Application;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.test.InstrumentationRegistry;
-
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.experimental.MobileEngageFeature;
 import com.emarsys.mobileengage.fake.FakeStatusListener;
@@ -16,7 +16,6 @@ import com.emarsys.mobileengage.testUtil.ConnectionTestUtils;
 import com.emarsys.mobileengage.testUtil.DatabaseTestUtils;
 import com.emarsys.mobileengage.testUtil.ExperimentalTestUtils;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
-
 import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
@@ -169,6 +168,14 @@ public class MobileEngageIntegrationTest {
         eventuallyAssertSuccess(MobileEngage.Inbox.trackMessageOpen(notification));
     }
 
+    @Test
+    public void testDeepLinkOpen_intent() throws Exception {
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://demo-mobileengage.emarsys.net/something?fancy_url=1&ems_dl=1_2_3_4_5_6"));
+
+        MobileEngage.trackDeepLink(intent);
+        eventuallyAssertSuccess();
+    }
+
     private void doAppLogin() throws InterruptedException {
         MobileEngage.appLogin(3, "test@test.com");
         latch.await();
@@ -180,8 +187,13 @@ public class MobileEngageIntegrationTest {
 
     private void eventuallyAssertSuccess(String id) throws Exception {
         latch.await();
-        assertNull(listener.errorCause);
+        eventuallyAssertSuccess();
         assertEquals(id, listener.successId);
+    }
+
+    private void eventuallyAssertSuccess() throws Exception {
+        latch.await();
+        assertNull(listener.errorCause);
         assertEquals(1, listener.onStatusLogCount);
         assertEquals(0, listener.onErrorCount);
         assertNotNull(listener.successLog);

@@ -3,10 +3,10 @@ package com.emarsys.mobileengage;
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
-
 import com.emarsys.core.DeviceInfo;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.request.model.RequestModel;
@@ -21,7 +21,6 @@ import com.emarsys.mobileengage.storage.MeIdStorage;
 import com.emarsys.mobileengage.testUtil.ExperimentalTestUtils;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 import com.emarsys.mobileengage.util.RequestUtils;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -36,15 +35,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static com.emarsys.mobileengage.MobileEngageInternal.MOBILEENGAGE_SDK_VERSION;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.mockito.Mockito.clearInvocations;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 @RunWith(AndroidJUnit4.class)
 public class MobileEngageInternalTest {
@@ -478,6 +470,48 @@ public class MobileEngageInternalTest {
         Map<String, Object> payload = captor.getValue().getPayload();
         assertEquals(payload.get("contact_field_id"), contactFieldId);
         assertEquals(payload.get("contact_field_value"), contactFieldValue);
+    }
+
+    @Test
+    public void testTrackDeepLink_requestManagerCalledWithCorrectRequestModel() {
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://demo-mobileengage.emarsys.net/something?fancy_url=1&ems_dl=1_2_3_4_5"));
+
+        HashMap<String, Object> payload = new HashMap<>();
+        payload.put("ems_dl", "1_2_3_4_5");
+
+        RequestModel expected = new RequestModel.Builder()
+                .url("https://deep-link.eservice.emarsys.net/api/clicks")
+                .payload(payload)
+                .headers(defaultHeaders)
+                .build();
+
+        ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
+
+        mobileEngage.trackDeepLinkOpen(intent);
+
+        verify(manager).setDefaultHeaders(defaultHeaders);
+        verify(manager).submit(captor.capture());
+
+        RequestModel result = captor.getValue();
+        assertRequestModels(expected, result);
+    }
+
+    @Test
+    public void testTrackDeepLink_doesNotCallRequestManager_whenDataIsNull() {
+        Intent intent = new Intent();
+
+        mobileEngage.trackDeepLinkOpen(intent);
+
+        verify(manager, times(0)).submit(any(RequestModel.class));
+    }
+
+    @Test
+    public void testTrackDeepLink_doesNotCallRequestManager_whenUriDoesNotContainEmsDlQueryParameter() {
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://demo-mobileengage.emarsys.net/something?fancy_url=1&other=1_2_3_4_5"));
+
+        mobileEngage.trackDeepLinkOpen(intent);
+
+        verify(manager, times(0)).submit(any(RequestModel.class));
     }
 
     @Test

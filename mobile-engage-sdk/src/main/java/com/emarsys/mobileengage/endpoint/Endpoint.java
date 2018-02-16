@@ -11,4 +11,7 @@ public class Endpoint {
     public static final String INBOX_BASE = "https://me-inbox.eservice.emarsys.net/api/";
     public static final String INBOX_RESET_BADGE_COUNT = INBOX_BASE + "reset-badge-count";
     public static final String INBOX_FETCH = INBOX_BASE + "notifications";
+
+    public static final String DEEP_LINK_BASE = "https://deep-link.eservice.emarsys.net/api/";
+    public static final String DEEP_LINK_CLICK = DEEP_LINK_BASE + "clicks";
 }

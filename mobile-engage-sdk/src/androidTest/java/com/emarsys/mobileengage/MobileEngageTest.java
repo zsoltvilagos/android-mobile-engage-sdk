@@ -4,7 +4,6 @@ import android.app.Application;
 import android.content.Intent;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
-
 import com.emarsys.core.activity.ApplicationStartAction;
 import com.emarsys.core.activity.ApplicationStartWatchdog;
 import com.emarsys.core.activity.CurrentActivityWatchdog;
@@ -27,12 +26,7 @@ import com.emarsys.mobileengage.responsehandler.InAppCleanUpResponseHandler;
 import com.emarsys.mobileengage.responsehandler.InAppMessageResponseHandler;
 import com.emarsys.mobileengage.responsehandler.MeIdResponseHandler;
 import com.emarsys.mobileengage.storage.AppLoginStorage;
-import com.emarsys.mobileengage.testUtil.CollectionTestUtils;
-import com.emarsys.mobileengage.testUtil.CurrentActivityWatchdogTestUtils;
-import com.emarsys.mobileengage.testUtil.DatabaseTestUtils;
-import com.emarsys.mobileengage.testUtil.ExperimentalTestUtils;
-import com.emarsys.mobileengage.testUtil.TimeoutUtils;
-
+import com.emarsys.mobileengage.testUtil.*;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.After;
@@ -52,21 +46,16 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 import static com.emarsys.mobileengage.fake.FakeRequestManager.ResponseType.SUCCESS;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @RunWith(AndroidJUnit4.class)
 public class MobileEngageTest {
 
     static {
         mock(Application.class);
+        mock(Intent.class);
     }
 
     private static final String appID = "56789876";
@@ -408,6 +397,18 @@ public class MobileEngageTest {
         Notification message = new Notification("id", "sid", "title", null, new HashMap<String, String>(), new JSONObject(), 7200, new Date().getTime());
         MobileEngage.Inbox.trackMessageOpen(message);
         verify(inboxInternal).trackMessageOpen(message);
+    }
+
+    @Test
+    public void testTrackDeepLinkOpen_callsInternal() throws Exception {
+        Intent intent = mock(Intent.class);
+        MobileEngage.trackDeepLink(intent);
+        verify(mobileEngageInternal).trackDeepLinkOpen(intent);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testTrackDeepLinkOpen_throwExceptionWhenIntentIsNull() throws Exception {
+        MobileEngage.trackDeepLink(null);
     }
 
     @Test(expected = IllegalArgumentException.class)

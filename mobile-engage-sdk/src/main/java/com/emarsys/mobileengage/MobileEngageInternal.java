@@ -2,12 +2,12 @@ package com.emarsys.mobileengage;
 
 import android.app.Application;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-
 import com.emarsys.core.DeviceInfo;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.request.model.RequestModel;
@@ -25,7 +25,6 @@ import com.emarsys.mobileengage.storage.MeIdStorage;
 import com.emarsys.mobileengage.util.RequestUtils;
 import com.emarsys.mobileengage.util.log.MobileEngageTopic;
 import com.google.firebase.iid.FirebaseInstanceId;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -34,9 +33,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.emarsys.mobileengage.endpoint.Endpoint.ME_LAST_MOBILE_ACTIVITY_V2;
-import static com.emarsys.mobileengage.endpoint.Endpoint.ME_LOGIN_V2;
-import static com.emarsys.mobileengage.endpoint.Endpoint.ME_LOGOUT_V2;
+import static com.emarsys.mobileengage.endpoint.Endpoint.*;
 
 public class MobileEngageInternal {
     public static final String MOBILEENGAGE_SDK_VERSION = BuildConfig.VERSION_NAME;
@@ -220,6 +217,28 @@ public class MobileEngageInternal {
         EMSLogger.log(MobileEngageTopic.MOBILE_ENGAGE, "MessageId %s", messageId);
 
         return handleMessageOpen(messageId);
+    }
+
+    void trackDeepLinkOpen(Intent intent) {
+        Uri uri = intent.getData();
+
+        if (uri != null) {
+            String ems_dl = "ems_dl";
+            String deepLinkQueryParam = uri.getQueryParameter(ems_dl);
+
+            if (deepLinkQueryParam != null) {
+                HashMap<String, Object> payload = new HashMap<>();
+                payload.put(ems_dl, deepLinkQueryParam);
+
+                RequestModel model = new RequestModel.Builder()
+                        .url(DEEP_LINK_CLICK)
+                        .payload(payload)
+                        .build();
+
+                MobileEngageUtils.incrementIdlingResource();
+                manager.submit(model);
+            }
+        }
     }
 
     String getMessageId(Intent intent) {

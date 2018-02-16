@@ -2,11 +2,11 @@ package com.emarsys.mobileengage;
 
 import android.app.Application;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
-
 import com.emarsys.core.CoreCompletionHandler;
 import com.emarsys.core.concurrency.CoreSdkHandlerProvider;
 import com.emarsys.core.connection.ConnectionWatchDog;
@@ -21,7 +21,6 @@ import com.emarsys.mobileengage.storage.AppLoginStorage;
 import com.emarsys.mobileengage.storage.MeIdStorage;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 import com.emarsys.mobileengage.util.MobileEngageIdlingResource;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -34,10 +33,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.*;
 
 @RunWith(AndroidJUnit4.class)
 public class MobileEngageInternalIdlingResourceTest {
@@ -135,6 +131,31 @@ public class MobileEngageInternalIdlingResourceTest {
         mobileEngage.trackMessageOpen(intent);
 
         verify(idlingResource, times(1)).increment();
+    }
+
+    @Test
+    public void testTrackDeepLink_correctIntent_callsIdlingResource() {
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://demo-mobileengage.emarsys.net/something?fancy_url=1&ems_dl=1_2_3_4_5"));
+
+        mobileEngage.trackDeepLinkOpen(intent);
+
+        verify(idlingResource, times(1)).increment();
+    }
+
+    @Test
+    public void testTrackDeepLink_emptyIntent_doesNotCallIdlingResource(){
+        mobileEngage.trackDeepLinkOpen(new Intent());
+
+        verifyZeroInteractions(idlingResource);
+    }
+
+    @Test
+    public void testTrackDeepLink_invalidIntent_doesNotCallIdlingResource(){
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://demo-mobileengage.emarsys.net/something?fancy_url=1&other=1_2_3_4_5"));
+
+        mobileEngage.trackDeepLinkOpen(intent);
+
+        verifyZeroInteractions(idlingResource);
     }
 
     @Test
