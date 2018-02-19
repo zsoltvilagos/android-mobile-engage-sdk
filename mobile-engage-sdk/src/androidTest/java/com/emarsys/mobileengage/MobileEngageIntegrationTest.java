@@ -23,6 +23,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
+import org.mockito.Mockito;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -55,7 +56,7 @@ public class MobileEngageIntegrationTest {
         DatabaseTestUtils.deleteMobileEngageDatabase();
 
         context = (Application) InstrumentationRegistry.getTargetContext().getApplicationContext();
-        activity = mock(Activity.class);
+        activity = mock(Activity.class, Mockito.RETURNS_DEEP_STUBS);
         clearStorages();
 
         ConnectionTestUtils.checkConnection(context);

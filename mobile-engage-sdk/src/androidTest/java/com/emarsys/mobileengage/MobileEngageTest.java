@@ -67,7 +67,6 @@ public class MobileEngageTest {
     private MobileEngageInternal mobileEngageInternal;
     private InboxInternal inboxInternal;
     private Application application;
-    private Activity activity;
     private MobileEngageConfig baseConfig;
 
     @Rule
@@ -81,7 +80,6 @@ public class MobileEngageTest {
         DatabaseTestUtils.deleteCoreDatabase();
 
         application = (Application) InstrumentationRegistry.getTargetContext().getApplicationContext();
-        activity = mock(Activity.class);
         coreCompletionHandler = mock(MobileEngageCoreCompletionHandler.class);
         mobileEngageInternal = mock(MobileEngageInternal.class);
         inboxInternal = mock(InboxInternal.class);
@@ -406,13 +404,26 @@ public class MobileEngageTest {
     @Test
     public void testTrackDeepLinkOpen_callsInternal() throws Exception {
         Intent intent = mock(Intent.class);
+        Activity activity = mock(Activity.class, Mockito.RETURNS_DEEP_STUBS);
+
         MobileEngage.trackDeepLink(activity, intent);
+
         verify(mobileEngageInternal).trackDeepLinkOpen(activity, intent);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testTrackDeepLinkOpen_throwExceptionWhenIntentIsNull() throws Exception {
-        MobileEngage.trackDeepLink(activity, null);
+        MobileEngage.trackDeepLink(mock(Activity.class, Mockito.RETURNS_DEEP_STUBS), null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testTrackDeepLinkOpen_throwExceptionWhenActivityIsNull() throws Exception {
+        MobileEngage.trackDeepLink(null, new Intent());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testTrackDeepLinkOpen_throwExceptionWhenIntentFromActivity_isNull() throws Exception {
+        MobileEngage.trackDeepLink(mock(Activity.class), new Intent());
     }
 
     @Test(expected = IllegalArgumentException.class)

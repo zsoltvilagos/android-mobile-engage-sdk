@@ -29,6 +29,7 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -43,6 +44,7 @@ import static org.mockito.Mockito.*;
 public class MobileEngageInternalTest {
 
     static {
+        mock(Intent.class);
         mock(Activity.class);
     }
 
@@ -64,7 +66,7 @@ public class MobileEngageInternalTest {
     private DeviceInfo deviceInfo;
     private AppLoginStorage appLoginStorage;
     private Context context;
-    private Activity activity;
+    private Activity mockActivity;
     private MobileEngageInternal mobileEngage;
 
     @Rule
@@ -77,7 +79,7 @@ public class MobileEngageInternalTest {
         manager = mock(RequestManager.class);
         coreCompletionHandler = mock(MobileEngageCoreCompletionHandler.class);
         application = (Application) InstrumentationRegistry.getTargetContext().getApplicationContext();
-        activity = mock(Activity.class);
+        mockActivity = mock(Activity.class, Mockito.RETURNS_DEEP_STUBS);
         deviceInfo = new DeviceInfo(application);
         appLoginStorage = new AppLoginStorage(application);
         appLoginStorage.remove();
@@ -495,7 +497,7 @@ public class MobileEngageInternalTest {
 
         ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
 
-        mobileEngage.trackDeepLinkOpen(activity, intent);
+        mobileEngage.trackDeepLinkOpen(mockActivity, intent);
 
         verify(manager).setDefaultHeaders(defaultHeaders);
         verify(manager).submit(captor.capture());
@@ -505,10 +507,35 @@ public class MobileEngageInternalTest {
     }
 
     @Test
+    public void testTrackDeepLink_setsClickedFlag_onIntentBundle() {
+        Intent originalIntent = mock(Intent.class);
+        when(mockActivity.getIntent()).thenReturn(originalIntent);
+
+        Intent currentIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://demo-mobileengage.emarsys.net/something?fancy_url=1&ems_dl=1_2_3_4_5"));
+
+        mobileEngage.trackDeepLinkOpen(mockActivity, currentIntent);
+
+        verify(originalIntent).putExtra("ems_deep_link_tracked", true);
+    }
+
+    @Test
+    public void testTrackDeepLink_doesNotCallRequestManager_whenTrackedFlagIsSet() {
+        Intent intentFromActivity = mock(Intent.class);
+        when(mockActivity.getIntent()).thenReturn(intentFromActivity);
+        when(intentFromActivity.getBooleanExtra("ems_deep_link_tracked", false)).thenReturn(true);
+
+        Intent currentIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://demo-mobileengage.emarsys.net/something?fancy_url=1&ems_dl=1_2_3_4_5"));
+
+        mobileEngage.trackDeepLinkOpen(mockActivity, currentIntent);
+
+        verify(manager, times(0)).submit(any(RequestModel.class));
+    }
+
+    @Test
     public void testTrackDeepLink_doesNotCallRequestManager_whenDataIsNull() {
         Intent intent = new Intent();
 
-        mobileEngage.trackDeepLinkOpen(activity, intent);
+        mobileEngage.trackDeepLinkOpen(mockActivity, intent);
 
         verify(manager, times(0)).submit(any(RequestModel.class));
     }
@@ -517,7 +544,7 @@ public class MobileEngageInternalTest {
     public void testTrackDeepLink_doesNotCallRequestManager_whenUriDoesNotContainEmsDlQueryParameter() {
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://demo-mobileengage.emarsys.net/something?fancy_url=1&other=1_2_3_4_5"));
 
-        mobileEngage.trackDeepLinkOpen(activity, intent);
+        mobileEngage.trackDeepLinkOpen(mockActivity, intent);
 
         verify(manager, times(0)).submit(any(RequestModel.class));
     }

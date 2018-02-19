@@ -28,6 +28,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -63,7 +64,7 @@ public class MobileEngageInternalIdlingResourceTest {
                 .disableDefaultChannel()
                 .build();
 
-        activity = mock(Activity.class);
+        activity = mock(Activity.class, Mockito.RETURNS_DEEP_STUBS);
 
         mobileEngageWithRealRequestManager = mobileEngageWithRealRequestManager(config);
 

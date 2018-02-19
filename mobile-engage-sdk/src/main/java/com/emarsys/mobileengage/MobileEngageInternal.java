@@ -38,6 +38,7 @@ import static com.emarsys.mobileengage.endpoint.Endpoint.*;
 
 public class MobileEngageInternal {
     public static final String MOBILEENGAGE_SDK_VERSION = BuildConfig.VERSION_NAME;
+    private static final String EMS_DEEP_LINK_TRACKED_KEY = "ems_deep_link_tracked";
 
     String pushToken;
     AppLoginParameters appLoginParameters;
@@ -222,8 +223,10 @@ public class MobileEngageInternal {
 
     void trackDeepLinkOpen(Activity activity, Intent intent) {
         Uri uri = intent.getData();
+        Intent intentFromActivity = activity.getIntent();
+        boolean isLinkTracked = intentFromActivity.getBooleanExtra(EMS_DEEP_LINK_TRACKED_KEY, false);
 
-        if (uri != null) {
+        if (!isLinkTracked && uri != null) {
             String ems_dl = "ems_dl";
             String deepLinkQueryParam = uri.getQueryParameter(ems_dl);
 
@@ -237,6 +240,7 @@ public class MobileEngageInternal {
                         .build();
 
                 MobileEngageUtils.incrementIdlingResource();
+                intentFromActivity.putExtra(EMS_DEEP_LINK_TRACKED_KEY, true);
                 manager.submit(model);
             }
         }

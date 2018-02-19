@@ -191,6 +191,8 @@ public class MobileEngage {
     }
 
     public static void trackDeepLink(@NonNull Activity activity, @NonNull Intent intent) {
+        Assert.notNull(activity, "Activity must not be null!");
+        Assert.notNull(activity.getIntent(), "Intent from Activity must not be null!");
         Assert.notNull(intent, "Intent must not be null!");
         instance.trackDeepLinkOpen(activity, intent);
     }
