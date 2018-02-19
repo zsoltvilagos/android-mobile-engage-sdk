@@ -1,6 +1,7 @@
 package com.emarsys.mobileengage.iam;
 
-import com.emarsys.core.activity.ApplicationStartAction;
+import android.app.Activity;
+import com.emarsys.core.activity.ActivityLifecycleAction;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.request.model.RequestModel;
 import com.emarsys.core.timestamp.TimestampProvider;
@@ -10,7 +11,7 @@ import com.emarsys.mobileengage.storage.MeIdSignatureStorage;
 import com.emarsys.mobileengage.storage.MeIdStorage;
 import com.emarsys.mobileengage.util.RequestUtils;
 
-public class InAppStartAction implements ApplicationStartAction {
+public class InAppStartAction implements ActivityLifecycleAction {
 
     private final RequestManager manager;
     private final TimestampProvider timestampProvider;
@@ -37,7 +38,7 @@ public class InAppStartAction implements ApplicationStartAction {
     }
 
     @Override
-    public void execute() {
+    public void execute(Activity activity) {
         if (meIdStorage.get() != null && meIdSignatureStorage.get() != null) {
             RequestModel model = RequestUtils.createInternalCustomEvent(
                     "app:start",

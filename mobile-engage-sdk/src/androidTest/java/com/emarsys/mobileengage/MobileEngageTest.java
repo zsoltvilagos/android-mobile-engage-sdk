@@ -5,8 +5,8 @@ import android.app.Application;
 import android.content.Intent;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
-import com.emarsys.core.activity.ApplicationStartAction;
-import com.emarsys.core.activity.ApplicationStartWatchdog;
+import com.emarsys.core.activity.ActivityLifecycleAction;
+import com.emarsys.core.activity.ActivityLifecycleWatchdog;
 import com.emarsys.core.activity.CurrentActivityWatchdog;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.request.model.RequestModelRepository;
@@ -227,7 +227,7 @@ public class MobileEngageTest {
 
         verify(spyApplication, times(0))
                 .registerActivityLifecycleCallbacks(
-                        any(ApplicationStartWatchdog.class));
+                        any(ActivityLifecycleWatchdog.class));
     }
 
     @Test
@@ -237,12 +237,12 @@ public class MobileEngageTest {
 
         MobileEngage.setup(config);
 
-        verify(spyApplication).registerActivityLifecycleCallbacks(any(ApplicationStartWatchdog.class));
+        verify(spyApplication).registerActivityLifecycleCallbacks(any(ActivityLifecycleWatchdog.class));
     }
 
     @Test
     public void testSetup_registers_applicationStartWatchDog_withInAppStartAction() throws Exception {
-        ArgumentCaptor<ApplicationStartWatchdog> captor = ArgumentCaptor.forClass(ApplicationStartWatchdog.class);
+        ArgumentCaptor<ActivityLifecycleWatchdog> captor = ArgumentCaptor.forClass(ActivityLifecycleWatchdog.class);
 
         MobileEngageConfig config = createConfigWithSpyApplication();
         Application spyApplication = config.getApplication();
@@ -250,7 +250,7 @@ public class MobileEngageTest {
         MobileEngage.setup(config);
 
         verify(spyApplication, Mockito.atLeastOnce()).registerActivityLifecycleCallbacks(captor.capture());
-        ApplicationStartAction[] actions = captor.getValue().getApplicationStartActions();
+        ActivityLifecycleAction[] actions = captor.getValue().getApplicationStartActions();
 
         assertEquals(1, CollectionTestUtils.numberOfElementsIn(actions, InAppStartAction.class));
     }

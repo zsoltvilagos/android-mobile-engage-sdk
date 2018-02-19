@@ -2,7 +2,6 @@ package com.emarsys.mobileengage.iam;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
-
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.request.model.RequestMethod;
 import com.emarsys.core.request.model.RequestModel;
@@ -15,7 +14,6 @@ import com.emarsys.mobileengage.testUtil.DatabaseTestUtils;
 import com.emarsys.mobileengage.testUtil.SharedPrefsUtils;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 import com.emarsys.mobileengage.util.RequestUtils;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -29,10 +27,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static junit.framework.Assert.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class InAppStartActionTest {
 
@@ -144,7 +139,7 @@ public class InAppStartActionTest {
     public void testExecute_sendsInternalEvent_toRequestManager() {
         ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
 
-        startAction.execute();
+        startAction.execute(null);
 
         verify(requestManager).submit(captor.capture());
 
@@ -158,7 +153,7 @@ public class InAppStartActionTest {
     public void testExecute_shouldNotRunIf_meId_isMissing() {
         meIdStorage.remove();
 
-        startAction.execute();
+        startAction.execute(null);
 
         verifyZeroInteractions(requestManager);
     }
@@ -167,7 +162,7 @@ public class InAppStartActionTest {
     public void testExecute_shouldNotRunIf_meIdSignature_isMissing() {
         meIdSignatureStorage.remove();
 
-        startAction.execute();
+        startAction.execute(null);
 
         verifyZeroInteractions(requestManager);
     }

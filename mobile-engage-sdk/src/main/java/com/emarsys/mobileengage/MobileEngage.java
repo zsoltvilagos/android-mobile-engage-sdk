@@ -8,8 +8,8 @@ import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import com.emarsys.core.DeviceInfo;
-import com.emarsys.core.activity.ApplicationStartAction;
-import com.emarsys.core.activity.ApplicationStartWatchdog;
+import com.emarsys.core.activity.ActivityLifecycleAction;
+import com.emarsys.core.activity.ActivityLifecycleWatchdog;
 import com.emarsys.core.activity.CurrentActivityWatchdog;
 import com.emarsys.core.concurrency.CoreSdkHandlerProvider;
 import com.emarsys.core.connection.ConnectionWatchDog;
@@ -134,7 +134,7 @@ public class MobileEngage {
         completionHandler.addResponseHandlers(responseHandlers);
 
         if (MobileEngageExperimental.isFeatureEnabled(MobileEngageFeature.IN_APP_MESSAGING)) {
-            ApplicationStartAction[] applicationStartActions = new ApplicationStartAction[]{
+            ActivityLifecycleAction[] applicationStartActions = new ActivityLifecycleAction[]{
                     new InAppStartAction(
                             requestManager,
                             config.getApplicationCode(),
@@ -143,7 +143,7 @@ public class MobileEngage {
                             timestampProvider
                     )
             };
-            application.registerActivityLifecycleCallbacks(new ApplicationStartWatchdog(applicationStartActions));
+            application.registerActivityLifecycleCallbacks(new ActivityLifecycleWatchdog(applicationStartActions, null));
         }
 
         instance = new MobileEngageInternal(config, requestManager, new AppLoginStorage(application), completionHandler);
