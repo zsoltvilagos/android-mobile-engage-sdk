@@ -1,5 +1,6 @@
 package com.emarsys.mobileengage;
 
+import android.app.Activity;
 import android.app.Application;
 import android.content.Intent;
 import android.net.Uri;
@@ -37,10 +38,16 @@ import static org.mockito.Mockito.*;
 
 @RunWith(AndroidJUnit4.class)
 public class MobileEngageInternalIdlingResourceTest {
+
+    static {
+        mock(Activity.class);
+    }
+
     private MobileEngageInternal mobileEngage;
     private MobileEngageInternal mobileEngageWithRealRequestManager;
     private CoreCompletionHandler coreCompletionHandler;
     private MobileEngageIdlingResource idlingResource;
+    private Activity activity;
 
     @Rule
     public TestRule timeout = TimeoutUtils.getTimeoutRule();
@@ -55,6 +62,8 @@ public class MobileEngageInternalIdlingResourceTest {
                 .enableIdlingResource(true)
                 .disableDefaultChannel()
                 .build();
+
+        activity = mock(Activity.class);
 
         mobileEngageWithRealRequestManager = mobileEngageWithRealRequestManager(config);
 
@@ -137,14 +146,14 @@ public class MobileEngageInternalIdlingResourceTest {
     public void testTrackDeepLink_correctIntent_callsIdlingResource() {
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://demo-mobileengage.emarsys.net/something?fancy_url=1&ems_dl=1_2_3_4_5"));
 
-        mobileEngage.trackDeepLinkOpen(intent);
+        mobileEngage.trackDeepLinkOpen(activity, intent);
 
         verify(idlingResource, times(1)).increment();
     }
 
     @Test
     public void testTrackDeepLink_emptyIntent_doesNotCallIdlingResource(){
-        mobileEngage.trackDeepLinkOpen(new Intent());
+        mobileEngage.trackDeepLinkOpen(activity, new Intent());
 
         verifyZeroInteractions(idlingResource);
     }
@@ -153,7 +162,7 @@ public class MobileEngageInternalIdlingResourceTest {
     public void testTrackDeepLink_invalidIntent_doesNotCallIdlingResource(){
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://demo-mobileengage.emarsys.net/something?fancy_url=1&other=1_2_3_4_5"));
 
-        mobileEngage.trackDeepLinkOpen(intent);
+        mobileEngage.trackDeepLinkOpen(activity, intent);
 
         verifyZeroInteractions(idlingResource);
     }

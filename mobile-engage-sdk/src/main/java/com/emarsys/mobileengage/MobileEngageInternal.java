@@ -1,5 +1,6 @@
 package com.emarsys.mobileengage;
 
+import android.app.Activity;
 import android.app.Application;
 import android.content.Intent;
 import android.net.Uri;
@@ -219,7 +220,7 @@ public class MobileEngageInternal {
         return handleMessageOpen(messageId);
     }
 
-    void trackDeepLinkOpen(Intent intent) {
+    void trackDeepLinkOpen(Activity activity, Intent intent) {
         Uri uri = intent.getData();
 
         if (uri != null) {

@@ -1,5 +1,6 @@
 package com.emarsys.mobileengage;
 
+import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
@@ -189,9 +190,9 @@ public class MobileEngage {
         return instance.trackMessageOpen(intent);
     }
 
-    public static void trackDeepLink(@NonNull Intent intent) {
+    public static void trackDeepLink(@NonNull Activity activity, @NonNull Intent intent) {
         Assert.notNull(intent, "Intent must not be null!");
-        instance.trackDeepLinkOpen(intent);
+        instance.trackDeepLinkOpen(activity, intent);
     }
 
     private static void setAppLoginParameters(AppLoginParameters parameters) {

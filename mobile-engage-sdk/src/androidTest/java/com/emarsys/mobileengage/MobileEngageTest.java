@@ -1,5 +1,6 @@
 package com.emarsys.mobileengage;
 
+import android.app.Activity;
 import android.app.Application;
 import android.content.Intent;
 import android.support.test.InstrumentationRegistry;
@@ -55,6 +56,7 @@ public class MobileEngageTest {
 
     static {
         mock(Application.class);
+        mock(Activity.class);
         mock(Intent.class);
     }
 
@@ -65,6 +67,7 @@ public class MobileEngageTest {
     private MobileEngageInternal mobileEngageInternal;
     private InboxInternal inboxInternal;
     private Application application;
+    private Activity activity;
     private MobileEngageConfig baseConfig;
 
     @Rule
@@ -78,6 +81,7 @@ public class MobileEngageTest {
         DatabaseTestUtils.deleteCoreDatabase();
 
         application = (Application) InstrumentationRegistry.getTargetContext().getApplicationContext();
+        activity = mock(Activity.class);
         coreCompletionHandler = mock(MobileEngageCoreCompletionHandler.class);
         mobileEngageInternal = mock(MobileEngageInternal.class);
         inboxInternal = mock(InboxInternal.class);
@@ -402,13 +406,13 @@ public class MobileEngageTest {
     @Test
     public void testTrackDeepLinkOpen_callsInternal() throws Exception {
         Intent intent = mock(Intent.class);
-        MobileEngage.trackDeepLink(intent);
-        verify(mobileEngageInternal).trackDeepLinkOpen(intent);
+        MobileEngage.trackDeepLink(activity, intent);
+        verify(mobileEngageInternal).trackDeepLinkOpen(activity, intent);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testTrackDeepLinkOpen_throwExceptionWhenIntentIsNull() throws Exception {
-        MobileEngage.trackDeepLink(null);
+        MobileEngage.trackDeepLink(activity, null);
     }
 
     @Test(expected = IllegalArgumentException.class)

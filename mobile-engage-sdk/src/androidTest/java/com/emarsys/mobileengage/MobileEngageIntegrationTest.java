@@ -1,5 +1,6 @@
 package com.emarsys.mobileengage;
 
+import android.app.Activity;
 import android.app.Application;
 import android.content.Intent;
 import android.net.Uri;
@@ -34,10 +35,16 @@ import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.mock;
 
 public class MobileEngageIntegrationTest {
+
+    static {
+        mock(Activity.class);
+    }
+
     private CountDownLatch latch;
     private FakeStatusListener listener;
 
     private Application context;
+    private Activity activity;
 
     @Rule
     public TestRule timeout = TimeoutUtils.getTimeoutRule();
@@ -48,6 +55,7 @@ public class MobileEngageIntegrationTest {
         DatabaseTestUtils.deleteMobileEngageDatabase();
 
         context = (Application) InstrumentationRegistry.getTargetContext().getApplicationContext();
+        activity = mock(Activity.class);
         clearStorages();
 
         ConnectionTestUtils.checkConnection(context);
@@ -172,7 +180,7 @@ public class MobileEngageIntegrationTest {
     public void testDeepLinkOpen_intent() throws Exception {
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://demo-mobileengage.emarsys.net/something?fancy_url=1&ems_dl=1_2_3_4_5_6"));
 
-        MobileEngage.trackDeepLink(intent);
+        MobileEngage.trackDeepLink(activity, intent);
         eventuallyAssertSuccess();
     }
 

@@ -1,5 +1,6 @@
 package com.emarsys.mobileengage;
 
+import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
@@ -40,6 +41,11 @@ import static org.mockito.Mockito.*;
 
 @RunWith(AndroidJUnit4.class)
 public class MobileEngageInternalTest {
+
+    static {
+        mock(Activity.class);
+    }
+
     private static String APPLICATION_ID = "user";
     private static String APPLICATION_SECRET = "pass";
     private static String ENDPOINT_BASE_V2 = "https://push.eservice.emarsys.net/api/mobileengage/v2/";
@@ -58,6 +64,7 @@ public class MobileEngageInternalTest {
     private DeviceInfo deviceInfo;
     private AppLoginStorage appLoginStorage;
     private Context context;
+    private Activity activity;
     private MobileEngageInternal mobileEngage;
 
     @Rule
@@ -70,6 +77,7 @@ public class MobileEngageInternalTest {
         manager = mock(RequestManager.class);
         coreCompletionHandler = mock(MobileEngageCoreCompletionHandler.class);
         application = (Application) InstrumentationRegistry.getTargetContext().getApplicationContext();
+        activity = mock(Activity.class);
         deviceInfo = new DeviceInfo(application);
         appLoginStorage = new AppLoginStorage(application);
         appLoginStorage.remove();
@@ -487,7 +495,7 @@ public class MobileEngageInternalTest {
 
         ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
 
-        mobileEngage.trackDeepLinkOpen(intent);
+        mobileEngage.trackDeepLinkOpen(activity, intent);
 
         verify(manager).setDefaultHeaders(defaultHeaders);
         verify(manager).submit(captor.capture());
@@ -500,7 +508,7 @@ public class MobileEngageInternalTest {
     public void testTrackDeepLink_doesNotCallRequestManager_whenDataIsNull() {
         Intent intent = new Intent();
 
-        mobileEngage.trackDeepLinkOpen(intent);
+        mobileEngage.trackDeepLinkOpen(activity, intent);
 
         verify(manager, times(0)).submit(any(RequestModel.class));
     }
@@ -509,7 +517,7 @@ public class MobileEngageInternalTest {
     public void testTrackDeepLink_doesNotCallRequestManager_whenUriDoesNotContainEmsDlQueryParameter() {
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://demo-mobileengage.emarsys.net/something?fancy_url=1&other=1_2_3_4_5"));
 
-        mobileEngage.trackDeepLinkOpen(intent);
+        mobileEngage.trackDeepLinkOpen(activity, intent);
 
         verify(manager, times(0)).submit(any(RequestModel.class));
     }
