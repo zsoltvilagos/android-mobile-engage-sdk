@@ -5,12 +5,14 @@ import android.app.Application;
 import android.content.Intent;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
+
 import com.emarsys.core.activity.ActivityLifecycleAction;
 import com.emarsys.core.activity.ActivityLifecycleWatchdog;
 import com.emarsys.core.activity.CurrentActivityWatchdog;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.request.model.RequestModelRepository;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
+import com.emarsys.mobileengage.deeplink.DeepLinkAction;
 import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
 import com.emarsys.mobileengage.experimental.MobileEngageExperimental;
 import com.emarsys.mobileengage.experimental.MobileEngageFeature;
@@ -27,7 +29,12 @@ import com.emarsys.mobileengage.responsehandler.InAppCleanUpResponseHandler;
 import com.emarsys.mobileengage.responsehandler.InAppMessageResponseHandler;
 import com.emarsys.mobileengage.responsehandler.MeIdResponseHandler;
 import com.emarsys.mobileengage.storage.AppLoginStorage;
-import com.emarsys.mobileengage.testUtil.*;
+import com.emarsys.mobileengage.testUtil.CollectionTestUtils;
+import com.emarsys.mobileengage.testUtil.CurrentActivityWatchdogTestUtils;
+import com.emarsys.mobileengage.testUtil.DatabaseTestUtils;
+import com.emarsys.mobileengage.testUtil.ExperimentalTestUtils;
+import com.emarsys.mobileengage.testUtil.TimeoutUtils;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.After;
@@ -37,7 +44,6 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -47,9 +53,17 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 import static com.emarsys.mobileengage.fake.FakeRequestManager.ResponseType.SUCCESS;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @RunWith(AndroidJUnit4.class)
 public class MobileEngageTest {
@@ -217,21 +231,7 @@ public class MobileEngageTest {
     }
 
     @Test
-    public void testSetup_doesNotRegister_applicationStartWatchDog_ifIamFlipperIsTurnedOff() throws Exception {
-        ExperimentalTestUtils.resetExperimentalFeatures();
-
-        MobileEngageConfig config = createConfigWithSpyApplication();
-        Application spyApplication = config.getApplication();
-
-        MobileEngage.setup(config);
-
-        verify(spyApplication, times(0))
-                .registerActivityLifecycleCallbacks(
-                        any(ActivityLifecycleWatchdog.class));
-    }
-
-    @Test
-    public void testSetup_registers_applicationStartWatchDog() throws Exception {
+    public void testSetup_registers_activityLifecycleWatchdog() throws Exception {
         MobileEngageConfig config = createConfigWithSpyApplication();
         Application spyApplication = config.getApplication();
 
@@ -241,7 +241,7 @@ public class MobileEngageTest {
     }
 
     @Test
-    public void testSetup_registers_applicationStartWatchDog_withInAppStartAction() throws Exception {
+    public void testSetup_registers_activityLifecycleWatchdog_withInAppStartAction() throws Exception {
         ArgumentCaptor<ActivityLifecycleWatchdog> captor = ArgumentCaptor.forClass(ActivityLifecycleWatchdog.class);
 
         MobileEngageConfig config = createConfigWithSpyApplication();
@@ -249,10 +249,31 @@ public class MobileEngageTest {
 
         MobileEngage.setup(config);
 
-        verify(spyApplication, Mockito.atLeastOnce()).registerActivityLifecycleCallbacks(captor.capture());
+        verify(spyApplication, atLeastOnce()).registerActivityLifecycleCallbacks(captor.capture());
         ActivityLifecycleAction[] actions = captor.getValue().getApplicationStartActions();
 
         assertEquals(1, CollectionTestUtils.numberOfElementsIn(actions, InAppStartAction.class));
+    }
+
+    @Test
+    public void testSetup_registers_activityLifecycleWatchdog_withDeepLinkAction() throws Exception {
+        ArgumentCaptor<ActivityLifecycleWatchdog> captor = ArgumentCaptor.forClass(ActivityLifecycleWatchdog.class);
+
+        MobileEngageConfig config = createConfigWithSpyApplication();
+        Application spyApplication = config.getApplication();
+
+        MobileEngage.setup(config);
+
+        verify(spyApplication, times(2)).registerActivityLifecycleCallbacks(captor.capture());
+        ActivityLifecycleAction[] actions = captor.getValue().getActivityCreatedActions();
+
+        assertEquals(1, CollectionTestUtils.numberOfElementsIn(actions, DeepLinkAction.class));
+    }
+
+    @Test
+    public void testSetup_registers_activityLifecycleWatchdog_withDeepLinkAction_withFlippersOff() throws Exception {
+        ExperimentalTestUtils.resetExperimentalFeatures();
+        testSetup_registers_activityLifecycleWatchdog_withDeepLinkAction();
     }
 
     @Test
@@ -404,7 +425,7 @@ public class MobileEngageTest {
     @Test
     public void testTrackDeepLinkOpen_callsInternal() throws Exception {
         Intent intent = mock(Intent.class);
-        Activity activity = mock(Activity.class, Mockito.RETURNS_DEEP_STUBS);
+        Activity activity = mock(Activity.class, RETURNS_DEEP_STUBS);
 
         MobileEngage.trackDeepLink(activity, intent);
 
@@ -413,7 +434,7 @@ public class MobileEngageTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testTrackDeepLinkOpen_throwExceptionWhenIntentIsNull() throws Exception {
-        MobileEngage.trackDeepLink(mock(Activity.class, Mockito.RETURNS_DEEP_STUBS), null);
+        MobileEngage.trackDeepLink(mock(Activity.class, RETURNS_DEEP_STUBS), null);
     }
 
     @Test(expected = IllegalArgumentException.class)

@@ -9,6 +9,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+
 import com.emarsys.core.DeviceInfo;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.request.model.RequestModel;
@@ -26,6 +27,7 @@ import com.emarsys.mobileengage.storage.MeIdStorage;
 import com.emarsys.mobileengage.util.RequestUtils;
 import com.emarsys.mobileengage.util.log.MobileEngageTopic;
 import com.google.firebase.iid.FirebaseInstanceId;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -34,7 +36,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.emarsys.mobileengage.endpoint.Endpoint.*;
+import static com.emarsys.mobileengage.endpoint.Endpoint.DEEP_LINK_CLICK;
+import static com.emarsys.mobileengage.endpoint.Endpoint.ME_LAST_MOBILE_ACTIVITY_V2;
+import static com.emarsys.mobileengage.endpoint.Endpoint.ME_LOGIN_V2;
+import static com.emarsys.mobileengage.endpoint.Endpoint.ME_LOGOUT_V2;
 
 public class MobileEngageInternal {
     public static final String MOBILEENGAGE_SDK_VERSION = BuildConfig.VERSION_NAME;
@@ -221,7 +226,7 @@ public class MobileEngageInternal {
         return handleMessageOpen(messageId);
     }
 
-    void trackDeepLinkOpen(Activity activity, Intent intent) {
+    public void trackDeepLinkOpen(Activity activity, Intent intent) {
         Uri uri = intent.getData();
         Intent intentFromActivity = activity.getIntent();
         boolean isLinkTracked = intentFromActivity.getBooleanExtra(EMS_DEEP_LINK_TRACKED_KEY, false);

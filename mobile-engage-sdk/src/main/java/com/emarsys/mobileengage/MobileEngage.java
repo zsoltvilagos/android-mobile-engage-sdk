@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+
 import com.emarsys.core.DeviceInfo;
 import com.emarsys.core.activity.ActivityLifecycleAction;
 import com.emarsys.core.activity.ActivityLifecycleWatchdog;
@@ -22,6 +23,7 @@ import com.emarsys.core.timestamp.TimestampProvider;
 import com.emarsys.core.util.Assert;
 import com.emarsys.core.util.log.EMSLogger;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
+import com.emarsys.mobileengage.deeplink.DeepLinkAction;
 import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
 import com.emarsys.mobileengage.experimental.FlipperFeature;
 import com.emarsys.mobileengage.experimental.MobileEngageExperimental;
@@ -133,8 +135,12 @@ public class MobileEngage {
 
         completionHandler.addResponseHandlers(responseHandlers);
 
+        instance = new MobileEngageInternal(config, requestManager, new AppLoginStorage(application), completionHandler);
+        inboxInstance = new InboxInternal(config, requestManager);
+
+        ActivityLifecycleAction[] applicationStartActions = null;
         if (MobileEngageExperimental.isFeatureEnabled(MobileEngageFeature.IN_APP_MESSAGING)) {
-            ActivityLifecycleAction[] applicationStartActions = new ActivityLifecycleAction[]{
+            applicationStartActions = new ActivityLifecycleAction[]{
                     new InAppStartAction(
                             requestManager,
                             config.getApplicationCode(),
@@ -143,11 +149,15 @@ public class MobileEngage {
                             timestampProvider
                     )
             };
-            application.registerActivityLifecycleCallbacks(new ActivityLifecycleWatchdog(applicationStartActions, null));
         }
 
-        instance = new MobileEngageInternal(config, requestManager, new AppLoginStorage(application), completionHandler);
-        inboxInstance = new InboxInternal(config, requestManager);
+        ActivityLifecycleAction[] activityCreatedActions = new ActivityLifecycleAction[]{
+                new DeepLinkAction(instance)
+        };
+
+        application.registerActivityLifecycleCallbacks(new ActivityLifecycleWatchdog(
+                applicationStartActions,
+                activityCreatedActions));
     }
 
     public static MobileEngageConfig getConfig() {
