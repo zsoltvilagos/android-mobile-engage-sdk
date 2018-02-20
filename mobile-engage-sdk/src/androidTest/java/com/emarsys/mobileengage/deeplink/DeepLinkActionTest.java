@@ -4,9 +4,12 @@ import android.app.Activity;
 import android.content.Intent;
 
 import com.emarsys.mobileengage.MobileEngageInternal;
+import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -21,6 +24,9 @@ public class DeepLinkActionTest {
 
     private MobileEngageInternal mockMobileEngageInternal;
     private DeepLinkAction action;
+
+    @Rule
+    public TestRule timeout = TimeoutUtils.getTimeoutRule();
 
     @Before
     public void setUp() throws Exception {
