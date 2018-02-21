@@ -122,6 +122,7 @@ public class MobileEngage {
                     new InAppMessageHandlerProvider(),
                     new IamDialogProvider(),
                     new ButtonClickedRepository(application),
+                    new DisplayedIamRepository(application),
                     requestManager,
                     config.getApplicationCode(),
                     meIdStorage,

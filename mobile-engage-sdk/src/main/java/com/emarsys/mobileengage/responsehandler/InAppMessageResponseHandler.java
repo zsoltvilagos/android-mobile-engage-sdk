@@ -20,7 +20,7 @@ import com.emarsys.mobileengage.iam.dialog.action.SendDisplayedIamAction;
 import com.emarsys.mobileengage.iam.jsbridge.IamJsBridge;
 import com.emarsys.mobileengage.iam.jsbridge.InAppMessageHandlerProvider;
 import com.emarsys.mobileengage.iam.model.buttonclicked.ButtonClicked;
-import com.emarsys.mobileengage.iam.model.displayediam.DisplayedIamRepository;
+import com.emarsys.mobileengage.iam.model.displayediam.DisplayedIam;
 import com.emarsys.mobileengage.iam.webview.DefaultMessageLoadedListener;
 import com.emarsys.mobileengage.iam.webview.IamWebViewProvider;
 import com.emarsys.mobileengage.storage.MeIdSignatureStorage;
@@ -40,6 +40,7 @@ public class InAppMessageResponseHandler extends AbstractResponseHandler {
     private InAppMessageHandlerProvider messageHandlerProvider;
     private IamDialogProvider dialogProvider;
     Repository<ButtonClicked, SqlSpecification> buttonClickedRepository;
+    Repository<DisplayedIam, SqlSpecification> displayedIamRepository;
     private RequestManager requestManager;
     private String applicationCode;
     private MeIdStorage meIdStorage;
@@ -53,6 +54,7 @@ public class InAppMessageResponseHandler extends AbstractResponseHandler {
             InAppMessageHandlerProvider messageHandlerProvider,
             IamDialogProvider dialogProvider,
             Repository<ButtonClicked, SqlSpecification> buttonClickedRepository,
+            Repository<DisplayedIam, SqlSpecification> displayedIamRepository,
             RequestManager requestManager,
             String applicationCode,
             MeIdStorage meIdStorage,
@@ -64,6 +66,7 @@ public class InAppMessageResponseHandler extends AbstractResponseHandler {
         Assert.notNull(dialogProvider, "DialogProvider must not be null!");
         Assert.notNull(coreSdkHandler, "CoreSdkHandler must not be null!");
         Assert.notNull(buttonClickedRepository, "ButtonClickRepository must not be null!");
+        Assert.notNull(displayedIamRepository, "DisplayedIamRepository must not be null!");
         Assert.notNull(requestManager, "RequestManager must not be null!");
         Assert.notNull(applicationCode, "ApplicationCode must not be null!");
         Assert.notNull(meIdStorage, "MeIdStorage must not be null!");
@@ -75,6 +78,7 @@ public class InAppMessageResponseHandler extends AbstractResponseHandler {
         this.dialogProvider = dialogProvider;
         this.coreSdkHandler = coreSdkHandler;
         this.buttonClickedRepository = buttonClickedRepository;
+        this.displayedIamRepository = displayedIamRepository;
         this.requestManager = requestManager;
         this.applicationCode = applicationCode;
         this.meIdStorage = meIdStorage;
@@ -133,7 +137,7 @@ public class InAppMessageResponseHandler extends AbstractResponseHandler {
     private void setupDialogWithActions(IamDialog iamDialog) {
         OnDialogShownAction saveDisplayedIamAction = new SaveDisplayedIamAction(
                 coreSdkHandler,
-                new DisplayedIamRepository(context),
+                displayedIamRepository,
                 timestampProvider);
 
         OnDialogShownAction sendDisplayedIamAction = new SendDisplayedIamAction(

@@ -18,6 +18,7 @@ import com.emarsys.mobileengage.iam.dialog.action.SendDisplayedIamAction;
 import com.emarsys.mobileengage.iam.jsbridge.IamJsBridge;
 import com.emarsys.mobileengage.iam.jsbridge.InAppMessageHandlerProvider;
 import com.emarsys.mobileengage.iam.model.buttonclicked.ButtonClickedRepository;
+import com.emarsys.mobileengage.iam.model.displayediam.DisplayedIamRepository;
 import com.emarsys.mobileengage.iam.webview.DefaultMessageLoadedListener;
 import com.emarsys.mobileengage.iam.webview.IamWebViewProvider;
 import com.emarsys.mobileengage.storage.MeIdSignatureStorage;
@@ -79,6 +80,7 @@ public class InAppMessageResponseHandlerTest {
                 mock(InAppMessageHandlerProvider.class),
                 dialogProvider,
                 mock(ButtonClickedRepository.class),
+                mock(DisplayedIamRepository.class),
                 requestManager,
                 APPLICATION_CODE,
                 mock(MeIdStorage.class),
@@ -95,6 +97,7 @@ public class InAppMessageResponseHandlerTest {
                 mock(InAppMessageHandlerProvider.class),
                 mock(IamDialogProvider.class),
                 mock(ButtonClickedRepository.class),
+                mock(DisplayedIamRepository.class),
                 mock(RequestManager.class),
                 APPLICATION_CODE,
                 mock(MeIdStorage.class),
@@ -111,6 +114,7 @@ public class InAppMessageResponseHandlerTest {
                 mock(InAppMessageHandlerProvider.class),
                 mock(IamDialogProvider.class),
                 mock(ButtonClickedRepository.class),
+                mock(DisplayedIamRepository.class),
                 mock(RequestManager.class),
                 APPLICATION_CODE,
                 mock(MeIdStorage.class),
@@ -127,6 +131,7 @@ public class InAppMessageResponseHandlerTest {
                 mock(InAppMessageHandlerProvider.class),
                 mock(IamDialogProvider.class),
                 mock(ButtonClickedRepository.class),
+                mock(DisplayedIamRepository.class),
                 mock(RequestManager.class),
                 APPLICATION_CODE,
                 mock(MeIdStorage.class),
@@ -143,6 +148,7 @@ public class InAppMessageResponseHandlerTest {
                 null,
                 mock(IamDialogProvider.class),
                 mock(ButtonClickedRepository.class),
+                mock(DisplayedIamRepository.class),
                 mock(RequestManager.class),
                 APPLICATION_CODE,
                 mock(MeIdStorage.class),
@@ -159,6 +165,7 @@ public class InAppMessageResponseHandlerTest {
                 mock(InAppMessageHandlerProvider.class),
                 null,
                 mock(ButtonClickedRepository.class),
+                mock(DisplayedIamRepository.class),
                 mock(RequestManager.class),
                 APPLICATION_CODE,
                 mock(MeIdStorage.class),
@@ -174,6 +181,24 @@ public class InAppMessageResponseHandlerTest {
                 mock(IamWebViewProvider.class),
                 mock(InAppMessageHandlerProvider.class),
                 mock(IamDialogProvider.class),
+                null,
+                mock(DisplayedIamRepository.class),
+                mock(RequestManager.class),
+                APPLICATION_CODE,
+                mock(MeIdStorage.class),
+                mock(MeIdSignatureStorage.class),
+                mock(TimestampProvider.class));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructor_displayedIamRepository_shouldNotBeNull() {
+        new InAppMessageResponseHandler(
+                context,
+                mock(Handler.class),
+                mock(IamWebViewProvider.class),
+                mock(InAppMessageHandlerProvider.class),
+                mock(IamDialogProvider.class),
+                mock(ButtonClickedRepository.class),
                 null,
                 mock(RequestManager.class),
                 APPLICATION_CODE,
@@ -191,6 +216,7 @@ public class InAppMessageResponseHandlerTest {
                 mock(InAppMessageHandlerProvider.class),
                 mock(IamDialogProvider.class),
                 mock(ButtonClickedRepository.class),
+                mock(DisplayedIamRepository.class),
                 null,
                 APPLICATION_CODE,
                 mock(MeIdStorage.class),
@@ -207,6 +233,7 @@ public class InAppMessageResponseHandlerTest {
                 mock(InAppMessageHandlerProvider.class),
                 mock(IamDialogProvider.class),
                 mock(ButtonClickedRepository.class),
+                mock(DisplayedIamRepository.class),
                 mock(RequestManager.class),
                 null,
                 mock(MeIdStorage.class),
@@ -223,6 +250,7 @@ public class InAppMessageResponseHandlerTest {
                 mock(InAppMessageHandlerProvider.class),
                 mock(IamDialogProvider.class),
                 mock(ButtonClickedRepository.class),
+                mock(DisplayedIamRepository.class),
                 mock(RequestManager.class),
                 APPLICATION_CODE,
                 null,
@@ -239,6 +267,7 @@ public class InAppMessageResponseHandlerTest {
                 mock(InAppMessageHandlerProvider.class),
                 mock(IamDialogProvider.class),
                 mock(ButtonClickedRepository.class),
+                mock(DisplayedIamRepository.class),
                 mock(RequestManager.class),
                 APPLICATION_CODE,
                 mock(MeIdStorage.class),
@@ -255,6 +284,7 @@ public class InAppMessageResponseHandlerTest {
                 mock(InAppMessageHandlerProvider.class),
                 mock(IamDialogProvider.class),
                 mock(ButtonClickedRepository.class),
+                mock(DisplayedIamRepository.class),
                 mock(RequestManager.class),
                 APPLICATION_CODE,
                 mock(MeIdStorage.class),
