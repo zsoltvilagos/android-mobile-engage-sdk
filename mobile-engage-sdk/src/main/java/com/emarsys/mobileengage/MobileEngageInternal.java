@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -59,7 +58,15 @@ public class MobileEngageInternal {
     MeIdSignatureStorage meIdSignatureStorage;
     TimestampProvider timestampProvider;
 
-    MobileEngageInternal(MobileEngageConfig config, RequestManager manager, AppLoginStorage appLoginStorage, MobileEngageCoreCompletionHandler coreCompletionHandler) {
+    MobileEngageInternal(MobileEngageConfig config,
+                         RequestManager manager,
+                         AppLoginStorage appLoginStorage,
+                         MobileEngageCoreCompletionHandler coreCompletionHandler,
+                         DeviceInfo deviceInfo,
+                         Handler uiHandler,
+                         MeIdStorage meIdStorage,
+                         MeIdSignatureStorage meIdSignatureStorage,
+                         TimestampProvider timestampProvider) {
         Assert.notNull(config, "Config must not be null!");
         Assert.notNull(manager, "Manager must not be null!");
         Assert.notNull(coreCompletionHandler, "CoreCompletionHandler must not be null!");
@@ -74,18 +81,16 @@ public class MobileEngageInternal {
         this.manager = manager;
         manager.setDefaultHeaders(RequestUtils.createDefaultHeaders(config));
 
-        this.deviceInfo = new DeviceInfo(application.getApplicationContext());
+        this.deviceInfo = deviceInfo;
+        this.handler = uiHandler;
+        this.meIdStorage = meIdStorage;
+        this.meIdSignatureStorage = meIdSignatureStorage;
+        this.timestampProvider = timestampProvider;
 
         try {
             this.pushToken = FirebaseInstanceId.getInstance().getToken();
-        } catch (Exception e) {
-            //no token for you
+        } catch (Exception ignore) {
         }
-
-        this.handler = new Handler(Looper.getMainLooper());
-        this.meIdStorage = new MeIdStorage(application);
-        this.meIdSignatureStorage = new MeIdSignatureStorage(application);
-        this.timestampProvider = new TimestampProvider();
     }
 
     RequestManager getManager() {

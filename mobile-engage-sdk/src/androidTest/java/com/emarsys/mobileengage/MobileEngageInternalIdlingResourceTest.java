@@ -8,20 +8,24 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
+
 import com.emarsys.core.CoreCompletionHandler;
+import com.emarsys.core.DeviceInfo;
 import com.emarsys.core.concurrency.CoreSdkHandlerProvider;
-import com.emarsys.core.connection.ConnectionWatchDog;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.request.model.RequestModel;
-import com.emarsys.core.request.model.RequestModelRepository;
 import com.emarsys.core.response.ResponseModel;
+import com.emarsys.core.timestamp.TimestampProvider;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
 import com.emarsys.mobileengage.responsehandler.AbstractResponseHandler;
 import com.emarsys.mobileengage.storage.AppLoginStorage;
+import com.emarsys.mobileengage.storage.MeIdSignatureStorage;
 import com.emarsys.mobileengage.storage.MeIdStorage;
+import com.emarsys.mobileengage.testUtil.DatabaseTestUtils;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 import com.emarsys.mobileengage.util.MobileEngageIdlingResource;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -35,7 +39,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
 
 @RunWith(AndroidJUnit4.class)
 public class MobileEngageInternalIdlingResourceTest {
@@ -45,9 +53,9 @@ public class MobileEngageInternalIdlingResourceTest {
     }
 
     private MobileEngageInternal mobileEngage;
-    private MobileEngageInternal mobileEngageWithRealRequestManager;
     private CoreCompletionHandler coreCompletionHandler;
     private MobileEngageIdlingResource idlingResource;
+    private Handler coreSdkHandler;
     private Activity activity;
 
     @Rule
@@ -55,6 +63,9 @@ public class MobileEngageInternalIdlingResourceTest {
 
     @Before
     public void init() throws Exception {
+        DatabaseTestUtils.deleteMobileEngageDatabase();
+        DatabaseTestUtils.deleteCoreDatabase();
+
         Application application = (Application) InstrumentationRegistry.getTargetContext().getApplicationContext();
 
         MobileEngageConfig config = new MobileEngageConfig.Builder()
@@ -64,13 +75,29 @@ public class MobileEngageInternalIdlingResourceTest {
                 .disableDefaultChannel()
                 .build();
 
+        coreSdkHandler = new CoreSdkHandlerProvider().provideHandler();
+
         activity = mock(Activity.class, Mockito.RETURNS_DEEP_STUBS);
 
-        mobileEngageWithRealRequestManager = mobileEngageWithRealRequestManager(config);
+        coreCompletionHandler = new MobileEngageCoreCompletionHandler(
+                new ArrayList<AbstractResponseHandler>(),
+                mock(MobileEngageStatusListener.class));
 
-        coreCompletionHandler = mobileEngageWithRealRequestManager.coreCompletionHandler;
+        MeIdStorage meIdStorage = mock(MeIdStorage.class);
+        when(meIdStorage.get()).thenReturn("meId");
+        MeIdSignatureStorage meIdSignatureStorage = mock(MeIdSignatureStorage.class);
+        when(meIdSignatureStorage.get()).thenReturn("meIdSignature");
 
-        mobileEngage = new MobileEngageInternal(config, mock(RequestManager.class), mock(AppLoginStorage.class), mock(MobileEngageCoreCompletionHandler.class));
+        mobileEngage = new MobileEngageInternal(
+                config,
+                mock(RequestManager.class),
+                mock(AppLoginStorage.class),
+                mock(MobileEngageCoreCompletionHandler.class),
+                mock(DeviceInfo.class),
+                mock(Handler.class),
+                meIdStorage,
+                meIdSignatureStorage,
+                mock(TimestampProvider.class));
 
         MobileEngageUtils.setup(config);
         idlingResource = mock(MobileEngageIdlingResource.class);
@@ -83,6 +110,7 @@ public class MobileEngageInternalIdlingResourceTest {
     @After
     public void tearDown() {
         new MeIdStorage(InstrumentationRegistry.getContext()).remove();
+        coreSdkHandler.getLooper().quit();
     }
 
     @Test
@@ -199,23 +227,6 @@ public class MobileEngageInternalIdlingResourceTest {
         coreCompletionHandler.onError("id", new Exception("exception"));
 
         verify(idlingResource, times(1)).decrement();
-    }
-
-    private MobileEngageInternal mobileEngageWithRealRequestManager(MobileEngageConfig config) {
-        MobileEngageCoreCompletionHandler completionHandler = new MobileEngageCoreCompletionHandler(new ArrayList<AbstractResponseHandler>(), new MobileEngageStatusListener() {
-            @Override
-            public void onError(String id, Exception cause) {
-
-            }
-
-            @Override
-            public void onStatusLog(String id, String log) {
-
-            }
-        });
-        Handler handler = new CoreSdkHandlerProvider().provideHandler();
-        RequestManager manager = new RequestManager(handler, new ConnectionWatchDog(config.getApplication(), handler), new RequestModelRepository(config.getApplication()), completionHandler);
-        return new MobileEngageInternal(config, manager, new AppLoginStorage(config.getApplication().getApplicationContext()), completionHandler);
     }
 
 }

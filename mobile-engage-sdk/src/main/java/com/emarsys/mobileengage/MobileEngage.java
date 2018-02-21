@@ -5,6 +5,7 @@ import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -103,6 +104,8 @@ public class MobileEngage {
         TimestampProvider timestampProvider = new TimestampProvider();
 
         completionHandler = new MobileEngageCoreCompletionHandler(config.getStatusListener());
+        DeviceInfo deviceInfo = new DeviceInfo(application);
+        Handler uiHandler = new Handler(Looper.getMainLooper());
 
         RequestManager requestManager = new RequestManager(
                 coreSdkHandler,
@@ -136,7 +139,18 @@ public class MobileEngage {
 
         completionHandler.addResponseHandlers(responseHandlers);
 
-        instance = new MobileEngageInternal(config, requestManager, new AppLoginStorage(application), completionHandler);
+        AppLoginStorage appLoginStorage = new AppLoginStorage(application);
+
+        instance = new MobileEngageInternal(
+                config,
+                requestManager,
+                appLoginStorage,
+                completionHandler,
+                deviceInfo,
+                uiHandler,
+                meIdStorage,
+                meIdSignatureStorage,
+                timestampProvider);
         inboxInstance = new InboxInternal(config, requestManager);
 
         ActivityLifecycleAction[] applicationStartActions = null;

@@ -6,8 +6,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
+
 import com.emarsys.core.DeviceInfo;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.request.model.RequestModel;
@@ -18,10 +20,12 @@ import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
 import com.emarsys.mobileengage.experimental.MobileEngageExperimental;
 import com.emarsys.mobileengage.experimental.MobileEngageFeature;
 import com.emarsys.mobileengage.storage.AppLoginStorage;
+import com.emarsys.mobileengage.storage.MeIdSignatureStorage;
 import com.emarsys.mobileengage.storage.MeIdStorage;
 import com.emarsys.mobileengage.testUtil.ExperimentalTestUtils;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 import com.emarsys.mobileengage.util.RequestUtils;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -37,8 +41,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static com.emarsys.mobileengage.MobileEngageInternal.MOBILEENGAGE_SDK_VERSION;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.clearInvocations;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(AndroidJUnit4.class)
 public class MobileEngageInternalTest {
@@ -94,8 +105,16 @@ public class MobileEngageInternalTest {
 
         defaultHeaders = RequestUtils.createDefaultHeaders(baseConfig);
 
-        mobileEngage = new MobileEngageInternal(baseConfig, manager, appLoginStorage, coreCompletionHandler);
-
+        mobileEngage = new MobileEngageInternal(
+                baseConfig,
+                manager,
+                appLoginStorage,
+                coreCompletionHandler,
+                new DeviceInfo(application),
+                mock(Handler.class),
+                new MeIdStorage(application),
+                new MeIdSignatureStorage(application),
+                mock(TimestampProvider.class));
         context = InstrumentationRegistry.getContext();
         new MeIdStorage(context).set(ME_ID);
     }
@@ -107,32 +126,58 @@ public class MobileEngageInternalTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_configShouldNotBeNull() {
-        new MobileEngageInternal(null, manager, appLoginStorage, coreCompletionHandler);
+        new MobileEngageInternal(
+                null,
+                manager,
+                appLoginStorage,
+                coreCompletionHandler,
+                mock(DeviceInfo.class),
+                mock(Handler.class),
+                mock(MeIdStorage.class),
+                mock(MeIdSignatureStorage.class),
+                mock(TimestampProvider.class));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_requestManagerShouldNotBeNull() {
-        new MobileEngageInternal(baseConfig, null, appLoginStorage, coreCompletionHandler);
+        new MobileEngageInternal(
+                baseConfig,
+                null,
+                appLoginStorage,
+                coreCompletionHandler,
+                mock(DeviceInfo.class),
+                mock(Handler.class),
+                mock(MeIdStorage.class),
+                mock(MeIdSignatureStorage.class),
+                mock(TimestampProvider.class));
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testConstructor_apploginStorageShouldNotBeNull() {
-        new MobileEngageInternal(baseConfig, manager, null, coreCompletionHandler);
+    public void testConstructor_appLoginStorageShouldNotBeNull() {
+        new MobileEngageInternal(
+                baseConfig,
+                manager,
+                null,
+                coreCompletionHandler,
+                mock(DeviceInfo.class),
+                mock(Handler.class),
+                mock(MeIdStorage.class),
+                mock(MeIdSignatureStorage.class),
+                mock(TimestampProvider.class));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_coreCompletionHandlerShouldNotBeNull() {
-        new MobileEngageInternal(baseConfig, manager, appLoginStorage, null);
-    }
-
-    @Test
-    public void testSetup_constructorInitializesFields() {
-        MobileEngageInternal engage = new MobileEngageInternal(baseConfig, manager, appLoginStorage, coreCompletionHandler);
-        assertEquals(manager, engage.manager);
-        assertEquals(appLoginStorage, engage.appLoginStorage);
-        assertEquals(coreCompletionHandler, engage.coreCompletionHandler);
-        assertNotNull(engage.getManager());
-        assertNotNull(engage.meIdStorage);
+        new MobileEngageInternal(
+                baseConfig,
+                manager,
+                appLoginStorage,
+                null,
+                mock(DeviceInfo.class),
+                mock(Handler.class),
+                mock(MeIdStorage.class),
+                mock(MeIdSignatureStorage.class),
+                mock(TimestampProvider.class));
     }
 
     @Test
@@ -628,8 +673,16 @@ public class MobileEngageInternalTest {
         clearInvocations(manager);
 
         if (shouldReinstantiateMobileEngage) {
-            appLoginStorage = new AppLoginStorage(application);
-            mobileEngage = new MobileEngageInternal(baseConfig, manager, appLoginStorage, coreCompletionHandler);
+            mobileEngage = new MobileEngageInternal(
+                    baseConfig,
+                    manager,
+                    new AppLoginStorage(application),
+                    coreCompletionHandler,
+                    new DeviceInfo(application),
+                    mock(Handler.class),
+                    new MeIdStorage(application),
+                    new MeIdSignatureStorage(application),
+                    mock(TimestampProvider.class));
         }
 
         captor = ArgumentCaptor.forClass(RequestModel.class);

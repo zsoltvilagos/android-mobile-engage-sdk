@@ -4,16 +4,21 @@ import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.test.InstrumentationRegistry;
 
+import com.emarsys.core.DeviceInfo;
+import com.emarsys.core.concurrency.CoreSdkHandlerProvider;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.response.ResponseModel;
+import com.emarsys.core.timestamp.TimestampProvider;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
 import com.emarsys.mobileengage.fake.FakeRequestManager;
 import com.emarsys.mobileengage.fake.FakeStatusListener;
 import com.emarsys.mobileengage.responsehandler.AbstractResponseHandler;
 import com.emarsys.mobileengage.storage.AppLoginStorage;
+import com.emarsys.mobileengage.storage.MeIdSignatureStorage;
 import com.emarsys.mobileengage.storage.MeIdStorage;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
@@ -33,6 +38,7 @@ import static com.emarsys.mobileengage.fake.FakeRequestManager.ResponseType.SUCC
 import static junit.framework.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class MobileEngageInternalStatusListenerTest {
 
@@ -54,6 +60,7 @@ public class MobileEngageInternalStatusListenerTest {
     private Application application;
     private Context context;
     private CountDownLatch latch;
+    private Handler coreSdkHandler;
     private Intent intent;
 
     @Rule
@@ -65,6 +72,8 @@ public class MobileEngageInternalStatusListenerTest {
         authHeader.put("Authorization", "Basic dXNlcjpwYXNz");
         context = InstrumentationRegistry.getTargetContext();
         application = (Application) InstrumentationRegistry.getTargetContext().getApplicationContext();
+
+        coreSdkHandler = new CoreSdkHandlerProvider().provideHandler();
 
         intent = new Intent();
         Bundle payload = new Bundle();
@@ -100,12 +109,11 @@ public class MobileEngageInternalStatusListenerTest {
         statusListener = mock(MobileEngageStatusListener.class);
         mainThreadStatusListener = new FakeStatusListener(latch);
         mobileEngageWith(mainThreadStatusListener, succeedingManager);
-        new MeIdStorage(InstrumentationRegistry.getContext()).set("test_me_id");
     }
 
     @After
     public void tearDown() {
-        new MeIdStorage(InstrumentationRegistry.getContext()).remove();
+        coreSdkHandler.getLooper().quit();
     }
 
     private void mobileEngageWith(MobileEngageStatusListener statusListener, RequestManager requestManager) {
@@ -115,7 +123,22 @@ public class MobileEngageInternalStatusListenerTest {
                 .statusListener(statusListener)
                 .disableDefaultChannel()
                 .build();
-        mobileEngage = new MobileEngageInternal(baseConfig, requestManager, new AppLoginStorage(context), completionHandler);
+
+        MeIdStorage meIdStorage = mock(MeIdStorage.class);
+        when(meIdStorage.get()).thenReturn("meId");
+        MeIdSignatureStorage meIdSignatureStorage = mock(MeIdSignatureStorage.class);
+        when(meIdSignatureStorage.get()).thenReturn("meIdSignature");
+
+        mobileEngage = new MobileEngageInternal(
+                baseConfig,
+                requestManager,
+                new AppLoginStorage(context),
+                completionHandler,
+                mock(DeviceInfo.class),
+                coreSdkHandler,
+                meIdStorage,
+                meIdSignatureStorage,
+                mock(TimestampProvider.class));
     }
 
     @Test

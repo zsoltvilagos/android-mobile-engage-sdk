@@ -3,14 +3,17 @@ package com.emarsys.mobileengage;
 import android.app.Activity;
 import android.app.Application;
 import android.content.Intent;
+import android.os.Handler;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
+import com.emarsys.core.DeviceInfo;
 import com.emarsys.core.activity.ActivityLifecycleAction;
 import com.emarsys.core.activity.ActivityLifecycleWatchdog;
 import com.emarsys.core.activity.CurrentActivityWatchdog;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.request.model.RequestModelRepository;
+import com.emarsys.core.timestamp.TimestampProvider;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.deeplink.DeepLinkAction;
 import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
@@ -29,6 +32,8 @@ import com.emarsys.mobileengage.responsehandler.InAppCleanUpResponseHandler;
 import com.emarsys.mobileengage.responsehandler.InAppMessageResponseHandler;
 import com.emarsys.mobileengage.responsehandler.MeIdResponseHandler;
 import com.emarsys.mobileengage.storage.AppLoginStorage;
+import com.emarsys.mobileengage.storage.MeIdSignatureStorage;
+import com.emarsys.mobileengage.storage.MeIdStorage;
 import com.emarsys.mobileengage.testUtil.CollectionTestUtils;
 import com.emarsys.mobileengage.testUtil.CurrentActivityWatchdogTestUtils;
 import com.emarsys.mobileengage.testUtil.DatabaseTestUtils;
@@ -328,8 +333,17 @@ public class MobileEngageTest {
                 SUCCESS,
                 null,
                 completionHandler);
-        AppLoginStorage storage = new AppLoginStorage(application);
-        MobileEngageInternal internal = new MobileEngageInternal(baseConfig, succeedingManager, storage, completionHandler);
+
+        MobileEngageInternal internal = new MobileEngageInternal(
+                baseConfig,
+                succeedingManager,
+                new AppLoginStorage(application),
+                completionHandler,
+                mock(DeviceInfo.class),
+                mock(Handler.class),
+                mock(MeIdStorage.class),
+                mock(MeIdSignatureStorage.class),
+                mock(TimestampProvider.class));
 
         MobileEngage.completionHandler = completionHandler;
         MobileEngage.instance = internal;
