@@ -411,6 +411,17 @@ public class MobileEngageInternalTest {
     }
 
     @Test
+    public void testTrackCustomEvent_V3_returnsRequestModelId() {
+        ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
+
+        String result = mobileEngage.trackCustomEvent("event", new HashMap<String, String>());
+
+        verify(manager).submit(captor.capture());
+
+        assertEquals(captor.getValue().getId(), result);
+    }
+
+    @Test
     public void testTrackCustomEvent_V2_requestManagerCalledWithCorrectRequestModel() throws Exception {
         ExperimentalTestUtils.resetExperimentalFeatures();
 
@@ -457,7 +468,9 @@ public class MobileEngageInternalTest {
     }
 
     @Test
-    public void testTrackCustomEvent_returnsRequestModelId() {
+    public void testTrackCustomEvent_V2_returnsRequestModelId() throws Exception {
+        ExperimentalTestUtils.resetExperimentalFeatures();
+
         ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
 
         String result = mobileEngage.trackCustomEvent("event", new HashMap<String, String>());
@@ -526,6 +539,17 @@ public class MobileEngageInternalTest {
         RequestModel result = captor.getValue();
 
         assertRequestModels_withPayloadAsString(expected, result);
+    }
+
+    @Test
+    public void testTrackInternalCustomEvent_returnsRequestModelId() {
+        ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
+
+        String result = mobileEngage.trackInternalCustomEvent("event", new HashMap<String, String>());
+
+        verify(manager).submit(captor.capture());
+
+        assertEquals(captor.getValue().getId(), result);
     }
 
     @Test
