@@ -54,6 +54,8 @@ import static org.mockito.Mockito.when;
 @RunWith(AndroidJUnit4.class)
 public class MobileEngageInternalTest {
 
+    private static final String INTERNAL = "internal";
+
     static {
         mock(Intent.class);
         mock(Activity.class);
@@ -474,6 +476,73 @@ public class MobileEngageInternalTest {
         assertEquals(captor.getValue().getId(), result);
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void testTrackInternalCustomEvent_eventName_mustNotBeNull() {
+        mobileEngage.trackInternalCustomEvent(null, new HashMap<String, String>());
+    }
+
+    @Test
+    public void testTrackInternalCustomEvent_requestManagerCalledWithCorrectRequestModel() {
+        long timestamp = 123;
+
+        TimestampProvider fakeProvider = mock(TimestampProvider.class);
+        when(fakeProvider.provideTimestamp()).thenReturn(timestamp);
+        mobileEngage.timestampProvider = fakeProvider;
+
+        String eventName = "cartoon";
+        Map<String, String> eventAttributes = new HashMap<>();
+        eventAttributes.put("tom", "jerry");
+
+        Map<String, Object> payload = createCustomEventPayload(eventName, eventAttributes, INTERNAL, timestamp);
+
+        RequestModel expected = new RequestModel.Builder()
+                .url(ENDPOINT_BASE_V3 + ME_ID + "/events")
+                .payload(payload)
+                .headers(defaultHeaders)
+                .build();
+
+        ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
+
+        mobileEngage.trackInternalCustomEvent(eventName, eventAttributes);
+
+        verify(manager).setDefaultHeaders(defaultHeaders);
+        verify(manager).submit(captor.capture());
+
+        RequestModel result = captor.getValue();
+
+        assertRequestModels_withPayloadAsString(expected, result);
+    }
+
+    @Test
+    public void testTrackInternalCustomEvent_requestManagerCalledWithCorrectRequestModel_withoutAttributes() {
+        long timestamp = 123;
+
+        TimestampProvider fakeProvider = mock(TimestampProvider.class);
+        when(fakeProvider.provideTimestamp()).thenReturn(timestamp);
+        mobileEngage.timestampProvider = fakeProvider;
+
+        String eventName = "cartoon";
+
+        Map<String, Object> payload = createCustomEventPayload(eventName, null, INTERNAL, timestamp);
+
+        RequestModel expected = new RequestModel.Builder()
+                .url(ENDPOINT_BASE_V3 + ME_ID + "/events")
+                .payload(payload)
+                .headers(defaultHeaders)
+                .build();
+
+        ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
+
+        mobileEngage.trackInternalCustomEvent(eventName, null);
+
+        verify(manager).setDefaultHeaders(defaultHeaders);
+        verify(manager).submit(captor.capture());
+
+        RequestModel result = captor.getValue();
+
+        assertRequestModels_withPayloadAsString(expected, result);
+    }
+
     @Test
     public void testTrackMessageOpen_requestManagerCalledWithCorrectRequestModel() throws Exception {
         Intent intent = getTestIntent();
@@ -763,5 +832,22 @@ public class MobileEngageInternalTest {
         assertEquals(expected.getUrl(), result.getUrl());
         assertEquals(expected.getMethod(), result.getMethod());
         assertEquals(expected.getPayload().toString(), result.getPayload().toString());
+    }
+
+    private Map<String, Object> createCustomEventPayload(String eventName, Map<String, String> eventAttributes, String eventType, long timestamp) {
+        Map<String, Object> event = new HashMap<>();
+        event.put("type", "internal");
+        event.put("name", eventName);
+        event.put("timestamp", TimestampUtils.formatTimestampWithUTC(timestamp));
+        if (eventAttributes != null && !eventAttributes.isEmpty()) {
+            event.put("attributes", eventAttributes);
+        }
+
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("clicks", new ArrayList<>());
+        payload.put("viewed_messages", new ArrayList<>());
+        payload.put("events", Collections.singletonList(event));
+        payload.put("hardware_id", deviceInfo.getHwid());
+        return payload;
     }
 }

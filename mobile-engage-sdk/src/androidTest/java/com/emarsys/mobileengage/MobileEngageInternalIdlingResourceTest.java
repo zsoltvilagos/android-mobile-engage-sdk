@@ -152,6 +152,22 @@ public class MobileEngageInternalIdlingResourceTest {
     }
 
     @Test
+    public void testTrackInternalCustomEvent_callsIdlingResource() {
+        mobileEngage.trackInternalCustomEvent("eventName", null);
+
+        verify(idlingResource, times(1)).increment();
+    }
+
+    @Test
+    public void testTrackInternalCustomEvent_withAttributes_callsIdlingResource() {
+        Map<String, String> attributes = new HashMap<>();
+        attributes.put("key", "value");
+        mobileEngage.trackInternalCustomEvent("eventName", attributes);
+
+        verify(idlingResource, times(1)).increment();
+    }
+
+    @Test
     public void testTrackMessageOpen_emptyIntent_doesNotCallIdlingResource(){
         mobileEngage.trackMessageOpen(new Intent());
 
