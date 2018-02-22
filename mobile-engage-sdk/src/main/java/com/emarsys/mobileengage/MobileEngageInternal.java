@@ -58,15 +58,16 @@ public class MobileEngageInternal {
     MeIdSignatureStorage meIdSignatureStorage;
     TimestampProvider timestampProvider;
 
-    MobileEngageInternal(MobileEngageConfig config,
-                         RequestManager manager,
-                         AppLoginStorage appLoginStorage,
-                         MobileEngageCoreCompletionHandler coreCompletionHandler,
-                         DeviceInfo deviceInfo,
-                         Handler uiHandler,
-                         MeIdStorage meIdStorage,
-                         MeIdSignatureStorage meIdSignatureStorage,
-                         TimestampProvider timestampProvider) {
+    public MobileEngageInternal(
+            MobileEngageConfig config,
+            RequestManager manager,
+            AppLoginStorage appLoginStorage,
+            MobileEngageCoreCompletionHandler coreCompletionHandler,
+            DeviceInfo deviceInfo,
+            Handler uiHandler,
+            MeIdStorage meIdStorage,
+            MeIdSignatureStorage meIdSignatureStorage,
+            TimestampProvider timestampProvider) {
         Assert.notNull(config, "Config must not be null!");
         Assert.notNull(manager, "Manager must not be null!");
         Assert.notNull(coreCompletionHandler, "CoreCompletionHandler must not be null!");
