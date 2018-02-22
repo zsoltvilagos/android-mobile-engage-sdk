@@ -856,7 +856,6 @@ public class MobileEngageInternalTest {
         payload.put("clicks", new ArrayList<>());
         payload.put("viewed_messages", new ArrayList<>());
         payload.put("events", Collections.singletonList(event));
-        payload.put("hardware_id", deviceInfo.getHwid());
         return payload;
     }
 }

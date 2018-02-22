@@ -206,7 +206,6 @@ public class MobileEngageInternal {
         payload.put("clicks", new ArrayList<>());
         payload.put("viewed_messages", new ArrayList<>());
         payload.put("events", Collections.singletonList(event));
-        payload.put("hardware_id", deviceInfo.getHwid());
 
         RequestModel model = new RequestModel.Builder()
                 .url(RequestUtils.createEventUrl_V3(meIdStorage.get()))
@@ -227,28 +226,13 @@ public class MobileEngageInternal {
         Assert.notNull(eventName, "EventName must not be null!");
         EMSLogger.log(MobileEngageTopic.MOBILE_ENGAGE, "Arguments: eventName %s, eventAttributes %s", eventName, eventAttributes);
 
-        Map<String, Object> event = new HashMap<>();
-        event.put("type", "internal");
-        event.put("name", eventName);
-        event.put("timestamp", TimestampUtils.formatTimestampWithUTC(timestampProvider.provideTimestamp()));
-        if (eventAttributes != null && !eventAttributes.isEmpty()) {
-            event.put("attributes", eventAttributes);
-        }
-
-        Map<String, Object> payload = new HashMap<>();
-        payload.put("clicks", new ArrayList<>());
-        payload.put("viewed_messages", new ArrayList<>());
-        payload.put("events", Collections.singletonList(event));
-        payload.put("hardware_id", deviceInfo.getHwid());
-
-        RequestModel model = new RequestModel.Builder()
-                .url(RequestUtils.createEventUrl_V3(meIdStorage.get()))
-                .payload(payload)
-                .headers(RequestUtils.createBaseHeaders_V3(
-                        config.getApplicationCode(),
-                        meIdStorage,
-                        meIdSignatureStorage))
-                .build();
+        RequestModel model = RequestUtils.createInternalCustomEvent(
+                eventName,
+                eventAttributes,
+                config.getApplicationCode(),
+                meIdStorage,
+                meIdSignatureStorage,
+                timestampProvider);
 
         MobileEngageUtils.incrementIdlingResource();
         manager.submit(model);
