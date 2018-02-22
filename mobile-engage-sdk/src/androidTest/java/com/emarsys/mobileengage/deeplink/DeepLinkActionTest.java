@@ -3,7 +3,6 @@ package com.emarsys.mobileengage.deeplink;
 import android.app.Activity;
 import android.content.Intent;
 
-import com.emarsys.mobileengage.MobileEngageInternal;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
 import org.junit.Before;
@@ -19,10 +18,11 @@ import static org.mockito.Mockito.when;
 public class DeepLinkActionTest {
 
     static {
+        mock(Intent.class);
         mock(Activity.class);
     }
 
-    private MobileEngageInternal mockMobileEngageInternal;
+    private DeepLinkInternal deepLinkInternal;
     private DeepLinkAction action;
 
     @Rule
@@ -30,8 +30,8 @@ public class DeepLinkActionTest {
 
     @Before
     public void setUp() throws Exception {
-        mockMobileEngageInternal = mock(MobileEngageInternal.class);
-        action = new DeepLinkAction(mockMobileEngageInternal);
+        deepLinkInternal = mock(DeepLinkInternal.class);
+        action = new DeepLinkAction(deepLinkInternal);
 
     }
 
@@ -48,7 +48,7 @@ public class DeepLinkActionTest {
 
         action.execute(activity);
 
-        verify(mockMobileEngageInternal).trackDeepLinkOpen(activity, intent);
+        verify(deepLinkInternal).trackDeepLinkOpen(activity, intent);
     }
 
     @Test
@@ -57,14 +57,14 @@ public class DeepLinkActionTest {
 
         action.execute(activity);
 
-        verifyZeroInteractions(mockMobileEngageInternal);
+        verifyZeroInteractions(deepLinkInternal);
     }
 
     @Test
     public void testExecute_neverCallsMobileEngageInternal_whenActivityIsNull() {
         action.execute(null);
 
-        verifyZeroInteractions(mockMobileEngageInternal);
+        verifyZeroInteractions(deepLinkInternal);
     }
 
 }

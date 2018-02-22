@@ -1,9 +1,7 @@
 package com.emarsys.mobileengage;
 
-import android.app.Activity;
 import android.app.Application;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.test.InstrumentationRegistry;
@@ -32,7 +30,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -48,15 +45,10 @@ import static org.mockito.Mockito.when;
 @RunWith(AndroidJUnit4.class)
 public class MobileEngageInternalIdlingResourceTest {
 
-    static {
-        mock(Activity.class);
-    }
-
     private MobileEngageInternal mobileEngage;
     private CoreCompletionHandler coreCompletionHandler;
     private MobileEngageIdlingResource idlingResource;
     private Handler coreSdkHandler;
-    private Activity activity;
 
     @Rule
     public TestRule timeout = TimeoutUtils.getTimeoutRule();
@@ -76,8 +68,6 @@ public class MobileEngageInternalIdlingResourceTest {
                 .build();
 
         coreSdkHandler = new CoreSdkHandlerProvider().provideHandler();
-
-        activity = mock(Activity.class, Mockito.RETURNS_DEEP_STUBS);
 
         coreCompletionHandler = new MobileEngageCoreCompletionHandler(
                 new ArrayList<AbstractResponseHandler>(),
@@ -185,31 +175,6 @@ public class MobileEngageInternalIdlingResourceTest {
         mobileEngage.trackMessageOpen(intent);
 
         verify(idlingResource, times(1)).increment();
-    }
-
-    @Test
-    public void testTrackDeepLink_correctIntent_callsIdlingResource() {
-        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://demo-mobileengage.emarsys.net/something?fancy_url=1&ems_dl=1_2_3_4_5"));
-
-        mobileEngage.trackDeepLinkOpen(activity, intent);
-
-        verify(idlingResource, times(1)).increment();
-    }
-
-    @Test
-    public void testTrackDeepLink_emptyIntent_doesNotCallIdlingResource(){
-        mobileEngage.trackDeepLinkOpen(activity, new Intent());
-
-        verifyZeroInteractions(idlingResource);
-    }
-
-    @Test
-    public void testTrackDeepLink_invalidIntent_doesNotCallIdlingResource(){
-        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://demo-mobileengage.emarsys.net/something?fancy_url=1&other=1_2_3_4_5"));
-
-        mobileEngage.trackDeepLinkOpen(activity, intent);
-
-        verifyZeroInteractions(idlingResource);
     }
 
     @Test

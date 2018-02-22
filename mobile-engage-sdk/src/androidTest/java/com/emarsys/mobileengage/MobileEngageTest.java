@@ -16,6 +16,7 @@ import com.emarsys.core.request.model.RequestModelRepository;
 import com.emarsys.core.timestamp.TimestampProvider;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.deeplink.DeepLinkAction;
+import com.emarsys.mobileengage.deeplink.DeepLinkInternal;
 import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
 import com.emarsys.mobileengage.experimental.MobileEngageExperimental;
 import com.emarsys.mobileengage.experimental.MobileEngageFeature;
@@ -85,6 +86,7 @@ public class MobileEngageTest {
     private MobileEngageCoreCompletionHandler coreCompletionHandler;
     private MobileEngageInternal mobileEngageInternal;
     private InboxInternal inboxInternal;
+    private DeepLinkInternal deepLinkInternal;
     private Application application;
     private MobileEngageConfig baseConfig;
 
@@ -102,6 +104,7 @@ public class MobileEngageTest {
         coreCompletionHandler = mock(MobileEngageCoreCompletionHandler.class);
         mobileEngageInternal = mock(MobileEngageInternal.class);
         inboxInternal = mock(InboxInternal.class);
+        deepLinkInternal = mock(DeepLinkInternal.class);
         baseConfig = new MobileEngageConfig.Builder()
                 .application(application)
                 .credentials(appID, appSecret)
@@ -109,6 +112,7 @@ public class MobileEngageTest {
                 .build();
         MobileEngage.inboxInstance = inboxInternal;
         MobileEngage.instance = mobileEngageInternal;
+        MobileEngage.deepLinkInstance = deepLinkInternal;
         MobileEngage.completionHandler = coreCompletionHandler;
 
         CurrentActivityWatchdogTestUtils.resetCurrentActivityWatchdog();
@@ -220,6 +224,14 @@ public class MobileEngageTest {
         MobileEngage.setup(baseConfig);
 
         assertNotNull(MobileEngage.inboxInstance);
+    }
+
+    @Test
+    public void testSetup_initializesDeepLinkInstance() {
+        MobileEngage.deepLinkInstance = null;
+        MobileEngage.setup(baseConfig);
+
+        assertNotNull(MobileEngage.deepLinkInstance);
     }
 
     @Test
@@ -443,7 +455,7 @@ public class MobileEngageTest {
 
         MobileEngage.trackDeepLink(activity, intent);
 
-        verify(mobileEngageInternal).trackDeepLinkOpen(activity, intent);
+        verify(deepLinkInternal).trackDeepLinkOpen(activity, intent);
     }
 
     @Test(expected = IllegalArgumentException.class)

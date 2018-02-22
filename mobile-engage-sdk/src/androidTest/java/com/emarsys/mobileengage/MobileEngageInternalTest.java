@@ -1,10 +1,7 @@
 package com.emarsys.mobileengage;
 
-import android.app.Activity;
 import android.app.Application;
-import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.test.InstrumentationRegistry;
@@ -33,7 +30,6 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -58,11 +54,6 @@ public class MobileEngageInternalTest {
     private static final String INTERNAL = "internal";
     private static final String CUSTOM = "custom";
 
-    static {
-        mock(Intent.class);
-        mock(Activity.class);
-    }
-
     private static String APPLICATION_ID = "user";
     private static String APPLICATION_SECRET = "pass";
     private static String ENDPOINT_BASE_V2 = "https://push.eservice.emarsys.net/api/mobileengage/v2/";
@@ -81,8 +72,6 @@ public class MobileEngageInternalTest {
     private Application application;
     private DeviceInfo deviceInfo;
     private AppLoginStorage appLoginStorage;
-    private Context context;
-    private Activity mockActivity;
     private MobileEngageInternal mobileEngage;
     private MeIdStorage meIdStorage;
     private MeIdSignatureStorage meIdSignatureStorage;
@@ -97,7 +86,6 @@ public class MobileEngageInternalTest {
         manager = mock(RequestManager.class);
         coreCompletionHandler = mock(MobileEngageCoreCompletionHandler.class);
         application = (Application) InstrumentationRegistry.getTargetContext().getApplicationContext();
-        mockActivity = mock(Activity.class, Mockito.RETURNS_DEEP_STUBS);
         deviceInfo = new DeviceInfo(application);
         appLoginStorage = new AppLoginStorage(application);
         appLoginStorage.remove();
@@ -127,7 +115,6 @@ public class MobileEngageInternalTest {
                 meIdStorage,
                 meIdSignatureStorage,
                 timestampProvider);
-        context = InstrumentationRegistry.getContext();
 
         meIdStorage.set(ME_ID);
         meIdSignatureStorage.set(ME_ID_SIGNATURE);
@@ -196,11 +183,6 @@ public class MobileEngageInternalTest {
     }
 
     @Test
-    public void testSetup_withAuthHeaderSet() {
-        verify(manager).setDefaultHeaders(defaultHeaders);
-    }
-
-    @Test
     public void testAppLogin_anonymous_requestManagerCalledWithCorrectRequestModel() throws Exception {
         Map<String, Object> payload = injectLoginPayload(createBasePayload());
         RequestModel expected = new RequestModel.Builder()
@@ -213,7 +195,6 @@ public class MobileEngageInternalTest {
 
         mobileEngage.appLogin();
 
-        verify(manager).setDefaultHeaders(defaultHeaders);
         verify(manager).submit(captor.capture());
 
         RequestModel result = captor.getValue();
@@ -242,7 +223,6 @@ public class MobileEngageInternalTest {
         mobileEngage.setAppLoginParameters(new AppLoginParameters(contactFieldId, contactFieldValue));
         mobileEngage.appLogin();
 
-        verify(manager).setDefaultHeaders(defaultHeaders);
         verify(manager).submit(captor.capture());
 
         RequestModel result = captor.getValue();
@@ -353,7 +333,6 @@ public class MobileEngageInternalTest {
 
         mobileEngage.appLogout();
 
-        verify(manager).setDefaultHeaders(defaultHeaders);
         verify(manager).submit(captor.capture());
 
         RequestModel result = captor.getValue();
@@ -410,7 +389,6 @@ public class MobileEngageInternalTest {
 
         mobileEngage.trackCustomEvent(eventName, eventAttributes);
 
-        verify(manager).setDefaultHeaders(defaultHeaders);
         verify(manager).submit(captor.capture());
 
         RequestModel result = captor.getValue();
@@ -450,7 +428,6 @@ public class MobileEngageInternalTest {
 
         mobileEngage.trackCustomEvent(eventName, eventAttributes);
 
-        verify(manager).setDefaultHeaders(defaultHeaders);
         verify(manager).submit(captor.capture());
 
         RequestModel result = captor.getValue();
@@ -514,7 +491,6 @@ public class MobileEngageInternalTest {
 
         mobileEngage.trackInternalCustomEvent(eventName, eventAttributes);
 
-        verify(manager).setDefaultHeaders(defaultHeaders);
         verify(manager).submit(captor.capture());
 
         RequestModel result = captor.getValue();
@@ -541,7 +517,6 @@ public class MobileEngageInternalTest {
 
         mobileEngage.trackInternalCustomEvent(eventName, null);
 
-        verify(manager).setDefaultHeaders(defaultHeaders);
         verify(manager).submit(captor.capture());
 
         RequestModel result = captor.getValue();
@@ -593,7 +568,6 @@ public class MobileEngageInternalTest {
 
         mobileEngage.trackMessageOpen(intent);
 
-        verify(manager).setDefaultHeaders(defaultHeaders);
         verify(manager).submit(captor.capture());
 
         RequestModel result = captor.getValue();
@@ -627,73 +601,6 @@ public class MobileEngageInternalTest {
         Map<String, Object> payload = captor.getValue().getPayload();
         assertEquals(payload.get("contact_field_id"), contactFieldId);
         assertEquals(payload.get("contact_field_value"), contactFieldValue);
-    }
-
-    @Test
-    public void testTrackDeepLink_requestManagerCalledWithCorrectRequestModel() {
-        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://demo-mobileengage.emarsys.net/something?fancy_url=1&ems_dl=1_2_3_4_5"));
-
-        HashMap<String, Object> payload = new HashMap<>();
-        payload.put("ems_dl", "1_2_3_4_5");
-
-        RequestModel expected = new RequestModel.Builder()
-                .url("https://deep-link.eservice.emarsys.net/api/clicks")
-                .payload(payload)
-                .headers(defaultHeaders)
-                .build();
-
-        ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
-
-        mobileEngage.trackDeepLinkOpen(mockActivity, intent);
-
-        verify(manager).setDefaultHeaders(defaultHeaders);
-        verify(manager).submit(captor.capture());
-
-        RequestModel result = captor.getValue();
-        assertRequestModels(expected, result);
-    }
-
-    @Test
-    public void testTrackDeepLink_setsClickedFlag_onIntentBundle() {
-        Intent originalIntent = mock(Intent.class);
-        when(mockActivity.getIntent()).thenReturn(originalIntent);
-
-        Intent currentIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://demo-mobileengage.emarsys.net/something?fancy_url=1&ems_dl=1_2_3_4_5"));
-
-        mobileEngage.trackDeepLinkOpen(mockActivity, currentIntent);
-
-        verify(originalIntent).putExtra("ems_deep_link_tracked", true);
-    }
-
-    @Test
-    public void testTrackDeepLink_doesNotCallRequestManager_whenTrackedFlagIsSet() {
-        Intent intentFromActivity = mock(Intent.class);
-        when(mockActivity.getIntent()).thenReturn(intentFromActivity);
-        when(intentFromActivity.getBooleanExtra("ems_deep_link_tracked", false)).thenReturn(true);
-
-        Intent currentIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://demo-mobileengage.emarsys.net/something?fancy_url=1&ems_dl=1_2_3_4_5"));
-
-        mobileEngage.trackDeepLinkOpen(mockActivity, currentIntent);
-
-        verify(manager, times(0)).submit(any(RequestModel.class));
-    }
-
-    @Test
-    public void testTrackDeepLink_doesNotCallRequestManager_whenDataIsNull() {
-        Intent intent = new Intent();
-
-        mobileEngage.trackDeepLinkOpen(mockActivity, intent);
-
-        verify(manager, times(0)).submit(any(RequestModel.class));
-    }
-
-    @Test
-    public void testTrackDeepLink_doesNotCallRequestManager_whenUriDoesNotContainEmsDlQueryParameter() {
-        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://demo-mobileengage.emarsys.net/something?fancy_url=1&other=1_2_3_4_5"));
-
-        mobileEngage.trackDeepLinkOpen(mockActivity, intent);
-
-        verify(manager, times(0)).submit(any(RequestModel.class));
     }
 
     @Test

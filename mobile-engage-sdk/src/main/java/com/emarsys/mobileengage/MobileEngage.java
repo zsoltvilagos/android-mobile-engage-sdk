@@ -25,6 +25,7 @@ import com.emarsys.core.util.Assert;
 import com.emarsys.core.util.log.EMSLogger;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.deeplink.DeepLinkAction;
+import com.emarsys.mobileengage.deeplink.DeepLinkInternal;
 import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
 import com.emarsys.mobileengage.experimental.FlipperFeature;
 import com.emarsys.mobileengage.experimental.MobileEngageExperimental;
@@ -48,6 +49,7 @@ import com.emarsys.mobileengage.responsehandler.MeIdResponseHandler;
 import com.emarsys.mobileengage.storage.AppLoginStorage;
 import com.emarsys.mobileengage.storage.MeIdSignatureStorage;
 import com.emarsys.mobileengage.storage.MeIdStorage;
+import com.emarsys.mobileengage.util.RequestUtils;
 import com.emarsys.mobileengage.util.log.MobileEngageTopic;
 
 import java.util.ArrayList;
@@ -55,9 +57,9 @@ import java.util.List;
 import java.util.Map;
 
 public class MobileEngage {
-    private static final String TAG = "MobileEngage";
     static MobileEngageInternal instance;
     static InboxInternal inboxInstance;
+    static DeepLinkInternal deepLinkInstance;
     static MobileEngageConfig config;
     static MobileEngageCoreCompletionHandler completionHandler;
     static Handler coreSdkHandler;
@@ -113,6 +115,8 @@ public class MobileEngage {
                 createRequestModelRepository(application),
                 completionHandler);
 
+        requestManager.setDefaultHeaders(RequestUtils.createDefaultHeaders(config));
+
         List<AbstractResponseHandler> responseHandlers = new ArrayList<>();
         if (MobileEngageExperimental.isFeatureEnabled(MobileEngageFeature.IN_APP_MESSAGING)) {
             responseHandlers.add(new MeIdResponseHandler(
@@ -152,6 +156,7 @@ public class MobileEngage {
                 meIdSignatureStorage,
                 timestampProvider);
         inboxInstance = new InboxInternal(config, requestManager);
+        deepLinkInstance = new DeepLinkInternal(requestManager);
 
         ActivityLifecycleAction[] applicationStartActions = null;
         if (MobileEngageExperimental.isFeatureEnabled(MobileEngageFeature.IN_APP_MESSAGING)) {
@@ -161,7 +166,7 @@ public class MobileEngage {
         }
 
         ActivityLifecycleAction[] activityCreatedActions = new ActivityLifecycleAction[]{
-                new DeepLinkAction(instance)
+                new DeepLinkAction(deepLinkInstance)
         };
 
         application.registerActivityLifecycleCallbacks(new ActivityLifecycleWatchdog(
@@ -213,7 +218,7 @@ public class MobileEngage {
         Assert.notNull(activity, "Activity must not be null!");
         Assert.notNull(activity.getIntent(), "Intent from Activity must not be null!");
         Assert.notNull(intent, "Intent must not be null!");
-        instance.trackDeepLinkOpen(activity, intent);
+        deepLinkInstance.trackDeepLinkOpen(activity, intent);
     }
 
     private static void setAppLoginParameters(AppLoginParameters parameters) {

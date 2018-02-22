@@ -1,9 +1,7 @@
 package com.emarsys.mobileengage;
 
-import android.app.Activity;
 import android.app.Application;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
@@ -35,14 +33,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.emarsys.mobileengage.endpoint.Endpoint.DEEP_LINK_CLICK;
 import static com.emarsys.mobileengage.endpoint.Endpoint.ME_LAST_MOBILE_ACTIVITY_V2;
 import static com.emarsys.mobileengage.endpoint.Endpoint.ME_LOGIN_V2;
 import static com.emarsys.mobileengage.endpoint.Endpoint.ME_LOGOUT_V2;
 
 public class MobileEngageInternal {
     public static final String MOBILEENGAGE_SDK_VERSION = BuildConfig.VERSION_NAME;
-    private static final String EMS_DEEP_LINK_TRACKED_KEY = "ems_deep_link_tracked";
 
     String pushToken;
     AppLoginParameters appLoginParameters;
@@ -78,10 +74,7 @@ public class MobileEngageInternal {
         this.application = config.getApplication();
         this.appLoginStorage = appLoginStorage;
         this.coreCompletionHandler = coreCompletionHandler;
-
         this.manager = manager;
-        manager.setDefaultHeaders(RequestUtils.createDefaultHeaders(config));
-
         this.deviceInfo = deviceInfo;
         this.uiHandler = uiHandler;
         this.meIdStorage = meIdStorage;
@@ -251,31 +244,6 @@ public class MobileEngageInternal {
         EMSLogger.log(MobileEngageTopic.MOBILE_ENGAGE, "MessageId %s", messageId);
 
         return handleMessageOpen(messageId);
-    }
-
-    public void trackDeepLinkOpen(Activity activity, Intent intent) {
-        Uri uri = intent.getData();
-        Intent intentFromActivity = activity.getIntent();
-        boolean isLinkTracked = intentFromActivity.getBooleanExtra(EMS_DEEP_LINK_TRACKED_KEY, false);
-
-        if (!isLinkTracked && uri != null) {
-            String ems_dl = "ems_dl";
-            String deepLinkQueryParam = uri.getQueryParameter(ems_dl);
-
-            if (deepLinkQueryParam != null) {
-                HashMap<String, Object> payload = new HashMap<>();
-                payload.put(ems_dl, deepLinkQueryParam);
-
-                RequestModel model = new RequestModel.Builder()
-                        .url(DEEP_LINK_CLICK)
-                        .payload(payload)
-                        .build();
-
-                MobileEngageUtils.incrementIdlingResource();
-                intentFromActivity.putExtra(EMS_DEEP_LINK_TRACKED_KEY, true);
-                manager.submit(model);
-            }
-        }
     }
 
     String getMessageId(Intent intent) {
