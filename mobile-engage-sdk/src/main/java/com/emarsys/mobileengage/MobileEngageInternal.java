@@ -115,7 +115,7 @@ public class MobileEngageInternal {
         this.appLoginParameters = parameters;
     }
 
-    String appLogin() {
+    public String appLogin() {
         EMSLogger.log(MobileEngageTopic.MOBILE_ENGAGE, "Called");
 
         RequestModel model;
@@ -146,7 +146,7 @@ public class MobileEngageInternal {
         return model.getId();
     }
 
-    String appLogout() {
+    public String appLogout() {
         EMSLogger.log(MobileEngageTopic.MOBILE_ENGAGE, "Called");
 
         RequestModel model = new RequestModel.Builder()
@@ -162,8 +162,8 @@ public class MobileEngageInternal {
         return model.getId();
     }
 
-    String trackCustomEvent(@NonNull String eventName,
-                            @Nullable Map<String, String> eventAttributes) {
+    public String trackCustomEvent(@NonNull String eventName,
+                                   @Nullable Map<String, String> eventAttributes) {
         if (MobileEngageExperimental.isFeatureEnabled(MobileEngageFeature.IN_APP_MESSAGING)) {
             return trackCustomEvent_V3(eventName, eventAttributes);
         } else {
@@ -222,7 +222,7 @@ public class MobileEngageInternal {
         return model.getId();
     }
 
-    String trackMessageOpen(Intent intent) {
+    public String trackMessageOpen(Intent intent) {
         EMSLogger.log(MobileEngageTopic.MOBILE_ENGAGE, "Argument: %s", intent);
 
         String messageId = getMessageId(intent);
