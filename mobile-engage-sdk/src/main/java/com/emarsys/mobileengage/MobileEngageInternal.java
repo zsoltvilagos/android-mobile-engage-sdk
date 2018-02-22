@@ -52,7 +52,7 @@ public class MobileEngageInternal {
     Application application;
     RequestManager manager;
     AppLoginStorage appLoginStorage;
-    Handler handler;
+    Handler uiHandler;
     MobileEngageCoreCompletionHandler coreCompletionHandler;
     MeIdStorage meIdStorage;
     MeIdSignatureStorage meIdSignatureStorage;
@@ -82,7 +82,7 @@ public class MobileEngageInternal {
         manager.setDefaultHeaders(RequestUtils.createDefaultHeaders(config));
 
         this.deviceInfo = deviceInfo;
-        this.handler = uiHandler;
+        this.uiHandler = uiHandler;
         this.meIdStorage = meIdStorage;
         this.meIdSignatureStorage = meIdSignatureStorage;
         this.timestampProvider = timestampProvider;
@@ -226,17 +226,21 @@ public class MobileEngageInternal {
         Assert.notNull(eventName, "EventName must not be null!");
         EMSLogger.log(MobileEngageTopic.MOBILE_ENGAGE, "Arguments: eventName %s, eventAttributes %s", eventName, eventAttributes);
 
-        RequestModel model = RequestUtils.createInternalCustomEvent(
-                eventName,
-                eventAttributes,
-                config.getApplicationCode(),
-                meIdStorage,
-                meIdSignatureStorage,
-                timestampProvider);
+        if (meIdStorage.get() != null && meIdSignatureStorage.get() != null) {
+            RequestModel model = RequestUtils.createInternalCustomEvent(
+                    eventName,
+                    eventAttributes,
+                    config.getApplicationCode(),
+                    meIdStorage,
+                    meIdSignatureStorage,
+                    timestampProvider);
 
-        MobileEngageUtils.incrementIdlingResource();
-        manager.submit(model);
-        return model.getId();
+            MobileEngageUtils.incrementIdlingResource();
+            manager.submit(model);
+            return model.getId();
+        } else {
+            return RequestModel.nextId();
+        }
     }
 
     public String trackMessageOpen(Intent intent) {
@@ -301,7 +305,7 @@ public class MobileEngageInternal {
             return model.getId();
         } else {
             final String uuid = RequestModel.nextId();
-            handler.post(new Runnable() {
+            uiHandler.post(new Runnable() {
                 @Override
                 public void run() {
                     coreCompletionHandler.onError(uuid, new IllegalArgumentException("No messageId found!"));

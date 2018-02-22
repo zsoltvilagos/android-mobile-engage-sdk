@@ -71,6 +71,7 @@ public class MobileEngageInternalTest {
     private static String ENDPOINT_LOGOUT = ENDPOINT_BASE_V2 + "users/logout";
     private static String ENDPOINT_LAST_MOBILE_ACTIVITY = ENDPOINT_BASE_V2 + "events/ems_lastMobileActivity";
     private static String ME_ID = "ASD123";
+    private static String ME_ID_SIGNATURE = "sig";
 
     private MobileEngageStatusListener statusListener;
     private MobileEngageCoreCompletionHandler coreCompletionHandler;
@@ -83,6 +84,8 @@ public class MobileEngageInternalTest {
     private Context context;
     private Activity mockActivity;
     private MobileEngageInternal mobileEngage;
+    private MeIdStorage meIdStorage;
+    private MeIdSignatureStorage meIdSignatureStorage;
 
     @Rule
     public TestRule timeout = TimeoutUtils.getTimeoutRule();
@@ -112,6 +115,8 @@ public class MobileEngageInternalTest {
         TimestampProvider timestampProvider = mock(TimestampProvider.class);
         when(timestampProvider.provideTimestamp()).thenReturn(TIMESTAMP);
 
+        meIdStorage = new MeIdStorage(application);
+        meIdSignatureStorage = new MeIdSignatureStorage(application);
         mobileEngage = new MobileEngageInternal(
                 baseConfig,
                 manager,
@@ -119,16 +124,19 @@ public class MobileEngageInternalTest {
                 coreCompletionHandler,
                 new DeviceInfo(application),
                 mock(Handler.class),
-                new MeIdStorage(application),
-                new MeIdSignatureStorage(application),
+                meIdStorage,
+                meIdSignatureStorage,
                 timestampProvider);
         context = InstrumentationRegistry.getContext();
-        new MeIdStorage(context).set(ME_ID);
+
+        meIdStorage.set(ME_ID);
+        meIdSignatureStorage.set(ME_ID_SIGNATURE);
     }
 
     @After
     public void tearDown() {
-        new MeIdStorage(context).remove();
+        meIdStorage.remove();
+        meIdSignatureStorage.remove();
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -550,6 +558,22 @@ public class MobileEngageInternalTest {
         verify(manager).submit(captor.capture());
 
         assertEquals(captor.getValue().getId(), result);
+    }
+
+    @Test
+    public void testTrackInternalCustomEvent_requestManagerNotCalled_whenMeIdIsUnavailable() {
+        meIdStorage.remove();
+        mobileEngage.trackInternalCustomEvent("event", new HashMap<String, String>());
+
+        verify(manager, times(0)).submit(any(RequestModel.class));
+    }
+
+    @Test
+    public void testTrackInternalCustomEvent_requestManagerNotCalled_whenMeIdSignatureIsUnavailable() {
+        meIdSignatureStorage.remove();
+        mobileEngage.trackInternalCustomEvent("event", new HashMap<String, String>());
+
+        verify(manager, times(0)).submit(any(RequestModel.class));
     }
 
     @Test
