@@ -1,55 +1,22 @@
 package com.emarsys.mobileengage.iam;
 
 import android.app.Activity;
+
 import com.emarsys.core.activity.ActivityLifecycleAction;
-import com.emarsys.core.request.RequestManager;
-import com.emarsys.core.request.model.RequestModel;
-import com.emarsys.core.timestamp.TimestampProvider;
 import com.emarsys.core.util.Assert;
-import com.emarsys.mobileengage.MobileEngageUtils;
-import com.emarsys.mobileengage.storage.MeIdSignatureStorage;
-import com.emarsys.mobileengage.storage.MeIdStorage;
-import com.emarsys.mobileengage.util.RequestUtils;
+import com.emarsys.mobileengage.MobileEngageInternal;
 
 public class InAppStartAction implements ActivityLifecycleAction {
 
-    private final RequestManager manager;
-    private final TimestampProvider timestampProvider;
-    private final MeIdStorage meIdStorage;
-    private final MeIdSignatureStorage meIdSignatureStorage;
-    private final String applicationCode;
+    private MobileEngageInternal mobileEngageInternal;
 
-    public InAppStartAction(
-            RequestManager requestManager,
-            String applicationCode,
-            MeIdStorage meIdStorage,
-            MeIdSignatureStorage meIdSignatureStorage,
-            TimestampProvider timestampProvider) {
-        Assert.notNull(requestManager, "RequestManager must not be null!");
-        Assert.notNull(applicationCode, "ApplicationCode must not be null!");
-        Assert.notNull(meIdStorage, "MeIdStorage must not be null!");
-        Assert.notNull(meIdSignatureStorage, "MeIdSignatureStorage must not be null!");
-        Assert.notNull(timestampProvider, "TimestampProvider must not be null!");
-        this.manager = requestManager;
-        this.meIdStorage = meIdStorage;
-        this.meIdSignatureStorage = meIdSignatureStorage;
-        this.timestampProvider = timestampProvider;
-        this.applicationCode = applicationCode;
+    public InAppStartAction(MobileEngageInternal mobileEngageInternal) {
+        Assert.notNull(mobileEngageInternal, "MobileEngageInternal must not be null!");
+        this.mobileEngageInternal = mobileEngageInternal;
     }
 
     @Override
     public void execute(Activity activity) {
-        if (meIdStorage.get() != null && meIdSignatureStorage.get() != null) {
-            RequestModel model = RequestUtils.createInternalCustomEvent(
-                    "app:start",
-                    null,
-                    applicationCode,
-                    meIdStorage,
-                    meIdSignatureStorage,
-                    timestampProvider);
-
-            MobileEngageUtils.incrementIdlingResource();
-            manager.submit(model);
-        }
+        mobileEngageInternal.trackInternalCustomEvent("app:start", null);
     }
 }

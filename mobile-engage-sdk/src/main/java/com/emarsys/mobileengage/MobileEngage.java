@@ -156,13 +156,7 @@ public class MobileEngage {
         ActivityLifecycleAction[] applicationStartActions = null;
         if (MobileEngageExperimental.isFeatureEnabled(MobileEngageFeature.IN_APP_MESSAGING)) {
             applicationStartActions = new ActivityLifecycleAction[]{
-                    new InAppStartAction(
-                            requestManager,
-                            config.getApplicationCode(),
-                            meIdStorage,
-                            meIdSignatureStorage,
-                            timestampProvider
-                    )
+                    new InAppStartAction(instance)
             };
         }
 
