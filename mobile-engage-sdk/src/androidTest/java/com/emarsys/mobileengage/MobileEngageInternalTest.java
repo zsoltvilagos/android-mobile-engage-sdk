@@ -54,7 +54,9 @@ import static org.mockito.Mockito.when;
 @RunWith(AndroidJUnit4.class)
 public class MobileEngageInternalTest {
 
+    private static final long TIMESTAMP = 123;
     private static final String INTERNAL = "internal";
+    private static final String CUSTOM = "custom";
 
     static {
         mock(Intent.class);
@@ -107,6 +109,9 @@ public class MobileEngageInternalTest {
 
         defaultHeaders = RequestUtils.createDefaultHeaders(baseConfig);
 
+        TimestampProvider timestampProvider = mock(TimestampProvider.class);
+        when(timestampProvider.provideTimestamp()).thenReturn(TIMESTAMP);
+
         mobileEngage = new MobileEngageInternal(
                 baseConfig,
                 manager,
@@ -116,7 +121,7 @@ public class MobileEngageInternalTest {
                 mock(Handler.class),
                 new MeIdStorage(application),
                 new MeIdSignatureStorage(application),
-                mock(TimestampProvider.class));
+                timestampProvider);
         context = InstrumentationRegistry.getContext();
         new MeIdStorage(context).set(ME_ID);
     }
@@ -378,28 +383,14 @@ public class MobileEngageInternalTest {
 
     @Test
     public void testTrackCustomEvent_V3_requestManagerCalledWithCorrectRequestModel() {
-        long timestamp = 123;
-        String dateStringWithTimeZone = TimestampUtils.formatTimestampWithUTC(timestamp);
-
-        TimestampProvider fakeProvider = mock(TimestampProvider.class);
-        when(fakeProvider.provideTimestamp()).thenReturn(timestamp);
-        mobileEngage.timestampProvider = fakeProvider;
-
         String eventName = "cartoon";
         Map<String, String> eventAttributes = new HashMap<>();
         eventAttributes.put("tom", "jerry");
 
-        Map<String, Object> event = new HashMap<>();
-        event.put("type", "custom");
-        event.put("name", eventName);
-        event.put("timestamp", dateStringWithTimeZone);
-        event.put("attributes", eventAttributes);
-
-        Map<String, Object> payload = new HashMap<>();
-        payload.put("clicks", new ArrayList<>());
-        payload.put("viewed_messages", new ArrayList<>());
-        payload.put("events", Collections.singletonList(event));
-        payload.put("hardware_id", deviceInfo.getHwid());
+        Map<String, Object> payload = createEventPayload(
+                eventName,
+                eventAttributes,
+                CUSTOM);
 
         RequestModel expected = new RequestModel.Builder()
                 .url(ENDPOINT_BASE_V3 + ME_ID + "/events")
@@ -483,17 +474,14 @@ public class MobileEngageInternalTest {
 
     @Test
     public void testTrackInternalCustomEvent_requestManagerCalledWithCorrectRequestModel() {
-        long timestamp = 123;
-
-        TimestampProvider fakeProvider = mock(TimestampProvider.class);
-        when(fakeProvider.provideTimestamp()).thenReturn(timestamp);
-        mobileEngage.timestampProvider = fakeProvider;
-
         String eventName = "cartoon";
         Map<String, String> eventAttributes = new HashMap<>();
         eventAttributes.put("tom", "jerry");
 
-        Map<String, Object> payload = createCustomEventPayload(eventName, eventAttributes, INTERNAL, timestamp);
+        Map<String, Object> payload = createEventPayload(
+                eventName,
+                eventAttributes,
+                INTERNAL);
 
         RequestModel expected = new RequestModel.Builder()
                 .url(ENDPOINT_BASE_V3 + ME_ID + "/events")
@@ -515,15 +503,12 @@ public class MobileEngageInternalTest {
 
     @Test
     public void testTrackInternalCustomEvent_requestManagerCalledWithCorrectRequestModel_withoutAttributes() {
-        long timestamp = 123;
-
-        TimestampProvider fakeProvider = mock(TimestampProvider.class);
-        when(fakeProvider.provideTimestamp()).thenReturn(timestamp);
-        mobileEngage.timestampProvider = fakeProvider;
-
         String eventName = "cartoon";
 
-        Map<String, Object> payload = createCustomEventPayload(eventName, null, INTERNAL, timestamp);
+        Map<String, Object> payload = createEventPayload(
+                eventName,
+                null,
+                INTERNAL);
 
         RequestModel expected = new RequestModel.Builder()
                 .url(ENDPOINT_BASE_V3 + ME_ID + "/events")
@@ -834,11 +819,11 @@ public class MobileEngageInternalTest {
         assertEquals(expected.getPayload().toString(), result.getPayload().toString());
     }
 
-    private Map<String, Object> createCustomEventPayload(String eventName, Map<String, String> eventAttributes, String eventType, long timestamp) {
+    private Map<String, Object> createEventPayload(String eventName, Map<String, String> eventAttributes, String eventType) {
         Map<String, Object> event = new HashMap<>();
-        event.put("type", "internal");
+        event.put("type", eventType);
         event.put("name", eventName);
-        event.put("timestamp", TimestampUtils.formatTimestampWithUTC(timestamp));
+        event.put("timestamp", TimestampUtils.formatTimestampWithUTC(TIMESTAMP));
         if (eventAttributes != null && !eventAttributes.isEmpty()) {
             event.put("attributes", eventAttributes);
         }
