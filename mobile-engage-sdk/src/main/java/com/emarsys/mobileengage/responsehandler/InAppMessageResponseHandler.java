@@ -1,17 +1,16 @@
 package com.emarsys.mobileengage.responsehandler;
 
 import android.annotation.TargetApi;
-import android.content.Context;
 import android.os.Build;
 import android.os.Handler;
 
 import com.emarsys.core.database.repository.Repository;
 import com.emarsys.core.database.repository.SqlSpecification;
-import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.response.ResponseModel;
 import com.emarsys.core.timestamp.TimestampProvider;
 import com.emarsys.core.util.Assert;
 import com.emarsys.core.util.log.EMSLogger;
+import com.emarsys.mobileengage.MobileEngageInternal;
 import com.emarsys.mobileengage.iam.dialog.IamDialog;
 import com.emarsys.mobileengage.iam.dialog.IamDialogProvider;
 import com.emarsys.mobileengage.iam.dialog.action.OnDialogShownAction;
@@ -23,8 +22,6 @@ import com.emarsys.mobileengage.iam.model.buttonclicked.ButtonClicked;
 import com.emarsys.mobileengage.iam.model.displayediam.DisplayedIam;
 import com.emarsys.mobileengage.iam.webview.DefaultMessageLoadedListener;
 import com.emarsys.mobileengage.iam.webview.IamWebViewProvider;
-import com.emarsys.mobileengage.storage.MeIdSignatureStorage;
-import com.emarsys.mobileengage.storage.MeIdStorage;
 import com.emarsys.mobileengage.util.log.MobileEngageTopic;
 
 import org.json.JSONException;
@@ -34,56 +31,40 @@ import java.util.Arrays;
 
 public class InAppMessageResponseHandler extends AbstractResponseHandler {
 
-    Context context;
     private Handler coreSdkHandler;
     private IamWebViewProvider webViewProvider;
     private InAppMessageHandlerProvider messageHandlerProvider;
     private IamDialogProvider dialogProvider;
-    Repository<ButtonClicked, SqlSpecification> buttonClickedRepository;
-    Repository<DisplayedIam, SqlSpecification> displayedIamRepository;
-    private RequestManager requestManager;
-    private String applicationCode;
-    private MeIdStorage meIdStorage;
-    private MeIdSignatureStorage meIdSignatureStorage;
+    private Repository<ButtonClicked, SqlSpecification> buttonClickedRepository;
+    private Repository<DisplayedIam, SqlSpecification> displayedIamRepository;
     private TimestampProvider timestampProvider;
+    private MobileEngageInternal mobileEngageInternal;
 
     public InAppMessageResponseHandler(
-            Context context,
             Handler coreSdkHandler,
             IamWebViewProvider webViewProvider,
             InAppMessageHandlerProvider messageHandlerProvider,
             IamDialogProvider dialogProvider,
             Repository<ButtonClicked, SqlSpecification> buttonClickedRepository,
             Repository<DisplayedIam, SqlSpecification> displayedIamRepository,
-            RequestManager requestManager,
-            String applicationCode,
-            MeIdStorage meIdStorage,
-            MeIdSignatureStorage meIdSignatureStorage,
-            TimestampProvider timestampProvider) {
-        Assert.notNull(context, "Context must not be null!");
+            TimestampProvider timestampProvider,
+            MobileEngageInternal mobileEngageInternal) {
         Assert.notNull(webViewProvider, "WebViewProvider must not be null!");
         Assert.notNull(messageHandlerProvider, "MessageHandlerProvider must not be null!");
         Assert.notNull(dialogProvider, "DialogProvider must not be null!");
         Assert.notNull(coreSdkHandler, "CoreSdkHandler must not be null!");
         Assert.notNull(buttonClickedRepository, "ButtonClickRepository must not be null!");
         Assert.notNull(displayedIamRepository, "DisplayedIamRepository must not be null!");
-        Assert.notNull(requestManager, "RequestManager must not be null!");
-        Assert.notNull(applicationCode, "ApplicationCode must not be null!");
-        Assert.notNull(meIdStorage, "MeIdStorage must not be null!");
-        Assert.notNull(meIdSignatureStorage, "MeIdSignatureStorage must not be null!");
         Assert.notNull(timestampProvider, "TimestampProvider must not be null!");
-        this.context = context;
+        Assert.notNull(mobileEngageInternal, "MobileEngageInternal must not be null!");
         this.webViewProvider = webViewProvider;
         this.messageHandlerProvider = messageHandlerProvider;
         this.dialogProvider = dialogProvider;
         this.coreSdkHandler = coreSdkHandler;
         this.buttonClickedRepository = buttonClickedRepository;
         this.displayedIamRepository = displayedIamRepository;
-        this.requestManager = requestManager;
-        this.applicationCode = applicationCode;
-        this.meIdStorage = meIdStorage;
-        this.meIdSignatureStorage = meIdSignatureStorage;
         this.timestampProvider = timestampProvider;
+        this.mobileEngageInternal = mobileEngageInternal;
     }
 
     @Override
@@ -119,14 +100,10 @@ public class InAppMessageResponseHandler extends AbstractResponseHandler {
             DefaultMessageLoadedListener listener = new DefaultMessageLoadedListener(iamDialog);
             IamJsBridge jsBridge = new IamJsBridge(
                     messageHandlerProvider,
-                    requestManager,
-                    applicationCode,
                     buttonClickedRepository,
                     id,
                     coreSdkHandler,
-                    meIdStorage,
-                    meIdSignatureStorage,
-                    timestampProvider);
+                    mobileEngageInternal);
             webViewProvider.loadMessageAsync(html, jsBridge, listener);
         } catch (JSONException je) {
             EMSLogger.log(MobileEngageTopic.IN_APP_MESSAGE, "Exception occurred, exception: %s json: %s", je, responseBody);
@@ -142,11 +119,7 @@ public class InAppMessageResponseHandler extends AbstractResponseHandler {
 
         OnDialogShownAction sendDisplayedIamAction = new SendDisplayedIamAction(
                 coreSdkHandler,
-                requestManager,
-                applicationCode,
-                meIdStorage,
-                meIdSignatureStorage,
-                timestampProvider);
+                mobileEngageInternal);
 
         iamDialog.setActions(Arrays.asList(
                 saveDisplayedIamAction,

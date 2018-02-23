@@ -2,7 +2,6 @@ package com.emarsys.mobileengage;
 
 import android.app.Activity;
 import android.app.Application;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.Looper;
@@ -57,12 +56,23 @@ import java.util.List;
 import java.util.Map;
 
 public class MobileEngage {
-    static MobileEngageInternal instance;
+
     static InboxInternal inboxInstance;
     static DeepLinkInternal deepLinkInstance;
-    static MobileEngageConfig config;
     static MobileEngageCoreCompletionHandler completionHandler;
     static Handler coreSdkHandler;
+    static MobileEngageInternal instance;
+    static MobileEngageConfig config;
+    private static Handler uiHandler;
+    private static TimestampProvider timestampProvider;
+    private static AppLoginStorage appLoginStorage;
+    private static MeIdStorage meIdStorage;
+    private static MeIdSignatureStorage meIdSignatureStorage;
+    private static DeviceInfo deviceInfo;
+    private static RequestManager requestManager;
+    private static ButtonClickedRepository buttonClickedRepository;
+    private static DisplayedIamRepository displayedIamRepository;
+    private static RequestModelRepository requestModelRepository;
 
     public static class Inbox {
 
@@ -94,84 +104,19 @@ public class MobileEngage {
         }
 
         MobileEngage.config = config;
-        MobileEngageUtils.setup(config);
-
-        coreSdkHandler = new CoreSdkHandlerProvider().provideHandler();
-
         Application application = config.getApplication();
-        CurrentActivityWatchdog.registerApplication(application);
 
-        MeIdStorage meIdStorage = new MeIdStorage(application);
-        MeIdSignatureStorage meIdSignatureStorage = new MeIdSignatureStorage(application);
-        TimestampProvider timestampProvider = new TimestampProvider();
+        initializeDependencies(config, application);
 
-        completionHandler = new MobileEngageCoreCompletionHandler(config.getStatusListener());
-        DeviceInfo deviceInfo = new DeviceInfo(application);
-        Handler uiHandler = new Handler(Looper.getMainLooper());
+        initializeInstances(config);
 
-        RequestManager requestManager = new RequestManager(
-                coreSdkHandler,
-                new ConnectionWatchDog(application, coreSdkHandler),
-                createRequestModelRepository(application),
-                completionHandler);
+        registerResponseHandlers();
 
-        requestManager.setDefaultHeaders(RequestUtils.createDefaultHeaders(config));
+        registerApplicationLifecycleWatchdog(application);
 
-        List<AbstractResponseHandler> responseHandlers = new ArrayList<>();
-        if (MobileEngageExperimental.isFeatureEnabled(MobileEngageFeature.IN_APP_MESSAGING)) {
-            responseHandlers.add(new MeIdResponseHandler(
-                    new MeIdStorage(application),
-                    new MeIdSignatureStorage(application)));
-            responseHandlers.add(new InAppMessageResponseHandler(
-                    application,
-                    coreSdkHandler,
-                    new IamWebViewProvider(),
-                    new InAppMessageHandlerProvider(),
-                    new IamDialogProvider(),
-                    new ButtonClickedRepository(application),
-                    new DisplayedIamRepository(application),
-                    requestManager,
-                    config.getApplicationCode(),
-                    meIdStorage,
-                    meIdSignatureStorage,
-                    timestampProvider));
-            responseHandlers.add(new InAppCleanUpResponseHandler(
-                    new DisplayedIamRepository(application),
-                    new ButtonClickedRepository(application)
-            ));
-        }
+        registerCurrentActivityWatchdog(application);
 
-        completionHandler.addResponseHandlers(responseHandlers);
-
-        AppLoginStorage appLoginStorage = new AppLoginStorage(application);
-
-        instance = new MobileEngageInternal(
-                config,
-                requestManager,
-                appLoginStorage,
-                completionHandler,
-                deviceInfo,
-                uiHandler,
-                meIdStorage,
-                meIdSignatureStorage,
-                timestampProvider);
-        inboxInstance = new InboxInternal(config, requestManager);
-        deepLinkInstance = new DeepLinkInternal(requestManager);
-
-        ActivityLifecycleAction[] applicationStartActions = null;
-        if (MobileEngageExperimental.isFeatureEnabled(MobileEngageFeature.IN_APP_MESSAGING)) {
-            applicationStartActions = new ActivityLifecycleAction[]{
-                    new InAppStartAction(instance)
-            };
-        }
-
-        ActivityLifecycleAction[] activityCreatedActions = new ActivityLifecycleAction[]{
-                new DeepLinkAction(deepLinkInstance)
-        };
-
-        application.registerActivityLifecycleCallbacks(new ActivityLifecycleWatchdog(
-                applicationStartActions,
-                activityCreatedActions));
+        MobileEngageUtils.setup(config);
     }
 
     public static MobileEngageConfig getConfig() {
@@ -226,20 +171,100 @@ public class MobileEngage {
         inboxInstance.setAppLoginParameters(parameters);
     }
 
-    private static Repository<RequestModel, SqlSpecification> createRequestModelRepository(Context context) {
+    private static void initializeDependencies(MobileEngageConfig config, Application application) {
+        uiHandler = new Handler(Looper.getMainLooper());
+        coreSdkHandler = new CoreSdkHandlerProvider().provideHandler();
+        timestampProvider = new TimestampProvider();
+
+        appLoginStorage = new AppLoginStorage(application);
+        meIdStorage = new MeIdStorage(application);
+        meIdSignatureStorage = new MeIdSignatureStorage(application);
+        deviceInfo = new DeviceInfo(application);
+        requestModelRepository = new RequestModelRepository(application);
+        buttonClickedRepository = new ButtonClickedRepository(application);
+        displayedIamRepository = new DisplayedIamRepository(application);
+
+        completionHandler = new MobileEngageCoreCompletionHandler(config.getStatusListener());
+
+        requestManager = new RequestManager(
+                coreSdkHandler,
+                new ConnectionWatchDog(application, coreSdkHandler),
+                createRequestModelRepository(),
+                completionHandler);
+        requestManager.setDefaultHeaders(RequestUtils.createDefaultHeaders(config));
+    }
+
+    private static void initializeInstances(@NonNull MobileEngageConfig config) {
+        instance = new MobileEngageInternal(
+                config,
+                requestManager,
+                appLoginStorage,
+                completionHandler,
+                deviceInfo,
+                uiHandler,
+                meIdStorage,
+                meIdSignatureStorage,
+                timestampProvider);
+        inboxInstance = new InboxInternal(config, requestManager);
+        deepLinkInstance = new DeepLinkInternal(requestManager);
+    }
+
+    private static void registerResponseHandlers() {
+        List<AbstractResponseHandler> responseHandlers = new ArrayList<>();
+
         if (MobileEngageExperimental.isFeatureEnabled(MobileEngageFeature.IN_APP_MESSAGING)) {
-            DeviceInfo deviceInfo = new DeviceInfo(context);
-            RequestModelRepository requestModelRepository = new RequestModelRepository(context);
-            ButtonClickedRepository buttonClickedRepository = new ButtonClickedRepository(context);
-            DisplayedIamRepository displayedIamRepository = new DisplayedIamRepository(context);
+            responseHandlers.add(new MeIdResponseHandler(
+                    meIdStorage,
+                    meIdSignatureStorage));
+            responseHandlers.add(new InAppMessageResponseHandler(
+                    coreSdkHandler,
+                    new IamWebViewProvider(),
+                    new InAppMessageHandlerProvider(),
+                    new IamDialogProvider(),
+                    buttonClickedRepository,
+                    displayedIamRepository,
+                    timestampProvider,
+                    instance));
+            responseHandlers.add(new InAppCleanUpResponseHandler(
+                    displayedIamRepository,
+                    buttonClickedRepository
+            ));
+        }
+
+        completionHandler.addResponseHandlers(responseHandlers);
+    }
+
+    private static void registerCurrentActivityWatchdog(Application application) {
+        CurrentActivityWatchdog.registerApplication(application);
+    }
+
+    private static void registerApplicationLifecycleWatchdog(Application application) {
+        ActivityLifecycleAction[] applicationStartActions = null;
+        if (MobileEngageExperimental.isFeatureEnabled(MobileEngageFeature.IN_APP_MESSAGING)) {
+            applicationStartActions = new ActivityLifecycleAction[]{
+                    new InAppStartAction(instance)
+            };
+        }
+
+        ActivityLifecycleAction[] activityCreatedActions = new ActivityLifecycleAction[]{
+                new DeepLinkAction(deepLinkInstance)
+        };
+
+        application.registerActivityLifecycleCallbacks(new ActivityLifecycleWatchdog(
+                applicationStartActions,
+                activityCreatedActions));
+    }
+
+    private static Repository<RequestModel, SqlSpecification> createRequestModelRepository() {
+        if (MobileEngageExperimental.isFeatureEnabled(MobileEngageFeature.IN_APP_MESSAGING)) {
             return new RequestRepositoryProxy(
                     deviceInfo,
                     requestModelRepository,
                     displayedIamRepository,
                     buttonClickedRepository,
-                    new TimestampProvider());
+                    timestampProvider);
         } else {
-            return new RequestModelRepository(context);
+            return requestModelRepository;
         }
     }
 

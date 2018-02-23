@@ -13,18 +13,16 @@ import com.emarsys.core.concurrency.CoreSdkHandlerProvider;
 import com.emarsys.core.database.repository.Repository;
 import com.emarsys.core.database.repository.SqlSpecification;
 import com.emarsys.core.request.RequestManager;
-import com.emarsys.core.request.model.RequestModel;
 import com.emarsys.core.timestamp.TimestampProvider;
+import com.emarsys.mobileengage.MobileEngageInternal;
 import com.emarsys.mobileengage.fake.FakeActivity;
 import com.emarsys.mobileengage.iam.InAppMessageHandler;
 import com.emarsys.mobileengage.iam.dialog.IamDialog;
 import com.emarsys.mobileengage.iam.model.buttonclicked.ButtonClicked;
 import com.emarsys.mobileengage.storage.MeIdSignatureStorage;
 import com.emarsys.mobileengage.storage.MeIdStorage;
-import com.emarsys.mobileengage.testUtil.RequestModelTestUtils;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 import com.emarsys.mobileengage.testUtil.mockito.ThreadSpy;
-import com.emarsys.mobileengage.util.RequestUtils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -73,12 +71,13 @@ public class IamJsBridgeTest {
     private InAppMessageHandler inAppMessageHandler;
     private InAppMessageHandlerProvider inAppMessageHandlerProvider;
     private WebView webView;
-    private Repository<ButtonClicked, SqlSpecification> repository;
+    private Repository<ButtonClicked, SqlSpecification> buttonClickedRepository;
     private Handler coreSdkHandler;
     private RequestManager requestManager;
     private MeIdStorage meIdStorage;
     private MeIdSignatureStorage meIdSignatureStorage;
     private TimestampProvider timestampProvider;
+    private MobileEngageInternal mobileEngageInternal;
 
     @Rule
     public TestRule timeout = TimeoutUtils.getTimeoutRule();
@@ -104,18 +103,17 @@ public class IamJsBridgeTest {
         timestampProvider = mock(TimestampProvider.class);
         when(timestampProvider.provideTimestamp()).thenReturn(TIMESTAMP);
 
-        repository = mock(Repository.class);
+        buttonClickedRepository = mock(Repository.class);
         coreSdkHandler = new CoreSdkHandlerProvider().provideHandler();
+
+        mobileEngageInternal = mock(MobileEngageInternal.class);
+
         jsBridge = new IamJsBridge(
                 inAppMessageHandlerProvider,
-                requestManager,
-                APPLICATION_CODE,
-                repository,
+                buttonClickedRepository,
                 CAMPAIGN_ID,
                 coreSdkHandler,
-                meIdStorage,
-                meIdSignatureStorage,
-                timestampProvider);
+                mobileEngageInternal);
         webView = mock(WebView.class);
         jsBridge.setWebView(webView);
     }
@@ -130,125 +128,49 @@ public class IamJsBridgeTest {
     public void testConstructor_messageHandlerProvider_shouldNotAcceptNull() {
         new IamJsBridge(
                 null,
-                requestManager,
-                APPLICATION_CODE,
-                repository,
+                buttonClickedRepository,
                 CAMPAIGN_ID,
                 coreSdkHandler,
-                meIdStorage,
-                meIdSignatureStorage,
-                timestampProvider);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testConstructor_requestManager_shouldNotAcceptNull() {
-        new IamJsBridge(
-                mock(InAppMessageHandlerProvider.class),
-                null,
-                APPLICATION_CODE,
-                repository,
-                CAMPAIGN_ID,
-                coreSdkHandler,
-                meIdStorage,
-                meIdSignatureStorage,
-                timestampProvider);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testConstructor_appllicationCode_shouldNotAcceptNull() {
-        new IamJsBridge(
-                mock(InAppMessageHandlerProvider.class),
-                requestManager,
-                null,
-                repository,
-                CAMPAIGN_ID,
-                coreSdkHandler,
-                meIdStorage,
-                meIdSignatureStorage,
-                timestampProvider);
+                mobileEngageInternal);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_buttonClickedRepository_shouldNotAcceptNull() {
         new IamJsBridge(
-                mock(InAppMessageHandlerProvider.class),
-                requestManager,
-                APPLICATION_CODE,
+                inAppMessageHandlerProvider,
                 null,
                 CAMPAIGN_ID,
                 coreSdkHandler,
-                meIdStorage,
-                meIdSignatureStorage,
-                timestampProvider);
+                mobileEngageInternal);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_campaignId_shouldNotAcceptNull() {
         new IamJsBridge(
-                mock(InAppMessageHandlerProvider.class),
-                requestManager,
-                APPLICATION_CODE,
-                repository,
+                inAppMessageHandlerProvider,
+                buttonClickedRepository,
                 null,
                 coreSdkHandler,
-                meIdStorage,
-                meIdSignatureStorage,
-                timestampProvider);
+                mobileEngageInternal);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_coreSdkHandler_shouldNotAcceptNull() {
         new IamJsBridge(
-                mock(InAppMessageHandlerProvider.class),
-                requestManager,
-                APPLICATION_CODE,
-                repository,
+                inAppMessageHandlerProvider,
+                buttonClickedRepository,
                 CAMPAIGN_ID,
                 null,
-                meIdStorage,
-                meIdSignatureStorage,
-                timestampProvider);
+                mobileEngageInternal);
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testConstructor_meIdStorage_shouldNotAcceptNull() {
+    public void testConstructor_mobileEngageInternal_shouldNotAcceptNull() {
         new IamJsBridge(
-                mock(InAppMessageHandlerProvider.class),
-                requestManager,
-                APPLICATION_CODE,
-                repository,
+                inAppMessageHandlerProvider,
+                buttonClickedRepository,
                 CAMPAIGN_ID,
                 coreSdkHandler,
-                null,
-                meIdSignatureStorage,
-                timestampProvider);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testConstructor_meIdStorageSignature_shouldNotAcceptNull() {
-        new IamJsBridge(
-                mock(InAppMessageHandlerProvider.class),
-                requestManager,
-                APPLICATION_CODE,
-                repository,
-                CAMPAIGN_ID,
-                coreSdkHandler,
-                meIdStorage,
-                null,
-                timestampProvider);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testConstructor_timestampProvider_shouldNotAcceptNull() {
-        new IamJsBridge(
-                mock(InAppMessageHandlerProvider.class),
-                requestManager,
-                APPLICATION_CODE,
-                repository,
-                CAMPAIGN_ID,
-                coreSdkHandler,
-                meIdStorage,
-                meIdSignatureStorage,
                 null);
     }
 
@@ -302,14 +224,10 @@ public class IamJsBridgeTest {
 
         IamJsBridge jsBridge = new IamJsBridge(
                 messageHandlerProvider,
-                requestManager,
-                APPLICATION_CODE,
-                repository,
+                buttonClickedRepository,
                 CAMPAIGN_ID,
-                mock(Handler.class),
-                mock(MeIdStorage.class),
-                mock(MeIdSignatureStorage.class),
-                mock(TimestampProvider.class));
+                coreSdkHandler,
+                mobileEngageInternal);
         jsBridge.triggerAppEvent(json.toString());
     }
 
@@ -326,14 +244,10 @@ public class IamJsBridgeTest {
 
         IamJsBridge jsBridge = new IamJsBridge(
                 messageHandlerProvider,
-                requestManager,
-                APPLICATION_CODE,
-                repository,
+                buttonClickedRepository,
                 CAMPAIGN_ID,
-                mock(Handler.class),
-                mock(MeIdStorage.class),
-                mock(MeIdSignatureStorage.class),
-                mock(TimestampProvider.class));
+                coreSdkHandler,
+                mobileEngageInternal);
         jsBridge.setWebView(webView);
         jsBridge.triggerAppEvent(json.toString());
 
@@ -376,7 +290,7 @@ public class IamJsBridgeTest {
         long before = System.currentTimeMillis();
         jsBridge.buttonClicked(json.toString());
 
-        verify(repository, Mockito.timeout(1000)).add(buttonClickedArgumentCaptor.capture());
+        verify(buttonClickedRepository, Mockito.timeout(1000)).add(buttonClickedArgumentCaptor.capture());
         long after = System.currentTimeMillis();
         ButtonClicked buttonClicked = buttonClickedArgumentCaptor.getValue();
 
@@ -389,36 +303,23 @@ public class IamJsBridgeTest {
 
     @Test
     public void testButtonClicked_shouldSendInternalEvent_throughRequestManager() throws Exception {
-        ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
-
         String id = "12346789";
         String buttonId = "987654321";
         JSONObject json = new JSONObject().put("id", id).put("buttonId", buttonId);
-
-        jsBridge.buttonClicked(json.toString());
-
-        verify(requestManager, Mockito.timeout(1000)).submit(captor.capture());
-        RequestModel actual = captor.getValue();
 
         Map<String, String> attributes = new HashMap<>();
         attributes.put("message_id", CAMPAIGN_ID);
         attributes.put("button_id", buttonId);
 
-        RequestModel expected = RequestUtils.createInternalCustomEvent(
-                "inapp:click",
-                attributes,
-                APPLICATION_CODE,
-                meIdStorage,
-                meIdSignatureStorage,
-                timestampProvider);
+        jsBridge.buttonClicked(json.toString());
 
-        RequestModelTestUtils.assertEqualsExceptId(expected, actual);
+        verify(mobileEngageInternal, Mockito.timeout(1000)).trackInternalCustomEvent("inapp:click", attributes);
     }
 
     @Test
     public void testButtonClicked_shouldCallAddOnRepository_onCoreSDKThread() throws JSONException, InterruptedException {
         ThreadSpy threadSpy = new ThreadSpy();
-        doAnswer(threadSpy).when(repository).add(any(ButtonClicked.class));
+        doAnswer(threadSpy).when(buttonClickedRepository).add(any(ButtonClicked.class));
 
         String id = "12346789";
         String buttonId = "987654321";

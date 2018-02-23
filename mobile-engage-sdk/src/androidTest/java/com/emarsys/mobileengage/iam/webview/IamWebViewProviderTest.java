@@ -8,17 +8,14 @@ import android.support.test.filters.SdkSuppress;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 
-import com.emarsys.core.request.RequestManager;
-import com.emarsys.core.timestamp.TimestampProvider;
 import com.emarsys.mobileengage.MobileEngage;
+import com.emarsys.mobileengage.MobileEngageInternal;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.fake.FakeMessageLoadedListener;
 import com.emarsys.mobileengage.iam.dialog.IamDialog;
 import com.emarsys.mobileengage.iam.jsbridge.IamJsBridge;
 import com.emarsys.mobileengage.iam.jsbridge.InAppMessageHandlerProvider;
 import com.emarsys.mobileengage.iam.model.buttonclicked.ButtonClickedRepository;
-import com.emarsys.mobileengage.storage.MeIdSignatureStorage;
-import com.emarsys.mobileengage.storage.MeIdStorage;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
 import org.junit.Before;
@@ -38,14 +35,10 @@ class TestJSInterface extends IamJsBridge {
     public TestJSInterface() {
         super(
                 mock(InAppMessageHandlerProvider.class),
-                mock(RequestManager.class),
-                "appcode",
                 mock(ButtonClickedRepository.class),
                 "123",
                 mock(Handler.class),
-                mock(MeIdStorage.class),
-                mock(MeIdSignatureStorage.class),
-                mock(TimestampProvider.class));
+                mock(MobileEngageInternal.class));
     }
 
     @JavascriptInterface

@@ -267,7 +267,7 @@ public class MobileEngageTest {
         MobileEngage.setup(config);
 
         verify(spyApplication, atLeastOnce()).registerActivityLifecycleCallbacks(captor.capture());
-        ActivityLifecycleAction[] actions = captor.getValue().getApplicationStartActions();
+        ActivityLifecycleAction[] actions = CollectionTestUtils.getElementByType(captor.getAllValues(), ActivityLifecycleWatchdog.class).getApplicationStartActions();
 
         assertEquals(1, CollectionTestUtils.numberOfElementsIn(actions, InAppStartAction.class));
     }
@@ -282,7 +282,7 @@ public class MobileEngageTest {
         MobileEngage.setup(config);
 
         verify(spyApplication, times(2)).registerActivityLifecycleCallbacks(captor.capture());
-        ActivityLifecycleAction[] actions = captor.getValue().getActivityCreatedActions();
+        ActivityLifecycleAction[] actions = CollectionTestUtils.getElementByType(captor.getAllValues(), ActivityLifecycleWatchdog.class).getActivityCreatedActions();
 
         assertEquals(1, CollectionTestUtils.numberOfElementsIn(actions, DeepLinkAction.class));
     }
