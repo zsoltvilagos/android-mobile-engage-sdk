@@ -1,6 +1,7 @@
 package com.emarsys.mobileengage.testUtil;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 public class CollectionTestUtils {
     public static int numberOfElementsIn(List list, Class type) {
@@ -25,5 +26,14 @@ public class CollectionTestUtils {
         }
 
         return count;
+    }
+
+    public static <T> T getElementByType(List<?> list, Class<T> type) {
+        for (Object o : list) {
+            if (type.isInstance(o)) {
+                return type.cast(o);
+            }
+        }
+        throw new NoSuchElementException("Cannot find element of class " + type + " in " + list);
     }
 }
