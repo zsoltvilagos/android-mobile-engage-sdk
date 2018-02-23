@@ -177,7 +177,7 @@ public class MobileEngageConfigTest {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("DefaultInAppMessageHandler must not be null");
 
-        MobileEngageConfig result = new MobileEngageConfig.Builder()
+        new MobileEngageConfig.Builder()
                 .application(applicationDebug)
                 .credentials(APP_ID, SECRET)
                 .disableDefaultChannel()
@@ -187,7 +187,7 @@ public class MobileEngageConfigTest {
 
     @Test
     public void testBuilder_whenInAppMessagingFlipperIsOff_DefaultInAppMessageHandlerIsNotRequired() {
-        MobileEngageConfig result = new MobileEngageConfig.Builder()
+        new MobileEngageConfig.Builder()
                 .application(applicationDebug)
                 .credentials(APP_ID, SECRET)
                 .disableDefaultChannel()

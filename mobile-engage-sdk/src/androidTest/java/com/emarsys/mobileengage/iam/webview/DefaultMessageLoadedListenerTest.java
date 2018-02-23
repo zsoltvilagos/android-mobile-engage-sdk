@@ -33,7 +33,6 @@ public class DefaultMessageLoadedListenerTest {
     }
 
     private FragmentManager fragmentManager;
-    private Activity currentActivity;
     private DefaultMessageLoadedListener listener;
     private IamDialog dialog;
 
@@ -45,7 +44,7 @@ public class DefaultMessageLoadedListenerTest {
     public void init() throws Exception {
         listener = new DefaultMessageLoadedListener(mock(IamDialog.class));
 
-        currentActivity = mock(Activity.class);
+        Activity currentActivity = mock(Activity.class);
         fragmentManager = mock(FragmentManager.class);
         when(currentActivity.getFragmentManager()).thenReturn(fragmentManager);
         CurrentActivityWatchdogTestUtils.setActivityWatchdogState(currentActivity);

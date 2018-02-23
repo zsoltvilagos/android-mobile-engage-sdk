@@ -43,13 +43,11 @@ public class NotificationInboxIntegrationTest {
     @Rule
     public TestRule timeout = TimeoutUtils.getTimeoutRule();
 
-    private Application context;
-
     @Before
     public void setup() {
         DatabaseTestUtils.deleteCoreDatabase();
 
-        context = (Application) InstrumentationRegistry.getTargetContext().getApplicationContext();
+        Application context = (Application) InstrumentationRegistry.getTargetContext().getApplicationContext();
         ConnectionTestUtils.checkConnection(context);
 
         latch = new CountDownLatch(1);

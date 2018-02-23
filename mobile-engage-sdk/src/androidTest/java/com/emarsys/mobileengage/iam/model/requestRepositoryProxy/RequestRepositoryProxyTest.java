@@ -62,7 +62,6 @@ public class RequestRepositoryProxyTest {
 
     private TimestampProvider timestampProvider;
     private RequestRepositoryProxy compositeRepository;
-    private Context context;
 
     @Rule
     public TestRule timeout = TimeoutUtils.getTimeoutRule();
@@ -73,7 +72,7 @@ public class RequestRepositoryProxyTest {
         DatabaseTestUtils.deleteCoreDatabase();
         DatabaseTestUtils.deleteMobileEngageDatabase();
 
-        context = InstrumentationRegistry.getTargetContext();
+        Context context = InstrumentationRegistry.getTargetContext();
 
         mockDeviceInfo = mock(DeviceInfo.class);
         deviceInfo = new DeviceInfo(context);

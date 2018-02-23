@@ -63,7 +63,6 @@ public class InboxInternalTest {
     private AppLoginParameters appLoginParameters_noCredentials;
     private AppLoginParameters appLoginParameters_missing;
 
-    private List<Notification> notificationCache;
     private Application application;
 
     private NotificationCache cache;
@@ -99,8 +98,7 @@ public class InboxInternalTest {
 
         Field cacheField = NotificationCache.class.getDeclaredField("internalCache");
         cacheField.setAccessible(true);
-        notificationCache = (List) cacheField.get(null);
-        notificationCache.clear();
+        ((List) cacheField.get(null)).clear();
 
         cache = new NotificationCache();
     }

@@ -12,15 +12,11 @@ import com.emarsys.core.activity.CurrentActivityWatchdog;
 import com.emarsys.core.concurrency.CoreSdkHandlerProvider;
 import com.emarsys.core.database.repository.Repository;
 import com.emarsys.core.database.repository.SqlSpecification;
-import com.emarsys.core.request.RequestManager;
-import com.emarsys.core.timestamp.TimestampProvider;
 import com.emarsys.mobileengage.MobileEngageInternal;
 import com.emarsys.mobileengage.fake.FakeActivity;
 import com.emarsys.mobileengage.iam.InAppMessageHandler;
 import com.emarsys.mobileengage.iam.dialog.IamDialog;
 import com.emarsys.mobileengage.iam.model.buttonclicked.ButtonClicked;
-import com.emarsys.mobileengage.storage.MeIdSignatureStorage;
-import com.emarsys.mobileengage.storage.MeIdStorage;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 import com.emarsys.mobileengage.testUtil.mockito.ThreadSpy;
 
@@ -73,10 +69,6 @@ public class IamJsBridgeTest {
     private WebView webView;
     private Repository<ButtonClicked, SqlSpecification> buttonClickedRepository;
     private Handler coreSdkHandler;
-    private RequestManager requestManager;
-    private MeIdStorage meIdStorage;
-    private MeIdSignatureStorage meIdSignatureStorage;
-    private TimestampProvider timestampProvider;
     private MobileEngageInternal mobileEngageInternal;
 
     @Rule
@@ -91,17 +83,6 @@ public class IamJsBridgeTest {
         inAppMessageHandler = mock(InAppMessageHandler.class);
         inAppMessageHandlerProvider = mock(InAppMessageHandlerProvider.class);
         when(inAppMessageHandlerProvider.provideHandler()).thenReturn(inAppMessageHandler);
-
-        requestManager = mock(RequestManager.class);
-
-        meIdStorage = mock(MeIdStorage.class);
-        when(meIdStorage.get()).thenReturn(ME_ID);
-
-        meIdSignatureStorage = mock(MeIdSignatureStorage.class);
-        when(meIdSignatureStorage.get()).thenReturn(ME_ID_SIGNATURE);
-
-        timestampProvider = mock(TimestampProvider.class);
-        when(timestampProvider.provideTimestamp()).thenReturn(TIMESTAMP);
 
         buttonClickedRepository = mock(Repository.class);
         coreSdkHandler = new CoreSdkHandlerProvider().provideHandler();

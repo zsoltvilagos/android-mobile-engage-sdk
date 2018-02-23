@@ -30,7 +30,6 @@ public class ButtonClickedRepositoryTest {
 
     private ButtonClickedRepository repository;
     private ButtonClicked buttonClicked1;
-    private ButtonClicked buttonClicked2;
 
     @Rule
     public TestRule timeout = TimeoutUtils.getTimeoutRule();
@@ -42,7 +41,6 @@ public class ButtonClickedRepositoryTest {
         Context context = InstrumentationRegistry.getContext();
         repository = new ButtonClickedRepository(context);
         buttonClicked1 = new ButtonClicked("campaign1", "button1", new Date().getTime());
-        buttonClicked2 = new ButtonClicked("campaign2", "button2", new Date().getTime() + 1000);
     }
 
     @Test

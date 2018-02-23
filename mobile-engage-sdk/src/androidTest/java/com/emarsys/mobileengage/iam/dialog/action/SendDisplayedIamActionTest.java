@@ -24,11 +24,7 @@ import static org.mockito.Mockito.verify;
 
 public class SendDisplayedIamActionTest {
 
-    private final static String APPLICATION_CODE = "application_code";
     private static final String CAMPAIGN_ID = "123445";
-    private static final long TIMESTAMP = 123445;
-    private static final String ME_ID = "123";
-    private static final String ME_ID_SIGNATURE = "signature";
 
     private SendDisplayedIamAction action;
 

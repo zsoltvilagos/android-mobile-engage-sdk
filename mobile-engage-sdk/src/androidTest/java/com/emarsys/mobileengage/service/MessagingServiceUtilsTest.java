@@ -334,8 +334,6 @@ public class MessagingServiceUtilsTest {
         input.put("key2", "value2");
         input.put("u", "{\"test_field\":\"\",\"ems_default_title\":\"" + DEFAULT_TITLE + "\",\"image\":\"https:\\/\\/media.giphy.com\\/media\\/ktvFa67wmjDEI\\/giphy.gif\",\"deep_link\":\"lifestylelabels.com\\/mobile\\/product\\/3245678\",\"sid\":\"sid_here\"}");
 
-        String expectedBefore23 = DEFAULT_TITLE;
-
         String expectedFrom23 = "";
 
         String expected = expectedBasedOnApiLevel(DEFAULT_TITLE, expectedFrom23);
