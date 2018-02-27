@@ -198,13 +198,16 @@ public class MobileEngage {
         instance = new MobileEngageInternal(
                 config,
                 requestManager,
-                appLoginStorage,
-                completionHandler,
-                deviceInfo,
                 uiHandler,
-                meIdStorage,
-                meIdSignatureStorage,
-                timestampProvider);
+                completionHandler,
+                new RequestContext(
+                        config.getApplicationCode(),
+                        deviceInfo,
+                        appLoginStorage,
+                        meIdStorage,
+                        meIdSignatureStorage,
+                        timestampProvider)
+        );
         inboxInstance = new InboxInternal(config, requestManager);
         deepLinkInstance = new DeepLinkInternal(requestManager);
     }

@@ -1,16 +1,13 @@
 package com.emarsys.mobileengage;
 
-import android.app.Application;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.emarsys.core.DeviceInfo;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.request.model.RequestModel;
-import com.emarsys.core.timestamp.TimestampProvider;
 import com.emarsys.core.util.Assert;
 import com.emarsys.core.util.TimestampUtils;
 import com.emarsys.core.util.log.EMSLogger;
@@ -18,9 +15,6 @@ import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
 import com.emarsys.mobileengage.experimental.MobileEngageExperimental;
 import com.emarsys.mobileengage.experimental.MobileEngageFeature;
-import com.emarsys.mobileengage.storage.AppLoginStorage;
-import com.emarsys.mobileengage.storage.MeIdSignatureStorage;
-import com.emarsys.mobileengage.storage.MeIdStorage;
 import com.emarsys.mobileengage.util.RequestUtils;
 import com.emarsys.mobileengage.util.log.MobileEngageTopic;
 import com.google.firebase.iid.FirebaseInstanceId;
@@ -44,43 +38,29 @@ public class MobileEngageInternal {
     AppLoginParameters appLoginParameters;
 
     MobileEngageConfig config;
-    DeviceInfo deviceInfo;
-    Application application;
     RequestManager manager;
-    AppLoginStorage appLoginStorage;
-    Handler uiHandler;
     MobileEngageCoreCompletionHandler coreCompletionHandler;
-    MeIdStorage meIdStorage;
-    MeIdSignatureStorage meIdSignatureStorage;
-    TimestampProvider timestampProvider;
+    Handler uiHandler;
+    private final RequestContext requestContext;
 
     public MobileEngageInternal(
             MobileEngageConfig config,
             RequestManager manager,
-            AppLoginStorage appLoginStorage,
-            MobileEngageCoreCompletionHandler coreCompletionHandler,
-            DeviceInfo deviceInfo,
             Handler uiHandler,
-            MeIdStorage meIdStorage,
-            MeIdSignatureStorage meIdSignatureStorage,
-            TimestampProvider timestampProvider) {
+            MobileEngageCoreCompletionHandler coreCompletionHandler,
+            RequestContext requestContext
+    ) {
         Assert.notNull(config, "Config must not be null!");
         Assert.notNull(manager, "Manager must not be null!");
+        Assert.notNull(requestContext, "RequestContext must not be null!");
         Assert.notNull(coreCompletionHandler, "CoreCompletionHandler must not be null!");
-        Assert.notNull(appLoginStorage, "AppLoginStorage must not be null!");
         EMSLogger.log(MobileEngageTopic.MOBILE_ENGAGE, "Arguments: config %s, manager %s, coreCompletionHandler %s", config, manager, coreCompletionHandler);
 
         this.config = config;
-        this.application = config.getApplication();
-        this.appLoginStorage = appLoginStorage;
-        this.coreCompletionHandler = coreCompletionHandler;
         this.manager = manager;
-        this.deviceInfo = deviceInfo;
+        this.requestContext = requestContext;
         this.uiHandler = uiHandler;
-        this.meIdStorage = meIdStorage;
-        this.meIdSignatureStorage = meIdSignatureStorage;
-        this.timestampProvider = timestampProvider;
-
+        this.coreCompletionHandler = coreCompletionHandler;
         try {
             this.pushToken = FirebaseInstanceId.getInstance().getToken();
         } catch (Exception ignore) {
@@ -115,7 +95,7 @@ public class MobileEngageInternal {
         RequestModel model;
         Map<String, Object> payload = injectLoginPayload(RequestUtils.createBasePayload(config, appLoginParameters));
 
-        Integer storedHashCode = appLoginStorage.get();
+        Integer storedHashCode = requestContext.getAppLoginStorage().get();
         int currentHashCode = payload.hashCode();
 
         Map<String, String> headers = RequestUtils.createBaseHeaders_V2(config);
@@ -126,7 +106,7 @@ public class MobileEngageInternal {
                     .payload(payload)
                     .headers(headers)
                     .build();
-            appLoginStorage.set(currentHashCode);
+            requestContext.getAppLoginStorage().set(currentHashCode);
         } else {
             model = new RequestModel.Builder()
                     .url(ME_LAST_MOBILE_ACTIVITY_V2)
@@ -151,8 +131,8 @@ public class MobileEngageInternal {
 
         MobileEngageUtils.incrementIdlingResource();
         manager.submit(model);
-        meIdStorage.remove();
-        appLoginStorage.remove();
+        requestContext.getMeIdStorage().remove();
+        requestContext.getAppLoginStorage().remove();
         return model.getId();
     }
 
@@ -191,7 +171,7 @@ public class MobileEngageInternal {
         Map<String, Object> event = new HashMap<>();
         event.put("type", "custom");
         event.put("name", eventName);
-        event.put("timestamp", TimestampUtils.formatTimestampWithUTC(timestampProvider.provideTimestamp()));
+        event.put("timestamp", TimestampUtils.formatTimestampWithUTC(requestContext.getTimestampProvider().provideTimestamp()));
         if (eventAttributes != null && !eventAttributes.isEmpty()) {
             event.put("attributes", eventAttributes);
         }
@@ -202,12 +182,12 @@ public class MobileEngageInternal {
         payload.put("events", Collections.singletonList(event));
 
         RequestModel model = new RequestModel.Builder()
-                .url(RequestUtils.createEventUrl_V3(meIdStorage.get()))
+                .url(RequestUtils.createEventUrl_V3(requestContext.getMeIdStorage().get()))
                 .payload(payload)
                 .headers(RequestUtils.createBaseHeaders_V3(
-                        config.getApplicationCode(),
-                        meIdStorage,
-                        meIdSignatureStorage))
+                        requestContext.getApplicationCode(),
+                        requestContext.getMeIdStorage(),
+                        requestContext.getMeIdSignatureStorage()))
                 .build();
 
         MobileEngageUtils.incrementIdlingResource();
@@ -220,14 +200,14 @@ public class MobileEngageInternal {
         Assert.notNull(eventName, "EventName must not be null!");
         EMSLogger.log(MobileEngageTopic.MOBILE_ENGAGE, "Arguments: eventName %s, eventAttributes %s", eventName, eventAttributes);
 
-        if (meIdStorage.get() != null && meIdSignatureStorage.get() != null) {
+        if (requestContext.getMeIdStorage().get() != null && requestContext.getMeIdSignatureStorage().get() != null) {
             RequestModel model = RequestUtils.createInternalCustomEvent(
                     eventName,
                     eventAttributes,
-                    config.getApplicationCode(),
-                    meIdStorage,
-                    meIdSignatureStorage,
-                    timestampProvider);
+                    requestContext.getApplicationCode(),
+                    requestContext.getMeIdStorage(),
+                    requestContext.getMeIdSignatureStorage(),
+                    requestContext.getTimestampProvider());
 
             MobileEngageUtils.incrementIdlingResource();
             manager.submit(model);
@@ -285,12 +265,12 @@ public class MobileEngageInternal {
     }
 
     private Map<String, Object> injectLoginPayload(Map<String, Object> payload) {
-        payload.put("platform", deviceInfo.getPlatform());
-        payload.put("language", deviceInfo.getLanguage());
-        payload.put("timezone", deviceInfo.getTimezone());
-        payload.put("device_model", deviceInfo.getModel());
-        payload.put("application_version", deviceInfo.getApplicationVersion());
-        payload.put("os_version", deviceInfo.getOsVersion());
+        payload.put("platform", requestContext.getDeviceInfo().getPlatform());
+        payload.put("language", requestContext.getDeviceInfo().getLanguage());
+        payload.put("timezone", requestContext.getDeviceInfo().getTimezone());
+        payload.put("device_model", requestContext.getDeviceInfo().getModel());
+        payload.put("application_version", requestContext.getDeviceInfo().getApplicationVersion());
+        payload.put("os_version", requestContext.getDeviceInfo().getOsVersion());
         payload.put("ems_sdk", MOBILEENGAGE_SDK_VERSION);
 
         if (pushToken == null) {

@@ -108,13 +108,15 @@ public class MobileEngageInternalTest {
         mobileEngage = new MobileEngageInternal(
                 baseConfig,
                 manager,
-                appLoginStorage,
-                coreCompletionHandler,
-                new DeviceInfo(application),
                 mock(Handler.class),
-                meIdStorage,
-                meIdSignatureStorage,
-                timestampProvider);
+                coreCompletionHandler,
+                new RequestContext(
+                        baseConfig.getApplicationCode(),
+                        deviceInfo,
+                        appLoginStorage,
+                        meIdStorage,
+                        meIdSignatureStorage,
+                        timestampProvider));
 
         meIdStorage.set(ME_ID);
         meIdSignatureStorage.set(ME_ID_SIGNATURE);
@@ -131,13 +133,9 @@ public class MobileEngageInternalTest {
         new MobileEngageInternal(
                 null,
                 manager,
-                appLoginStorage,
-                coreCompletionHandler,
-                mock(DeviceInfo.class),
                 mock(Handler.class),
-                mock(MeIdStorage.class),
-                mock(MeIdSignatureStorage.class),
-                mock(TimestampProvider.class));
+                coreCompletionHandler,
+                mock(RequestContext.class));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -145,41 +143,19 @@ public class MobileEngageInternalTest {
         new MobileEngageInternal(
                 baseConfig,
                 null,
-                appLoginStorage,
-                coreCompletionHandler,
-                mock(DeviceInfo.class),
                 mock(Handler.class),
-                mock(MeIdStorage.class),
-                mock(MeIdSignatureStorage.class),
-                mock(TimestampProvider.class));
+                coreCompletionHandler,
+                mock(RequestContext.class));
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testConstructor_appLoginStorageShouldNotBeNull() {
+    public void testConstructor_requestContextShouldNotBeNull() {
         new MobileEngageInternal(
                 baseConfig,
                 manager,
-                null,
+                mock(Handler.class),
                 coreCompletionHandler,
-                mock(DeviceInfo.class),
-                mock(Handler.class),
-                mock(MeIdStorage.class),
-                mock(MeIdSignatureStorage.class),
-                mock(TimestampProvider.class));
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testConstructor_coreCompletionHandlerShouldNotBeNull() {
-        new MobileEngageInternal(
-                baseConfig,
-                manager,
-                appLoginStorage,
-                null,
-                mock(DeviceInfo.class),
-                mock(Handler.class),
-                mock(MeIdStorage.class),
-                mock(MeIdSignatureStorage.class),
-                mock(TimestampProvider.class));
+                null);
     }
 
     @Test
@@ -685,13 +661,15 @@ public class MobileEngageInternalTest {
             mobileEngage = new MobileEngageInternal(
                     baseConfig,
                     manager,
-                    new AppLoginStorage(application),
-                    coreCompletionHandler,
-                    new DeviceInfo(application),
                     mock(Handler.class),
-                    new MeIdStorage(application),
-                    new MeIdSignatureStorage(application),
-                    mock(TimestampProvider.class));
+                    coreCompletionHandler,
+                    new RequestContext(
+                            baseConfig.getApplicationCode(),
+                            new DeviceInfo(application),
+                            new AppLoginStorage(application),
+                            new MeIdStorage(application),
+                            new MeIdSignatureStorage(application),
+                            mock(TimestampProvider.class)));
         }
 
         captor = ArgumentCaptor.forClass(RequestModel.class);

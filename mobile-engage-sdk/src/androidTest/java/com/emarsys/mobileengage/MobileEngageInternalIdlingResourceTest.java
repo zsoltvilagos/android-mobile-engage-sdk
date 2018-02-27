@@ -81,13 +81,15 @@ public class MobileEngageInternalIdlingResourceTest {
         mobileEngage = new MobileEngageInternal(
                 config,
                 mock(RequestManager.class),
-                mock(AppLoginStorage.class),
-                mock(MobileEngageCoreCompletionHandler.class),
-                mock(DeviceInfo.class),
                 mock(Handler.class),
-                meIdStorage,
-                meIdSignatureStorage,
-                mock(TimestampProvider.class));
+                mock(MobileEngageCoreCompletionHandler.class),
+                new RequestContext(
+                        config.getApplicationCode(),
+                        mock(DeviceInfo.class),
+                        mock(AppLoginStorage.class),
+                        meIdStorage,
+                        meIdSignatureStorage,
+                        mock(TimestampProvider.class)));
 
         MobileEngageUtils.setup(config);
         idlingResource = mock(MobileEngageIdlingResource.class);

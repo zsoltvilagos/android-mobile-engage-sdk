@@ -349,13 +349,16 @@ public class MobileEngageTest {
         MobileEngageInternal internal = new MobileEngageInternal(
                 baseConfig,
                 succeedingManager,
-                new AppLoginStorage(application),
-                completionHandler,
-                mock(DeviceInfo.class),
                 mock(Handler.class),
-                mock(MeIdStorage.class),
-                mock(MeIdSignatureStorage.class),
-                mock(TimestampProvider.class));
+                completionHandler,
+                new RequestContext(
+                        baseConfig.getApplicationCode(),
+                        mock(DeviceInfo.class),
+                        new AppLoginStorage(application),
+                        mock(MeIdStorage.class),
+                        mock(MeIdSignatureStorage.class),
+                        mock(TimestampProvider.class)
+                ));
 
         MobileEngage.completionHandler = completionHandler;
         MobileEngage.instance = internal;

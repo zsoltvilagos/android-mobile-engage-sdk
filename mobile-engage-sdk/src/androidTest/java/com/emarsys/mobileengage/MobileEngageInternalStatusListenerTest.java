@@ -132,13 +132,15 @@ public class MobileEngageInternalStatusListenerTest {
         mobileEngage = new MobileEngageInternal(
                 baseConfig,
                 requestManager,
-                new AppLoginStorage(context),
-                completionHandler,
-                mock(DeviceInfo.class),
                 coreSdkHandler,
-                meIdStorage,
-                meIdSignatureStorage,
-                mock(TimestampProvider.class));
+                completionHandler,
+                new RequestContext(
+                        baseConfig.getApplicationCode(),
+                        mock(DeviceInfo.class),
+                        new AppLoginStorage(context),
+                        meIdStorage,
+                        meIdSignatureStorage,
+                        mock(TimestampProvider.class)));
     }
 
     @Test
