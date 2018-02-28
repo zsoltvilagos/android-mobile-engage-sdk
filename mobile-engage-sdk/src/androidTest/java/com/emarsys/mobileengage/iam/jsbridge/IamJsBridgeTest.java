@@ -207,7 +207,7 @@ public class IamJsBridgeTest {
                                         .put("payloadKey1", "value1")
                                         .put("payloadKey2", "value2"));
 
-        jsBridge.triggerMeEvent(json.toString());
+        jsBridge.triggerMEEvent(json.toString());
 
         verify(mobileEngageInternal, Mockito.timeout(1000)).trackCustomEvent("eventName", eventAttributes);
     }
@@ -219,7 +219,7 @@ public class IamJsBridgeTest {
                         .put("name", "eventName")
                         .put("id", "123456789");
 
-        jsBridge.triggerMeEvent(json.toString());
+        jsBridge.triggerMEEvent(json.toString());
 
         verify(mobileEngageInternal, Mockito.timeout(1000)).trackCustomEvent("eventName", null);
     }
@@ -236,7 +236,7 @@ public class IamJsBridgeTest {
                 .put("id", id)
                 .put("name", eventName);
 
-        jsBridge.triggerMeEvent(json.toString());
+        jsBridge.triggerMEEvent(json.toString());
         threadSpy.verifyCalledOnCoreSdkThread();
     }
 
@@ -245,7 +245,7 @@ public class IamJsBridgeTest {
         String id = "12346789";
         JSONObject json = new JSONObject().put("id", id);
 
-        jsBridge.triggerMeEvent(json.toString());
+        jsBridge.triggerMEEvent(json.toString());
 
         JSONObject result = new JSONObject()
                 .put("id", id)
@@ -263,7 +263,7 @@ public class IamJsBridgeTest {
         String requestId = "eventId";
         when(mobileEngageInternal.trackCustomEvent(any(String.class), nullable(Map.class))).thenReturn(requestId);
 
-        jsBridge.triggerMeEvent(json.toString());
+        jsBridge.triggerMEEvent(json.toString());
 
         JSONObject result = new JSONObject()
                 .put("id", id)

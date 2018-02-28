@@ -96,7 +96,7 @@ public class IamJsBridge {
     }
 
     @JavascriptInterface
-    public void triggerMeEvent(String jsonString) {
+    public void triggerMEEvent(String jsonString) {
         handleJsBridgeEvent(jsonString, "name", coreSdkHandler, new JsBridgeEventAction() {
             @Override
             public JSONObject execute(String property, JSONObject json) throws Exception {
