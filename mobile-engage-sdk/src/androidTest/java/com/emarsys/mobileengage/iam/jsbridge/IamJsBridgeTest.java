@@ -42,6 +42,7 @@ import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -57,10 +58,6 @@ public class IamJsBridgeTest {
         mock(Activity.class);
     }
 
-    private static final String APPLICATION_CODE = "ABCD-1234";
-    private static final String ME_ID = "123";
-    private static final String ME_ID_SIGNATURE = "signature";
-    private static final long TIMESTAMP = 9876;
     private static final String CAMPAIGN_ID = "555666777";
 
     private IamJsBridge jsBridge;
@@ -185,7 +182,6 @@ public class IamJsBridgeTest {
                         .put("id", "123456789")
                         .put("payload", payload);
 
-        jsBridge.setWebView(webView);
         jsBridge.triggerAppEvent(json.toString());
 
         ArgumentCaptor<String> nameCaptor = ArgumentCaptor.forClass(String.class);
@@ -194,6 +190,86 @@ public class IamJsBridgeTest {
 
         assertEquals(payload.toString(), payloadCaptor.getValue().toString());
         assertEquals("eventName", nameCaptor.getValue());
+    }
+
+    @Test
+    public void testTriggerMeEvent_shouldCallMobileEngageInternal_withAttributes() throws JSONException {
+        Map<String, String> eventAttributes = new HashMap<>();
+        eventAttributes.put("payloadKey1", "value1");
+        eventAttributes.put("payloadKey2", "value2");
+
+        JSONObject json =
+                new JSONObject()
+                        .put("name", "eventName")
+                        .put("id", "123456789")
+                        .put("payload",
+                                new JSONObject()
+                                        .put("payloadKey1", "value1")
+                                        .put("payloadKey2", "value2"));
+
+        jsBridge.triggerMeEvent(json.toString());
+
+        verify(mobileEngageInternal, Mockito.timeout(1000)).trackCustomEvent("eventName", eventAttributes);
+    }
+
+    @Test
+    public void testTriggerMeEvent_shouldCallMobileEngageInternal_withoutAttributes() throws JSONException {
+        JSONObject json =
+                new JSONObject()
+                        .put("name", "eventName")
+                        .put("id", "123456789");
+
+        jsBridge.triggerMeEvent(json.toString());
+
+        verify(mobileEngageInternal, Mockito.timeout(1000)).trackCustomEvent("eventName", null);
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testTriggerMeEvent_shouldCallMobileEngageInternal_onCoreSDKThread() throws JSONException, InterruptedException {
+        ThreadSpy threadSpy = new ThreadSpy();
+        doAnswer(threadSpy).when(mobileEngageInternal).trackCustomEvent(any(String.class), nullable(Map.class));
+
+        String id = "12346789";
+        String eventName = "eventName";
+        JSONObject json = new JSONObject()
+                .put("id", id)
+                .put("name", eventName);
+
+        jsBridge.triggerMeEvent(json.toString());
+        threadSpy.verifyCalledOnCoreSdkThread();
+    }
+
+    @Test
+    public void testTriggerMeEvent_shouldInvokeCallback_whenNameIsMissing() throws JSONException {
+        String id = "12346789";
+        JSONObject json = new JSONObject().put("id", id);
+
+        jsBridge.triggerMeEvent(json.toString());
+
+        JSONObject result = new JSONObject()
+                .put("id", id)
+                .put("success", false)
+                .put("error", "Missing name!");
+        verify(webView, Mockito.timeout(1000)).evaluateJavascript(String.format("MEIAM.handleResponse(%s);", result), null);
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testTriggerMeEvent_shouldInvokeCallback_onSuccess() throws Exception {
+        String id = "123456789";
+        JSONObject json = new JSONObject().put("id", id).put("name", "value");
+        jsBridge.triggerMeEvent(json.toString());
+
+        String requestId = "eventId";
+        when(mobileEngageInternal.trackCustomEvent(any(String.class), nullable(Map.class))).thenReturn(requestId);
+
+        JSONObject result = new JSONObject()
+                .put("id", id)
+                .put("success", true)
+                .put("meEventId", requestId);
+
+        verify(webView, Mockito.timeout(1000)).evaluateJavascript(String.format("MEIAM.handleResponse(%s);", result), null);
     }
 
     @Test
@@ -283,7 +359,7 @@ public class IamJsBridgeTest {
     }
 
     @Test
-    public void testButtonClicked_shouldSendInternalEvent_throughRequestManager() throws Exception {
+    public void testButtonClicked_shouldSendInternalEvent_throughMobileEngageInternal() throws Exception {
         String id = "12346789";
         String buttonId = "987654321";
         JSONObject json = new JSONObject().put("id", id).put("buttonId", buttonId);

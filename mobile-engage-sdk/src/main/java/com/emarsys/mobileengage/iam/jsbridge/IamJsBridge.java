@@ -16,6 +16,7 @@ import com.emarsys.core.activity.CurrentActivityWatchdog;
 import com.emarsys.core.database.repository.Repository;
 import com.emarsys.core.database.repository.SqlSpecification;
 import com.emarsys.core.util.Assert;
+import com.emarsys.core.util.JsonUtils;
 import com.emarsys.core.util.log.EMSLogger;
 import com.emarsys.mobileengage.MobileEngageInternal;
 import com.emarsys.mobileengage.iam.InAppMessageHandler;
@@ -27,11 +28,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 @RequiresApi(api = Build.VERSION_CODES.KITKAT)
 public class IamJsBridge {
-
     private InAppMessageHandlerProvider messageHandlerProvider;
     private WebView webView;
     private Handler uiHandler;
@@ -82,32 +83,42 @@ public class IamJsBridge {
     @JavascriptInterface
     public void triggerAppEvent(final String jsonString) {
         final InAppMessageHandler inAppMessageHandler = messageHandlerProvider.provideHandler();
-
         if (inAppMessageHandler != null) {
             handleJsBridgeEvent(jsonString, "name", uiHandler, new JsBridgeEventAction() {
                 @Override
-                public void execute(String property, JSONObject json) throws Exception {
+                public JSONObject execute(String property, JSONObject json) throws Exception {
                     final JSONObject payload = json.optJSONObject("payload");
                     inAppMessageHandler.handleApplicationEvent(property, payload);
+                    return null;
                 }
             });
         }
     }
 
     @JavascriptInterface
+    public void triggerMeEvent(String jsonString) {
+        handleJsBridgeEvent(jsonString, "name", coreSdkHandler, new JsBridgeEventAction() {
+            @Override
+            public JSONObject execute(String property, JSONObject json) throws Exception {
+                Map<String, String> attributes = extractAttributes(json);
+                String eventId = mobileEngageInternal.trackCustomEvent(property, attributes);
+                return new JSONObject().put("meEventId", eventId);
+            }
+        });
+    }
+
+    @JavascriptInterface
     public void buttonClicked(String jsonString) {
         handleJsBridgeEvent(jsonString, "buttonId", coreSdkHandler, new JsBridgeEventAction() {
             @Override
-            public void execute(String property, JSONObject json) {
+            public JSONObject execute(String property, JSONObject json) {
                 buttonClickedRepository.add(new ButtonClicked(campaignId, property, System.currentTimeMillis()));
-
                 String eventName = "inapp:click";
-
                 Map<String, String> attributes = new HashMap<>();
                 attributes.put("message_id", campaignId);
                 attributes.put("button_id", property);
-
                 mobileEngageInternal.trackInternalCustomEvent(eventName, attributes);
+                return null;
             }
         });
     }
@@ -116,7 +127,7 @@ public class IamJsBridge {
     public void openExternalLink(String jsonString) {
         handleJsBridgeEvent(jsonString, "url", uiHandler, new JsBridgeEventAction() {
             @Override
-            public void execute(String property, JSONObject json) throws Exception {
+            public JSONObject execute(String property, JSONObject json) throws Exception {
                 Activity activity = CurrentActivityWatchdog.getCurrentActivity();
                 if (activity != null) {
                     Uri link = Uri.parse(property);
@@ -129,27 +140,28 @@ public class IamJsBridge {
                 } else {
                     throw new Exception("UI unavailable!");
                 }
+                return null;
             }
         });
     }
 
     private interface JsBridgeEventAction {
-        void execute(String property, JSONObject json) throws Exception;
+
+        JSONObject execute(String property, JSONObject json) throws Exception;
     }
 
     private void handleJsBridgeEvent(String jsonString, final String property, Handler handler, final JsBridgeEventAction jsBridgeEventAction) {
         try {
             final JSONObject json = new JSONObject(jsonString);
             final String id = json.getString("id");
-
             if (json.has(property)) {
                 final String propertyValue = json.getString(property);
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
                         try {
-                            jsBridgeEventAction.execute(propertyValue, json);
-                            sendSuccess(id);
+                            JSONObject resultPayload = jsBridgeEventAction.execute(propertyValue, json);
+                            sendSuccess(id, resultPayload);
                         } catch (Exception e) {
                             sendError(id, e.getMessage());
                         }
@@ -163,11 +175,13 @@ public class IamJsBridge {
         }
     }
 
-    void sendSuccess(String id) {
+    void sendSuccess(String id, JSONObject resultPayload) {
         try {
-            sendResult(new JSONObject()
+            JSONObject message = new JSONObject()
                     .put("id", id)
-                    .put("success", true));
+                    .put("success", true);
+            JSONObject result = JsonUtils.merge(message, resultPayload);
+            sendResult(result);
         } catch (JSONException ignore) {
         }
     }
@@ -198,4 +212,19 @@ public class IamJsBridge {
             });
         }
     }
+
+    private Map<String, String> extractAttributes(JSONObject json) throws JSONException {
+        Map<String, String> result = null;
+        JSONObject payload = json.optJSONObject("payload");
+        if (payload != null) {
+            result = new HashMap<>();
+            Iterator<String> keys = payload.keys();
+            while (keys.hasNext()) {
+                String key = keys.next();
+                result.put(key, payload.getString(key));
+            }
+        }
+        return result;
+    }
+
 }
