@@ -259,10 +259,11 @@ public class IamJsBridgeTest {
     public void testTriggerMeEvent_shouldInvokeCallback_onSuccess() throws Exception {
         String id = "123456789";
         JSONObject json = new JSONObject().put("id", id).put("name", "value");
-        jsBridge.triggerMeEvent(json.toString());
 
         String requestId = "eventId";
         when(mobileEngageInternal.trackCustomEvent(any(String.class), nullable(Map.class))).thenReturn(requestId);
+
+        jsBridge.triggerMeEvent(json.toString());
 
         JSONObject result = new JSONObject()
                 .put("id", id)
