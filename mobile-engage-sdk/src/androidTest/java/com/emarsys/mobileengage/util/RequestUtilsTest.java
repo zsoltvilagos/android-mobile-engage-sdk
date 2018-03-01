@@ -38,6 +38,7 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -274,7 +275,8 @@ public class RequestUtilsTest {
                 null,
                 Collections.<DisplayedIam>emptyList(),
                 Collections.<ButtonClicked>emptyList(),
-                deviceInfo);
+                deviceInfo,
+                false);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -283,7 +285,8 @@ public class RequestUtilsTest {
                 Collections.emptyList(),
                 null,
                 Collections.<ButtonClicked>emptyList(),
-                deviceInfo);
+                deviceInfo,
+                false);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -292,7 +295,8 @@ public class RequestUtilsTest {
                 Collections.emptyList(),
                 Collections.<DisplayedIam>emptyList(),
                 null,
-                deviceInfo);
+                deviceInfo,
+                false);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -301,7 +305,20 @@ public class RequestUtilsTest {
                 Collections.emptyList(),
                 Collections.<DisplayedIam>emptyList(),
                 Collections.<ButtonClicked>emptyList(),
-                null);
+                null,
+                false);
+    }
+
+    @Test
+    public void testCreateCompositeRequestModelPayload_payloadContainsDoNotDisturb_whenDoNotDisturbIsTrue() {
+        Map<String, Object> payload = RequestUtils.createCompositeRequestModelPayload(
+                Collections.emptyList(),
+                Collections.<DisplayedIam>emptyList(),
+                Collections.<ButtonClicked>emptyList(),
+                deviceInfo,
+                true);
+
+        assertTrue((Boolean) payload.get("dnd"));
     }
 
     @Test
@@ -333,8 +350,8 @@ public class RequestUtilsTest {
                 events,
                 displayedIams,
                 buttonClicks,
-                deviceInfo
-        );
+                deviceInfo,
+                false);
 
         assertEquals(expectedPayload, resultPayload);
     }

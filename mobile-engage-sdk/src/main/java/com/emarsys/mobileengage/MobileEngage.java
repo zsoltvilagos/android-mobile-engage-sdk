@@ -29,6 +29,7 @@ import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
 import com.emarsys.mobileengage.experimental.FlipperFeature;
 import com.emarsys.mobileengage.experimental.MobileEngageExperimental;
 import com.emarsys.mobileengage.experimental.MobileEngageFeature;
+import com.emarsys.mobileengage.iam.DoNotDisturbProvider;
 import com.emarsys.mobileengage.iam.InAppStartAction;
 import com.emarsys.mobileengage.iam.dialog.IamDialogProvider;
 import com.emarsys.mobileengage.iam.jsbridge.InAppMessageHandlerProvider;
@@ -65,6 +66,7 @@ public class MobileEngage {
     static MobileEngageConfig config;
     private static Handler uiHandler;
     private static TimestampProvider timestampProvider;
+    private static DoNotDisturbProvider doNotDisturbProvider;
     private static AppLoginStorage appLoginStorage;
     private static MeIdStorage meIdStorage;
     private static MeIdSignatureStorage meIdSignatureStorage;
@@ -95,6 +97,20 @@ public class MobileEngage {
 
     }
 
+    public static class InApp {
+
+        private static boolean enabled;
+
+        public static void setPaused(boolean enabled) {
+            InApp.enabled = enabled;
+        }
+
+        public static boolean isPaused() {
+            return InApp.enabled;
+        }
+
+    }
+
     public static void setup(@NonNull MobileEngageConfig config) {
         Assert.notNull(config, "Config must not be null!");
         EMSLogger.log(MobileEngageTopic.MOBILE_ENGAGE, "Argument: %s", config);
@@ -109,6 +125,8 @@ public class MobileEngage {
         initializeDependencies(config, application);
 
         initializeInstances(config);
+
+        initializeInApp();
 
         registerResponseHandlers();
 
@@ -175,7 +193,7 @@ public class MobileEngage {
         uiHandler = new Handler(Looper.getMainLooper());
         coreSdkHandler = new CoreSdkHandlerProvider().provideHandler();
         timestampProvider = new TimestampProvider();
-
+        doNotDisturbProvider = new DoNotDisturbProvider();
         appLoginStorage = new AppLoginStorage(application);
         meIdStorage = new MeIdStorage(application);
         meIdSignatureStorage = new MeIdSignatureStorage(application);
@@ -210,6 +228,10 @@ public class MobileEngage {
         );
         inboxInstance = new InboxInternal(config, requestManager);
         deepLinkInstance = new DeepLinkInternal(requestManager);
+    }
+
+    private static void initializeInApp() {
+        InApp.setPaused(false);
     }
 
     private static void registerResponseHandlers() {
@@ -265,7 +287,8 @@ public class MobileEngage {
                     requestModelRepository,
                     displayedIamRepository,
                     buttonClickedRepository,
-                    timestampProvider);
+                    timestampProvider,
+                    doNotDisturbProvider);
         } else {
             return requestModelRepository;
         }

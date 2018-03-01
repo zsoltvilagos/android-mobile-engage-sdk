@@ -60,6 +60,7 @@ import java.util.concurrent.CountDownLatch;
 
 import static com.emarsys.mobileengage.fake.FakeRequestManager.ResponseType.SUCCESS;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
@@ -139,6 +140,15 @@ public class MobileEngageTest {
         MobileEngageCoreCompletionHandler coreCompletionHandler = MobileEngage.completionHandler;
         assertNotNull(coreCompletionHandler);
         assertEquals(1, CollectionTestUtils.numberOfElementsIn(coreCompletionHandler.responseHandlers, MeIdResponseHandler.class));
+    }
+
+    @Test
+    public void testSetup_initializesInAppPaused_withFalse() {
+        MobileEngage.InApp.setPaused(true);
+
+        MobileEngage.setup(baseConfig);
+
+        assertFalse(MobileEngage.InApp.isPaused());
     }
 
     @Test

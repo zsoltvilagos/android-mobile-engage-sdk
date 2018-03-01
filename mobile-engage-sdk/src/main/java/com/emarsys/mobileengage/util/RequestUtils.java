@@ -105,7 +105,8 @@ public class RequestUtils {
             List<?> events,
             List<DisplayedIam> displayedIams,
             List<ButtonClicked> buttonClicks,
-            DeviceInfo deviceInfo) {
+            DeviceInfo deviceInfo,
+            boolean doNotDisturb) {
         Assert.notNull(events, "Events must not be null!");
         Assert.notNull(displayedIams, "DisplayedIams must not be null!");
         Assert.notNull(buttonClicks, "ButtonClicks must not be null!");
@@ -114,6 +115,9 @@ public class RequestUtils {
         Map<String, Object> compositePayload = new HashMap<>();
         compositePayload.put("viewed_messages", IamConversionUtils.displayedIamsToArray(displayedIams));
         compositePayload.put("clicks", IamConversionUtils.buttonClicksToArray(buttonClicks));
+        if (doNotDisturb) {
+            compositePayload.put("dnd", true);
+        }
         compositePayload.put("events", events);
         compositePayload.put("hardware_id", deviceInfo.getHwid());
         compositePayload.put("language", deviceInfo.getLanguage());

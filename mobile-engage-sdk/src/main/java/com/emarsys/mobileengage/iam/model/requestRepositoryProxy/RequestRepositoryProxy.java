@@ -10,6 +10,7 @@ import com.emarsys.core.request.model.specification.FilterByUrlPattern;
 import com.emarsys.core.timestamp.TimestampProvider;
 import com.emarsys.core.util.Assert;
 import com.emarsys.mobileengage.endpoint.Endpoint;
+import com.emarsys.mobileengage.iam.DoNotDisturbProvider;
 import com.emarsys.mobileengage.iam.model.buttonclicked.ButtonClicked;
 import com.emarsys.mobileengage.iam.model.buttonclicked.ButtonClickedContract;
 import com.emarsys.mobileengage.iam.model.displayediam.DisplayedIam;
@@ -34,23 +35,27 @@ public class RequestRepositoryProxy implements Repository<RequestModel, SqlSpeci
     private final Repository<DisplayedIam, SqlSpecification> iamRepository;
     private final Repository<ButtonClicked, SqlSpecification> buttonClickedRepository;
     private final TimestampProvider timestampProvider;
+    private final DoNotDisturbProvider doNotDisturbProvider;
 
     public RequestRepositoryProxy(
             DeviceInfo deviceInfo,
             Repository<RequestModel, SqlSpecification> requestRepository,
             Repository<DisplayedIam, SqlSpecification> iamRepository,
             Repository<ButtonClicked, SqlSpecification> buttonClickedRepository,
-            TimestampProvider timestampProvider) {
+            TimestampProvider timestampProvider,
+            DoNotDisturbProvider doNotDisturbProvider) {
         Assert.notNull(deviceInfo, "DeviceInfo must not be null!");
         Assert.notNull(requestRepository, "RequestRepository must not be null!");
         Assert.notNull(iamRepository, "IamRepository must not be null!");
         Assert.notNull(buttonClickedRepository, "ButtonClickedRepository must not be null!");
         Assert.notNull(timestampProvider, "TimestampProvider must not be null!");
+        Assert.notNull(doNotDisturbProvider, "DoNotDisturbProvider must not be null!");
         this.deviceInfo = deviceInfo;
         this.requestRepository = requestRepository;
         this.iamRepository = iamRepository;
         this.buttonClickedRepository = buttonClickedRepository;
         this.timestampProvider = timestampProvider;
+        this.doNotDisturbProvider = doNotDisturbProvider;
     }
 
     @Override
@@ -135,7 +140,8 @@ public class RequestRepositoryProxy implements Repository<RequestModel, SqlSpeci
                 events,
                 iamRepository.query(new QueryAll(DisplayedIamContract.TABLE_NAME)),
                 buttonClickedRepository.query(new QueryAll(ButtonClickedContract.TABLE_NAME)),
-                deviceInfo
+                deviceInfo,
+                doNotDisturbProvider.isPaused()
         );
     }
 
@@ -149,6 +155,5 @@ public class RequestRepositoryProxy implements Repository<RequestModel, SqlSpeci
 
         return result;
     }
-
 
 }

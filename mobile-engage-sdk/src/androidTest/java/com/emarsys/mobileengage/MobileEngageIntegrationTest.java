@@ -112,6 +112,24 @@ public class MobileEngageIntegrationTest {
     }
 
     @Test
+    public void testTrackCustomEvent_V3_withPausedInApp() throws Exception {
+        doAppLogin();
+
+        MobileEngage.InApp.setPaused(true);
+
+        eventuallyAssertSuccess(MobileEngage.trackCustomEvent("customEvent", new HashMap<String, String>()));
+    }
+
+    @Test
+    public void testTrackCustomEvent_V3_withResumedInApp() throws Exception {
+        doAppLogin();
+
+        MobileEngage.InApp.setPaused(false);
+
+        eventuallyAssertSuccess(MobileEngage.trackCustomEvent("customEvent", new HashMap<String, String>()));
+    }
+
+    @Test
     public void testTrackCustomEvent_V3_withAttributes() throws Exception {
         doAppLogin();
 

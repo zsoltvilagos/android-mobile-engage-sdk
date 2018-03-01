@@ -15,6 +15,7 @@ import com.emarsys.core.request.model.RequestModelRepository;
 import com.emarsys.core.request.model.specification.QueryNewestRequestModel;
 import com.emarsys.core.timestamp.TimestampProvider;
 import com.emarsys.core.util.TimestampUtils;
+import com.emarsys.mobileengage.iam.DoNotDisturbProvider;
 import com.emarsys.mobileengage.iam.model.buttonclicked.ButtonClicked;
 import com.emarsys.mobileengage.iam.model.buttonclicked.ButtonClickedRepository;
 import com.emarsys.mobileengage.iam.model.displayediam.DisplayedIam;
@@ -38,6 +39,7 @@ import java.util.Map;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -61,6 +63,8 @@ public class RequestRepositoryProxyTest {
     private Repository<ButtonClicked, SqlSpecification> buttonClickedRepository;
 
     private TimestampProvider timestampProvider;
+    private DoNotDisturbProvider doNotDisturbProvider;
+
     private RequestRepositoryProxy compositeRepository;
 
     @Rule
@@ -87,38 +91,45 @@ public class RequestRepositoryProxyTest {
 
         timestampProvider = mock(TimestampProvider.class);
         when(timestampProvider.provideTimestamp()).thenReturn(TIMESTAMP);
+        doNotDisturbProvider = mock(DoNotDisturbProvider.class);
 
         compositeRepository = new RequestRepositoryProxy(
                 mockDeviceInfo,
                 mockRequestModelRepository,
                 mockDisplayedIamRepository,
                 mockButtonClickedRepository,
-                timestampProvider);
+                timestampProvider,
+                doNotDisturbProvider);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_deviceInfo_mustNotBeNull() {
-        new RequestRepositoryProxy(null, mockRequestModelRepository, mockDisplayedIamRepository, mockButtonClickedRepository, timestampProvider);
+        new RequestRepositoryProxy(null, mockRequestModelRepository, mockDisplayedIamRepository, mockButtonClickedRepository, timestampProvider, doNotDisturbProvider);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_requestRepository_mustNotBeNull() {
-        new RequestRepositoryProxy(mockDeviceInfo, null, mockDisplayedIamRepository, mockButtonClickedRepository, timestampProvider);
+        new RequestRepositoryProxy(mockDeviceInfo, null, mockDisplayedIamRepository, mockButtonClickedRepository, timestampProvider, doNotDisturbProvider);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_displayedIamRepository_mustNotBeNull() {
-        new RequestRepositoryProxy(mockDeviceInfo, mockRequestModelRepository, null, mockButtonClickedRepository, timestampProvider);
+        new RequestRepositoryProxy(mockDeviceInfo, mockRequestModelRepository, null, mockButtonClickedRepository, timestampProvider, doNotDisturbProvider);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_buttonClickedRepository_mustNotBeNull() {
-        new RequestRepositoryProxy(mockDeviceInfo, mockRequestModelRepository, mockDisplayedIamRepository, null, timestampProvider);
+        new RequestRepositoryProxy(mockDeviceInfo, mockRequestModelRepository, mockDisplayedIamRepository, null, timestampProvider, doNotDisturbProvider);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_timestampProvider_mustNotBeNull() {
-        new RequestRepositoryProxy(mockDeviceInfo, mockRequestModelRepository, mockDisplayedIamRepository, buttonClickedRepository, null);
+        new RequestRepositoryProxy(mockDeviceInfo, mockRequestModelRepository, mockDisplayedIamRepository, buttonClickedRepository, null, doNotDisturbProvider);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructor_doNotDisturbProvider_mustNotBeNull() {
+        new RequestRepositoryProxy(mockDeviceInfo, mockRequestModelRepository, mockDisplayedIamRepository, buttonClickedRepository, timestampProvider, null);
     }
 
     @Test
@@ -224,8 +235,8 @@ public class RequestRepositoryProxyTest {
                 Arrays.asList(event1, event2, event3),
                 Collections.<DisplayedIam>emptyList(),
                 Collections.<ButtonClicked>emptyList(),
-                deviceInfo
-        );
+                deviceInfo,
+                false);
 
         RequestModel expectedComposite = new CompositeRequestModel(
                 RequestUtils.createEventUrl_V3(MEID),
@@ -295,8 +306,8 @@ public class RequestRepositoryProxyTest {
                         new ButtonClicked("campaign1", "button2", 300),
                         new ButtonClicked("campaign2", "button1", 2000)
                 ),
-                deviceInfo
-        );
+                deviceInfo,
+                false);
 
         RequestModel expectedComposite = new CompositeRequestModel(
                 RequestUtils.createEventUrl_V3(MEID),
@@ -384,8 +395,8 @@ public class RequestRepositoryProxyTest {
                         new ButtonClicked("campaign1", "button2", 300),
                         new ButtonClicked("campaign2", "button1", 2000)
                 ),
-                deviceInfo
-        );
+                deviceInfo,
+                false);
 
         RequestModel expectedComposite = new CompositeRequestModel(
                 RequestUtils.createEventUrl_V3(MEID),
@@ -406,13 +417,42 @@ public class RequestRepositoryProxyTest {
         assertEquals(expected, compositeRepository.query(new QueryAll(RequestContract.TABLE_NAME)));
     }
 
+    @Test
+    public void testQuery_resultPayloadShouldContainDoNotDisturbWithTrue_whenDoNotDisturbIsOn() {
+        when(doNotDisturbProvider.isPaused()).thenReturn(true);
+        compositeRepository = compositeRepositoryWithRealRepositories();
+
+        final RequestModel customEvent1 = customEvent_V3(900, "event1");
+        requestModelRepository.add(customEvent1);
+
+        List<RequestModel> result = compositeRepository.query(new QueryAll(RequestContract.TABLE_NAME));
+        Map<String, Object> payload = result.get(0).getPayload();
+
+        assertTrue((Boolean) payload.get("dnd"));
+    }
+
+    @Test
+    public void testQuery_resultPayloadShouldNotContainDoNotDisturb_whenDoNotDisturbIsOff() {
+        when(doNotDisturbProvider.isPaused()).thenReturn(false);
+        compositeRepository = compositeRepositoryWithRealRepositories();
+
+        final RequestModel customEvent1 = customEvent_V3(900, "event1");
+        requestModelRepository.add(customEvent1);
+
+        List<RequestModel> result = compositeRepository.query(new QueryAll(RequestContract.TABLE_NAME));
+        Map<String, Object> payload = result.get(0).getPayload();
+
+        assertNull(payload.get("dnd"));
+    }
+
     private RequestRepositoryProxy compositeRepositoryWithRealRepositories() {
         return new RequestRepositoryProxy(
                 deviceInfo,
                 requestModelRepository,
                 displayedIamRepository,
                 buttonClickedRepository,
-                timestampProvider
+                timestampProvider,
+                doNotDisturbProvider
         );
     }
 
