@@ -1,13 +1,19 @@
 package com.emarsys.mobileengage.iam;
 
 import com.emarsys.mobileengage.MobileEngage;
+import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class DoNotDisturbProviderTest {
+
+    @Rule
+    public TestRule timeout = TimeoutUtils.getTimeoutRule();
 
     @Test
     public void testIsPaused_returnsTrue_ifInAppIsSetToBePaused() {
