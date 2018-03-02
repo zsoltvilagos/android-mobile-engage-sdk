@@ -80,6 +80,7 @@ public class MobileEngageIntegrationTest {
     public void tearDown() {
         MobileEngage.coreSdkHandler.getLooper().quit();
         clearStorages();
+        MobileEngage.InApp.setPaused(false);
     }
 
     @Test

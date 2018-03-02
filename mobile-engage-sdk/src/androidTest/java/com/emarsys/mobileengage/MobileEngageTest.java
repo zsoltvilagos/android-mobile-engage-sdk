@@ -122,6 +122,7 @@ public class MobileEngageTest {
     @After
     public void tearDown() throws Exception {
         ExperimentalTestUtils.resetExperimentalFeatures();
+        MobileEngage.InApp.setPaused(false);
     }
 
     @Test

@@ -4,6 +4,7 @@ import android.support.test.runner.AndroidJUnit4;
 
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -15,6 +16,11 @@ public class MobileEngageInAppTest {
 
     @Rule
     public TestRule timeout = TimeoutUtils.getTimeoutRule();
+
+    @After
+    public void tearDown() {
+        MobileEngage.InApp.setPaused(false);
+    }
 
     @Test
     public void testSetter_paused() {
