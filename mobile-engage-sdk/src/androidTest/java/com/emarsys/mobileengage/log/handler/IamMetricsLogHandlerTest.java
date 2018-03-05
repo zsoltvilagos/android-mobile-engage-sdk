@@ -17,16 +17,16 @@ public class IamMetricsLogHandlerTest {
     @Rule
     public TestRule timeout = TimeoutUtils.getTimeoutRule();
 
-    private com.emarsys.core.handler.IamMetricsLogHandler handler;
+    private IamMetricsLogHandler handler;
 
     @Before
     public void init() {
-        handler = new com.emarsys.core.handler.IamMetricsLogHandler();
+        handler = new IamMetricsLogHandler();
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testHandle_itemMustNotBeNull() {
-        new com.emarsys.core.handler.IamMetricsLogHandler().handle(null);
+        new IamMetricsLogHandler().handle(null);
     }
 
     @Test
