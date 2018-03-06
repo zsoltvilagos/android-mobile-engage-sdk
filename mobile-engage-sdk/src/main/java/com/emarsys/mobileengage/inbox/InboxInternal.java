@@ -36,13 +36,17 @@ public class InboxInternal {
     NotificationCache cache;
     RequestManager manager;
 
-    public InboxInternal(MobileEngageConfig config, RequestManager requestManager) {
+    public InboxInternal(
+            MobileEngageConfig config,
+            RequestManager requestManager,
+            RestClient restClient) {
         Assert.notNull(config, "Config must not be null!");
         Assert.notNull(requestManager, "RequestManager must not be null!");
+        Assert.notNull(restClient, "RestClient must not be null!");
         EMSLogger.log(MobileEngageTopic.INBOX, "Arguments: config %s, requestManager %s", config, requestManager);
 
         this.config = config;
-        this.client = new RestClient();
+        this.client = restClient;
         this.handler = new Handler(Looper.getMainLooper());
         this.cache = new NotificationCache();
         this.manager = requestManager;

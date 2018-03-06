@@ -2,6 +2,7 @@ package com.emarsys.mobileengage;
 
 import android.app.Activity;
 import android.app.Application;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.Looper;
@@ -16,12 +17,16 @@ import com.emarsys.core.concurrency.CoreSdkHandlerProvider;
 import com.emarsys.core.connection.ConnectionWatchDog;
 import com.emarsys.core.database.repository.Repository;
 import com.emarsys.core.database.repository.SqlSpecification;
+import com.emarsys.core.database.repository.log.LogRepository;
 import com.emarsys.core.request.RequestManager;
+import com.emarsys.core.request.RestClient;
 import com.emarsys.core.request.model.RequestModel;
 import com.emarsys.core.request.model.RequestModelRepository;
 import com.emarsys.core.timestamp.TimestampProvider;
 import com.emarsys.core.util.Assert;
 import com.emarsys.core.util.log.EMSLogger;
+import com.emarsys.core.worker.DefaultWorker;
+import com.emarsys.core.worker.Worker;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.deeplink.DeepLinkAction;
 import com.emarsys.mobileengage.deeplink.DeepLinkInternal;
@@ -42,6 +47,8 @@ import com.emarsys.mobileengage.inbox.InboxResultListener;
 import com.emarsys.mobileengage.inbox.ResetBadgeCountResultListener;
 import com.emarsys.mobileengage.inbox.model.Notification;
 import com.emarsys.mobileengage.inbox.model.NotificationInboxStatus;
+import com.emarsys.mobileengage.log.LogRepositoryProxy;
+import com.emarsys.mobileengage.log.handler.IamMetricsLogHandler;
 import com.emarsys.mobileengage.responsehandler.AbstractResponseHandler;
 import com.emarsys.mobileengage.responsehandler.InAppCleanUpResponseHandler;
 import com.emarsys.mobileengage.responsehandler.InAppMessageResponseHandler;
@@ -53,6 +60,7 @@ import com.emarsys.mobileengage.util.RequestUtils;
 import com.emarsys.mobileengage.util.log.MobileEngageTopic;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -74,7 +82,8 @@ public class MobileEngage {
     private static RequestManager requestManager;
     private static ButtonClickedRepository buttonClickedRepository;
     private static DisplayedIamRepository displayedIamRepository;
-    private static RequestModelRepository requestModelRepository;
+    private static Repository<RequestModel, SqlSpecification> requestModelRepository;
+    private static RestClient restClient;
 
     public static class Inbox {
 
@@ -198,17 +207,29 @@ public class MobileEngage {
         meIdStorage = new MeIdStorage(application);
         meIdSignatureStorage = new MeIdSignatureStorage(application);
         deviceInfo = new DeviceInfo(application);
-        requestModelRepository = new RequestModelRepository(application);
         buttonClickedRepository = new ButtonClickedRepository(application);
         displayedIamRepository = new DisplayedIamRepository(application);
-
         completionHandler = new MobileEngageCoreCompletionHandler(config.getStatusListener());
+
+        requestModelRepository = createRequestModelRepository(application);
+
+        Repository<Map<String, Object>, SqlSpecification> logRepository = new LogRepository();
+        List<com.emarsys.core.handler.Handler<Map<String, Object>, Map<String, Object>>> logHandlers = Arrays.<com.emarsys.core.handler.Handler<Map<String, Object>, Map<String, Object>>>asList(new IamMetricsLogHandler());
+        Repository<Map<String, Object>, SqlSpecification> logRepositoryProxy = new LogRepositoryProxy(logRepository, logHandlers);
+        restClient = new RestClient(logRepositoryProxy, timestampProvider);
+
+        ConnectionWatchDog connectionWatchDog = new ConnectionWatchDog(application, coreSdkHandler);
+        Worker worker = new DefaultWorker(
+                requestModelRepository,
+                connectionWatchDog,
+                coreSdkHandler,
+                completionHandler,
+                restClient);
 
         requestManager = new RequestManager(
                 coreSdkHandler,
-                new ConnectionWatchDog(application, coreSdkHandler),
-                createRequestModelRepository(),
-                completionHandler);
+                requestModelRepository,
+                worker);
         requestManager.setDefaultHeaders(RequestUtils.createDefaultHeaders(config));
     }
 
@@ -226,7 +247,7 @@ public class MobileEngage {
                         meIdSignatureStorage,
                         timestampProvider)
         );
-        inboxInstance = new InboxInternal(config, requestManager);
+        inboxInstance = new InboxInternal(config, requestManager, restClient);
         deepLinkInstance = new DeepLinkInternal(requestManager);
     }
 
@@ -280,7 +301,8 @@ public class MobileEngage {
                 activityCreatedActions));
     }
 
-    private static Repository<RequestModel, SqlSpecification> createRequestModelRepository() {
+    private static Repository<RequestModel, SqlSpecification> createRequestModelRepository(Context application) {
+        RequestModelRepository requestModelRepository = new RequestModelRepository(application);
         if (MobileEngageExperimental.isFeatureEnabled(MobileEngageFeature.IN_APP_MESSAGING)) {
             return new RequestRepositoryProxy(
                     deviceInfo,

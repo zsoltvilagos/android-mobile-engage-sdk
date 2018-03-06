@@ -64,8 +64,8 @@ public class InboxInternalTest {
     private AppLoginParameters appLoginParameters_missing;
 
     private Application application;
-
     private NotificationCache cache;
+    private RestClient restClient;
 
     @Rule
     public TestRule timeout = TimeoutUtils.getTimeoutRule();
@@ -88,7 +88,8 @@ public class InboxInternalTest {
                 .build();
 
         defaultHeaders = RequestUtils.createDefaultHeaders(config);
-        inbox = new InboxInternal(config, manager);
+        restClient = mock(RestClient.class);
+        inbox = new InboxInternal(config, manager, restClient);
 
         resultListenerMock = mock(InboxResultListener.class);
         resetListenerMock = mock(ResetBadgeCountResultListener.class);
@@ -105,12 +106,17 @@ public class InboxInternalTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_mobileEngageInternal_shouldNotBeNull() {
-        inbox = new InboxInternal(null, manager);
+        inbox = new InboxInternal(null, manager, restClient);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_requestManager_shouldNotBeNull() {
-        inbox = new InboxInternal(config, null);
+        inbox = new InboxInternal(config, null, restClient);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructor_restClient_shouldNotBeNull() {
+        inbox = new InboxInternal(config, manager, null);
     }
 
     @Test(expected = IllegalArgumentException.class)

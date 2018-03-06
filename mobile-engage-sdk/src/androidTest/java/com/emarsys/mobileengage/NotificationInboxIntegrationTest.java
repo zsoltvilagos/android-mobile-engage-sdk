@@ -7,9 +7,14 @@ import android.support.test.InstrumentationRegistry;
 import com.emarsys.core.CoreCompletionHandler;
 import com.emarsys.core.concurrency.CoreSdkHandlerProvider;
 import com.emarsys.core.connection.ConnectionWatchDog;
+import com.emarsys.core.database.repository.Repository;
 import com.emarsys.core.request.RequestManager;
+import com.emarsys.core.request.RestClient;
 import com.emarsys.core.request.model.RequestModelRepository;
 import com.emarsys.core.response.ResponseModel;
+import com.emarsys.core.timestamp.TimestampProvider;
+import com.emarsys.core.worker.DefaultWorker;
+import com.emarsys.core.worker.Worker;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.fake.FakeInboxResultListener;
 import com.emarsys.mobileengage.fake.FakeResetBadgeCountResultListener;
@@ -44,6 +49,7 @@ public class NotificationInboxIntegrationTest {
     public TestRule timeout = TimeoutUtils.getTimeoutRule();
 
     @Before
+    @SuppressWarnings("unchecked")
     public void setup() {
         DatabaseTestUtils.deleteCoreDatabase();
 
@@ -61,7 +67,10 @@ public class NotificationInboxIntegrationTest {
         MobileEngage.setup(config);
         RequestModelRepository requestRepository = new RequestModelRepository(context);
         Handler handler = new CoreSdkHandlerProvider().provideHandler();
-        MobileEngage.instance.manager = new RequestManager(handler, new ConnectionWatchDog(context, handler), requestRepository, new CoreCompletionHandler() {
+
+        RestClient restClient = new RestClient(mock(Repository.class), mock(TimestampProvider.class));
+
+        CoreCompletionHandler completionHandler = new CoreCompletionHandler() {
             @Override
             public void onSuccess(String id, ResponseModel responseModel) {
                 listener.onStatusLog(id, "");
@@ -76,7 +85,15 @@ public class NotificationInboxIntegrationTest {
             public void onError(String id, Exception cause) {
                 listener.onError(id, mock(Exception.class));
             }
-        });
+        };
+        Worker worker = new DefaultWorker(
+                requestRepository,
+                new ConnectionWatchDog(context, handler),
+                handler,
+                completionHandler,
+                restClient);
+
+        MobileEngage.instance.manager = new RequestManager(handler, requestRepository, worker);
         MobileEngage.instance.manager.setDefaultHeaders(RequestUtils.createDefaultHeaders(config));
 
         inboxLatch = new CountDownLatch(1);

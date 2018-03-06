@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class LogRepositoryProxy implements Repository<Map<String, Object>, Object> {
+public class LogRepositoryProxy implements Repository<Map<String, Object>, SqlSpecification> {
 
     private final Repository<Map<String, Object>, SqlSpecification> logRepository;
 
@@ -47,12 +47,12 @@ public class LogRepositoryProxy implements Repository<Map<String, Object>, Objec
     }
 
     @Override
-    public void remove(Object specification) {
+    public void remove(SqlSpecification specification) {
 
     }
 
     @Override
-    public List<Map<String, Object>> query(Object specification) {
+    public List<Map<String, Object>> query(SqlSpecification specification) {
         return null;
     }
 
