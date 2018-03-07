@@ -46,6 +46,11 @@ public class RequestUtils {
     public static boolean isCustomEvent_V3(RequestModel requestModel) {
         Assert.notNull(requestModel, "RequestModel must not be null");
         String url = requestModel.getUrl().toString();
+        return RequestUtils.isCustomEvent_V3(url);
+    }
+
+    public static boolean isCustomEvent_V3(String url) {
+        Assert.notNull(url, "Url must not be null");
         Matcher matcher = customEventPattern.matcher(url);
         return matcher.matches();
     }

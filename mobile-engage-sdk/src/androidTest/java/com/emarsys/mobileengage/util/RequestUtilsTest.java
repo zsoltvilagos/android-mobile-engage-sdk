@@ -110,7 +110,7 @@ public class RequestUtilsTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testIsCustomEvent_requestModel_mustNotBeNull() {
-        assertTrue(RequestUtils.isCustomEvent_V3(null));
+        RequestUtils.isCustomEvent_V3((RequestModel) null);
     }
 
     @Test
@@ -129,6 +129,21 @@ public class RequestUtilsTest {
                 .build();
 
         assertFalse(RequestUtils.isCustomEvent_V3(requestModel));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testIsCustomEvent_string_mustNotBeNull() {
+        RequestUtils.isCustomEvent_V3((String) null);
+    }
+
+    @Test
+    public void testIsCustomEvent_string_V3_returnsTrue_ifIndeedV3Event() {
+        assertTrue(RequestUtils.isCustomEvent_V3(VALID_CUSTOM_EVENT_V3));
+    }
+
+    @Test
+    public void testIsCustomEvent_string_V3_returnsFalse_ifThereIsNoMatch() {
+        assertFalse(RequestUtils.isCustomEvent_V3("https://www.google.com"));
     }
 
     @Test(expected = IllegalArgumentException.class)
