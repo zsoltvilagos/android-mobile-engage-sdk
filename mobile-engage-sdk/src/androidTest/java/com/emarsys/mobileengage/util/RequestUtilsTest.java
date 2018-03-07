@@ -36,6 +36,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static junit.framework.Assert.assertFalse;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -45,6 +46,7 @@ import static org.mockito.Mockito.when;
 public class RequestUtilsTest {
     private static final String APPLICATION_CODE = "applicationCode";
     private static final String APPLICATION_PASSWORD = "applicationPassword";
+    public static final String VALID_CUSTOM_EVENT_V3 = "https://mobile-events.eservice.emarsys.net/v3/devices/12345/events";
 
     private MobileEngageConfig realConfig;
     private MobileEngageConfig mockDebugConfig;
@@ -104,6 +106,29 @@ public class RequestUtilsTest {
         String url = RequestUtils.createEventUrl_V3("meId");
         String expected = "https://mobile-events.eservice.emarsys.net/v3/devices/meId/events";
         assertEquals(expected, url);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testIsCustomEvent_requestModel_mustNotBeNull() {
+        assertTrue(RequestUtils.isCustomEvent_V3(null));
+    }
+
+    @Test
+    public void testIsCustomEvent_requestModel_V3_returnsTrue_ifIndeedV3Event() {
+        RequestModel requestModel = new RequestModel.Builder()
+                .url(VALID_CUSTOM_EVENT_V3)
+                .build();
+
+        assertTrue(RequestUtils.isCustomEvent_V3(requestModel));
+    }
+
+    @Test
+    public void testIsCustomEvent_requestModel_V3_returnsFalse_ifThereIsNoMatch() {
+        RequestModel requestModel = new RequestModel.Builder()
+                .url("https://www.google.com")
+                .build();
+
+        assertFalse(RequestUtils.isCustomEvent_V3(requestModel));
     }
 
     @Test(expected = IllegalArgumentException.class)

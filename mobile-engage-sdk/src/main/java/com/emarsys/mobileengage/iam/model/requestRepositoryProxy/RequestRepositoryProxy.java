@@ -20,10 +20,6 @@ import com.emarsys.mobileengage.util.RequestUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import static com.emarsys.mobileengage.endpoint.Endpoint.ME_BASE_V3;
 
 
 public class RequestRepositoryProxy implements Repository<RequestModel, SqlSpecification> {
@@ -96,18 +92,11 @@ public class RequestRepositoryProxy implements Repository<RequestModel, SqlSpeci
     private List<RequestModel> collectCustomEvents(List<RequestModel> models) {
         List<RequestModel> result = new ArrayList<>();
         for (RequestModel requestModel : models) {
-            if (isCustomEvent(requestModel)) {
+            if (RequestUtils.isCustomEvent_V3(requestModel)) {
                 result.add(requestModel);
             }
         }
         return result;
-    }
-
-    private boolean isCustomEvent(RequestModel requestModel) {
-        String url = requestModel.getUrl().toString();
-        Pattern customEventPattern = Pattern.compile(ME_BASE_V3 + "\\w+/events");
-        Matcher matcher = customEventPattern.matcher(url);
-        return matcher.matches();
     }
 
     private CompositeRequestModel createCompositeCustomEvent(List<RequestModel> models) {
