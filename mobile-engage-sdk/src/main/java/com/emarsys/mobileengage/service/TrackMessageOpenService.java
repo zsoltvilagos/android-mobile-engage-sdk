@@ -20,8 +20,8 @@ public class TrackMessageOpenService extends Service {
         if (intent != null) {
             MobileEngage.trackMessageOpen(intent);
         }
-        stopSelf();
-        return START_REDELIVER_INTENT;
+        stopSelf(startId);
+        return START_NOT_STICKY;
     }
 
     @Override

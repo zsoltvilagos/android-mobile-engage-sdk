@@ -63,7 +63,11 @@ class MessagingServiceUtils {
 
     private static PendingIntent createPendingIntent(Context context, Map<String, String> remoteMessageData) {
         Intent intent = createIntent(remoteMessageData, context);
-        return PendingIntent.getService(context, 0, intent, 0);
+        return PendingIntent.getService(
+                context,
+                (int) (System.currentTimeMillis() % Integer.MAX_VALUE),
+                intent,
+                0);
     }
 
     private static void styleNotification(NotificationCompat.Builder builder, String title, String body, Bitmap bitmap) {
