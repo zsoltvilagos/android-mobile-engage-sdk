@@ -9,10 +9,12 @@ import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 
+import com.emarsys.core.resource.MetaDataReader;
 import com.emarsys.core.util.Assert;
 import com.emarsys.core.util.ImageUtils;
 import com.emarsys.mobileengage.config.OreoConfig;
@@ -28,6 +30,8 @@ class MessagingServiceUtils {
 
     public static final String MESSAGE_FILTER = "ems_msg";
     public static final String METADATA_SMALL_NOTIFICATION_ICON_KEY = "com.emarsys.mobileengage.small_notification_icon";
+    public static final String METADATA_NOTIFICATION_COLOR = "com.emarsys.mobileengage.notification_color";
+    public static final int DEFAULT_SMALL_NOTIFICATION_ICON = com.emarsys.mobileengage.R.drawable.default_small_notification_icon;
 
     static NotificationCache notificationCache = new NotificationCache();
 
@@ -35,12 +39,17 @@ class MessagingServiceUtils {
         return remoteMessageData != null && remoteMessageData.size() > 0 && remoteMessageData.containsKey(MESSAGE_FILTER);
     }
 
-    static Notification createNotification(Context context, Map<String, String> remoteMessageData, OreoConfig oreoConfig) {
-        int resourceId = getSmallIconResourceId(context);
+    static Notification createNotification(
+            Context context,
+            Map<String, String> remoteMessageData,
+            OreoConfig oreoConfig,
+            MetaDataReader metaDataReader) {
 
+        int smallIconResourceId = metaDataReader.getInt(context, METADATA_SMALL_NOTIFICATION_ICON_KEY, DEFAULT_SMALL_NOTIFICATION_ICON);
+        Integer color = metaDataReader.getIntOrNull(context, METADATA_NOTIFICATION_COLOR);
+        Bitmap image = ImageUtils.loadOptimizedBitmap(context, remoteMessageData.get("image_url"));
         String title = getTitle(remoteMessageData, context);
         String body = remoteMessageData.get("body");
-        Bitmap image = ImageUtils.loadOptimizedBitmap(context, remoteMessageData.get("image_url"));
         String channelId = getChannelId(remoteMessageData, oreoConfig);
 
         if (OreoConfig.DEFAULT_CHANNEL_ID.equals(channelId)) {
@@ -52,9 +61,13 @@ class MessagingServiceUtils {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, channelId)
                 .setContentTitle(title)
                 .setContentText(body)
-                .setSmallIcon(resourceId)
+                .setSmallIcon(smallIconResourceId)
                 .setAutoCancel(true)
                 .setContentIntent(resultPendingIntent);
+
+        if (color != null) {
+            builder.setColor(color);
+        }
 
         styleNotification(builder, title, body, image);
 
@@ -129,22 +142,6 @@ class MessagingServiceUtils {
             }
         }
         return title;
-    }
-
-    static int getSmallIconResourceId(Context context) {
-        final int DEFAULT_SMALL_NOTIFICATION_ICON = com.emarsys.mobileengage.R.drawable.default_small_notification_icon;
-        int resourceId;
-        try {
-            ApplicationInfo ai = context.getPackageManager().getApplicationInfo(context.getPackageName(), PackageManager.GET_META_DATA);
-            if (ai.metaData.containsKey(METADATA_SMALL_NOTIFICATION_ICON_KEY)) {
-                resourceId = ai.metaData.getInt(METADATA_SMALL_NOTIFICATION_ICON_KEY);
-            } else {
-                resourceId = DEFAULT_SMALL_NOTIFICATION_ICON;
-            }
-        } catch (PackageManager.NameNotFoundException e) {
-            resourceId = DEFAULT_SMALL_NOTIFICATION_ICON;
-        }
-        return resourceId;
     }
 
     static Intent createIntent(Map<String, String> remoteMessageData, Context context) {

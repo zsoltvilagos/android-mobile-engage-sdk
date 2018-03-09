@@ -4,6 +4,7 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.Context;
 
+import com.emarsys.core.resource.MetaDataReader;
 import com.emarsys.core.util.log.EMSLogger;
 import com.emarsys.mobileengage.MobileEngage;
 import com.emarsys.mobileengage.util.log.MobileEngageTopic;
@@ -31,7 +32,8 @@ public class MobileEngageMessagingService extends FirebaseMessagingService {
             Notification notification = MessagingServiceUtils.createNotification(
                     getApplicationContext(),
                     remoteData,
-                    MobileEngage.getConfig().getOreoConfig());
+                    MobileEngage.getConfig().getOreoConfig(),
+                    new MetaDataReader());
 
             ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE))
                     .notify((int) System.currentTimeMillis(), notification);
