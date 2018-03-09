@@ -142,6 +142,11 @@ public class RequestUtilsTest {
     }
 
     @Test
+    public void testIsCustomEvent_string_matchesWholeString() {
+        assertFalse(RequestUtils.isCustomEvent_V3("prefix" + VALID_CUSTOM_EVENT_V3 + "suffix"));
+    }
+
+    @Test
     public void testIsCustomEvent_string_V3_returnsFalse_ifThereIsNoMatch() {
         assertFalse(RequestUtils.isCustomEvent_V3("https://www.google.com"));
     }
