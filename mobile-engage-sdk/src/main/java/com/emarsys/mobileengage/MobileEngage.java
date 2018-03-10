@@ -61,6 +61,7 @@ import com.emarsys.mobileengage.util.log.MobileEngageTopic;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -214,7 +215,9 @@ public class MobileEngage {
         requestModelRepository = createRequestModelRepository(application);
 
         Repository<Map<String, Object>, SqlSpecification> logRepository = new LogRepository();
-        List<com.emarsys.core.handler.Handler<Map<String, Object>, Map<String, Object>>> logHandlers = Arrays.<com.emarsys.core.handler.Handler<Map<String, Object>, Map<String, Object>>>asList(new IamMetricsLogHandler());
+        List<com.emarsys.core.handler.Handler<Map<String, Object>, Map<String, Object>>> logHandlers = Arrays.<com.emarsys.core.handler.Handler<Map<String, Object>, Map<String, Object>>>asList(
+                new IamMetricsLogHandler(new HashMap<String, Map<String, Object>>())
+        );
         Repository<Map<String, Object>, SqlSpecification> logRepositoryProxy = new LogRepositoryProxy(logRepository, logHandlers);
         restClient = new RestClient(logRepositoryProxy, timestampProvider);
 
