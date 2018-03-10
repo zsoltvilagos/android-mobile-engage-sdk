@@ -212,6 +212,27 @@ public class IamMetricsLogHandlerTest {
     }
 
     @Test
+    public void testHandle_storesLoadingTimeMetric() {
+        Map<String, Object> input = new HashMap<>();
+        input.put(LOADING_TIME, 200);
+        input.put(REQUEST_ID, "id");
+
+        Map<String, Object> expectedStoredMetric = new HashMap<>(input);
+
+        handler.handle(input);
+        Assert.assertEquals(expectedStoredMetric, metricsBuffer.get("id"));
+    }
+
+    @Test
+    public void testHandle_loadingTime_doesNotReturnIncompleteMetric() {
+        Map<String, Object> input = new HashMap<>();
+        input.put(LOADING_TIME, 200);
+        input.put(REQUEST_ID, "id");
+
+        Assert.assertNull(handler.handle(input));
+    }
+
+    @Test
     public void testHandle_mergesMetrics() {
         Map<String, Object> inDatabase = new HashMap<>();
         inDatabase.put(IN_DATABASE, 200);
