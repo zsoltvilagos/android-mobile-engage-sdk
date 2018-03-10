@@ -102,7 +102,7 @@ public class InAppMessageResponseHandler extends AbstractResponseHandler {
             IamDialog iamDialog = dialogProvider.provideDialog(id);
             setupDialogWithActions(iamDialog);
 
-            DefaultMessageLoadedListener listener = new DefaultMessageLoadedListener(iamDialog, logRepository, responseModel.getTimestamp(), timestampProvider);
+            DefaultMessageLoadedListener listener = new DefaultMessageLoadedListener(iamDialog, logRepository, responseModel, timestampProvider);
             IamJsBridge jsBridge = new IamJsBridge(
                     messageHandlerProvider,
                     buttonClickedRepository,

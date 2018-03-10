@@ -7,6 +7,7 @@ import android.support.test.filters.SdkSuppress;
 
 import com.emarsys.core.database.repository.Repository;
 import com.emarsys.core.database.repository.SqlSpecification;
+import com.emarsys.core.response.ResponseModel;
 import com.emarsys.core.timestamp.TimestampProvider;
 import com.emarsys.mobileengage.iam.dialog.IamDialog;
 import com.emarsys.mobileengage.testUtil.CurrentActivityWatchdogTestUtils;
@@ -17,7 +18,9 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
+import org.mockito.Mockito;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import static android.os.Build.VERSION_CODES.KITKAT;
@@ -29,7 +32,9 @@ import static org.mockito.Mockito.when;
 @SdkSuppress(minSdkVersion = KITKAT)
 public class DefaultMessageLoadedListenerTest {
 
-    public static final long TIMESTAMP = 900_800L;
+    public static final long TIMESTAMP_START = 800L;
+    public static final long TIMESTAMP_END = 1000L;
+    public static final String REQUEST_ID = "originalRequestId";
 
     static {
         mock(Activity.class);
@@ -43,6 +48,7 @@ public class DefaultMessageLoadedListenerTest {
     private IamDialog dialog;
     private Repository<Map<String, Object>, SqlSpecification> logRepositoryMock;
     private TimestampProvider timestampProvider;
+    private ResponseModel responseModel;
 
     @Rule
     public TestRule timeout = TimeoutUtils.getTimeoutRule();
@@ -59,8 +65,13 @@ public class DefaultMessageLoadedListenerTest {
 
         logRepositoryMock = mock(Repository.class);
         timestampProvider = mock(TimestampProvider.class);
+        when(timestampProvider.provideTimestamp()).thenReturn(TIMESTAMP_END);
 
-        listener = new DefaultMessageLoadedListener(dialog, logRepositoryMock, TIMESTAMP, timestampProvider);
+        responseModel = mock(ResponseModel.class, Mockito.RETURNS_DEEP_STUBS);
+        when(responseModel.getTimestamp()).thenReturn(TIMESTAMP_START);
+        when(responseModel.getRequestModel().getId()).thenReturn(REQUEST_ID);
+
+        listener = new DefaultMessageLoadedListener(dialog, logRepositoryMock, responseModel, timestampProvider);
     }
 
     @After
@@ -70,17 +81,22 @@ public class DefaultMessageLoadedListenerTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_iamDialog_shouldNotBeNull() {
-        new DefaultMessageLoadedListener(null, logRepositoryMock, TIMESTAMP, timestampProvider);
+        new DefaultMessageLoadedListener(null, logRepositoryMock, responseModel, timestampProvider);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_logRepository_shouldNotBeNull() {
-        new DefaultMessageLoadedListener(dialog, null, TIMESTAMP, timestampProvider);
+        new DefaultMessageLoadedListener(dialog, null, responseModel, timestampProvider);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructor_responseModel_shouldNotBeNull() {
+        new DefaultMessageLoadedListener(dialog, logRepositoryMock, null, timestampProvider);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_timestampProvider_shouldNotBeNull() {
-        new DefaultMessageLoadedListener(dialog, logRepositoryMock, TIMESTAMP, null);
+        new DefaultMessageLoadedListener(dialog, logRepositoryMock, responseModel, null);
     }
 
     @Test
@@ -107,6 +123,17 @@ public class DefaultMessageLoadedListenerTest {
         listener.onMessageLoaded();
 
         verify(dialog, times(0)).show(fragmentManager, IamDialog.TAG);
+    }
+
+    @Test
+    public void testOnMessageLoaded_shouldLogLoadingTime() {
+        listener.onMessageLoaded();
+
+        Map<String, Object> loadingTimeMetric = new HashMap<>();
+        loadingTimeMetric.put("loading_time", 200L);
+        loadingTimeMetric.put("id", REQUEST_ID);
+
+        verify(logRepositoryMock).add(loadingTimeMetric);
     }
 
 }
