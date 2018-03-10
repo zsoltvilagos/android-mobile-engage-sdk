@@ -5,16 +5,20 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.support.test.filters.SdkSuppress;
 
+import com.emarsys.core.database.repository.Repository;
+import com.emarsys.core.database.repository.SqlSpecification;
+import com.emarsys.core.timestamp.TimestampProvider;
 import com.emarsys.mobileengage.iam.dialog.IamDialog;
 import com.emarsys.mobileengage.testUtil.CurrentActivityWatchdogTestUtils;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
+
+import java.util.Map;
 
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static org.mockito.Mockito.mock;
@@ -24,6 +28,8 @@ import static org.mockito.Mockito.when;
 
 @SdkSuppress(minSdkVersion = KITKAT)
 public class DefaultMessageLoadedListenerTest {
+
+    public static final long TIMESTAMP = 900_800L;
 
     static {
         mock(Activity.class);
@@ -35,21 +41,26 @@ public class DefaultMessageLoadedListenerTest {
     private FragmentManager fragmentManager;
     private DefaultMessageLoadedListener listener;
     private IamDialog dialog;
+    private Repository<Map<String, Object>, SqlSpecification> logRepositoryMock;
+    private TimestampProvider timestampProvider;
 
     @Rule
     public TestRule timeout = TimeoutUtils.getTimeoutRule();
 
-
     @Before
+    @SuppressWarnings("unchecked")
     public void init() throws Exception {
-        listener = new DefaultMessageLoadedListener(mock(IamDialog.class));
 
         Activity currentActivity = mock(Activity.class);
         fragmentManager = mock(FragmentManager.class);
         when(currentActivity.getFragmentManager()).thenReturn(fragmentManager);
         CurrentActivityWatchdogTestUtils.setActivityWatchdogState(currentActivity);
         dialog = mock(IamDialog.class);
-        listener.iamDialog = dialog;
+
+        logRepositoryMock = mock(Repository.class);
+        timestampProvider = mock(TimestampProvider.class);
+
+        listener = new DefaultMessageLoadedListener(dialog, logRepositoryMock, TIMESTAMP, timestampProvider);
     }
 
     @After
@@ -58,13 +69,18 @@ public class DefaultMessageLoadedListenerTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testConstructor_iamDialogShouldNotBeNull() {
-        new DefaultMessageLoadedListener(null);
+    public void testConstructor_iamDialog_shouldNotBeNull() {
+        new DefaultMessageLoadedListener(null, logRepositoryMock, TIMESTAMP, timestampProvider);
     }
 
-    @Test
-    public void testConstructor_iamDialogShouldBeInitialized() {
-        Assert.assertNotNull(new DefaultMessageLoadedListener(mock(IamDialog.class)).iamDialog);
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructor_logRepository_shouldNotBeNull() {
+        new DefaultMessageLoadedListener(dialog, null, TIMESTAMP, timestampProvider);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructor_timestampProvider_shouldNotBeNull() {
+        new DefaultMessageLoadedListener(dialog, logRepositoryMock, TIMESTAMP, null);
     }
 
     @Test

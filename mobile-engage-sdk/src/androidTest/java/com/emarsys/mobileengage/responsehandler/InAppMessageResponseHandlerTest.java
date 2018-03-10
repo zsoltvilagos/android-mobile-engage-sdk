@@ -4,6 +4,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.support.test.filters.SdkSuppress;
 
+import com.emarsys.core.database.repository.log.LogRepository;
 import com.emarsys.core.request.model.RequestModel;
 import com.emarsys.core.response.ResponseModel;
 import com.emarsys.core.timestamp.TimestampProvider;
@@ -68,6 +69,7 @@ public class InAppMessageResponseHandlerTest {
                 dialogProvider,
                 mock(ButtonClickedRepository.class),
                 mock(DisplayedIamRepository.class),
+                mock(LogRepository.class),
                 mock(TimestampProvider.class),
                 mock(MobileEngageInternal.class));
     }
@@ -81,6 +83,7 @@ public class InAppMessageResponseHandlerTest {
                 mock(IamDialogProvider.class),
                 mock(ButtonClickedRepository.class),
                 mock(DisplayedIamRepository.class),
+                mock(LogRepository.class),
                 mock(TimestampProvider.class),
                 mock(MobileEngageInternal.class));
     }
@@ -94,6 +97,7 @@ public class InAppMessageResponseHandlerTest {
                 mock(IamDialogProvider.class),
                 mock(ButtonClickedRepository.class),
                 mock(DisplayedIamRepository.class),
+                mock(LogRepository.class),
                 mock(TimestampProvider.class),
                 mock(MobileEngageInternal.class));
     }
@@ -107,6 +111,7 @@ public class InAppMessageResponseHandlerTest {
                 mock(IamDialogProvider.class),
                 mock(ButtonClickedRepository.class),
                 mock(DisplayedIamRepository.class),
+                mock(LogRepository.class),
                 mock(TimestampProvider.class),
                 mock(MobileEngageInternal.class));
     }
@@ -120,6 +125,7 @@ public class InAppMessageResponseHandlerTest {
                 null,
                 mock(ButtonClickedRepository.class),
                 mock(DisplayedIamRepository.class),
+                mock(LogRepository.class),
                 mock(TimestampProvider.class),
                 mock(MobileEngageInternal.class));
     }
@@ -133,6 +139,7 @@ public class InAppMessageResponseHandlerTest {
                 mock(IamDialogProvider.class),
                 null,
                 mock(DisplayedIamRepository.class),
+                mock(LogRepository.class),
                 mock(TimestampProvider.class),
                 mock(MobileEngageInternal.class));
     }
@@ -145,6 +152,21 @@ public class InAppMessageResponseHandlerTest {
                 mock(InAppMessageHandlerProvider.class),
                 mock(IamDialogProvider.class),
                 mock(ButtonClickedRepository.class),
+                null,
+                mock(LogRepository.class),
+                mock(TimestampProvider.class),
+                mock(MobileEngageInternal.class));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructor_logRepository_shouldNotBeNull() {
+        new InAppMessageResponseHandler(
+                mock(Handler.class),
+                webViewProvider,
+                mock(InAppMessageHandlerProvider.class),
+                mock(IamDialogProvider.class),
+                mock(ButtonClickedRepository.class),
+                mock(DisplayedIamRepository.class),
                 null,
                 mock(TimestampProvider.class),
                 mock(MobileEngageInternal.class));
@@ -159,6 +181,7 @@ public class InAppMessageResponseHandlerTest {
                 mock(IamDialogProvider.class),
                 mock(ButtonClickedRepository.class),
                 mock(DisplayedIamRepository.class),
+                mock(LogRepository.class),
                 null,
                 mock(MobileEngageInternal.class));
     }
@@ -172,6 +195,7 @@ public class InAppMessageResponseHandlerTest {
                 mock(IamDialogProvider.class),
                 mock(ButtonClickedRepository.class),
                 mock(DisplayedIamRepository.class),
+                mock(LogRepository.class),
                 mock(TimestampProvider.class),
                 null);
     }

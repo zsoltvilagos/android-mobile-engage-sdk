@@ -85,6 +85,7 @@ public class MobileEngage {
     private static DisplayedIamRepository displayedIamRepository;
     private static Repository<RequestModel, SqlSpecification> requestModelRepository;
     private static RestClient restClient;
+    private static Repository<Map<String, Object>, SqlSpecification> logRepositoryProxy;
 
     public static class Inbox {
 
@@ -218,7 +219,7 @@ public class MobileEngage {
         List<com.emarsys.core.handler.Handler<Map<String, Object>, Map<String, Object>>> logHandlers = Arrays.<com.emarsys.core.handler.Handler<Map<String, Object>, Map<String, Object>>>asList(
                 new IamMetricsLogHandler(new HashMap<String, Map<String, Object>>())
         );
-        Repository<Map<String, Object>, SqlSpecification> logRepositoryProxy = new LogRepositoryProxy(logRepository, logHandlers);
+        logRepositoryProxy = new LogRepositoryProxy(logRepository, logHandlers);
         restClient = new RestClient(logRepositoryProxy, timestampProvider);
 
         ConnectionWatchDog connectionWatchDog = new ConnectionWatchDog(application, coreSdkHandler);
@@ -272,6 +273,7 @@ public class MobileEngage {
                     new IamDialogProvider(),
                     buttonClickedRepository,
                     displayedIamRepository,
+                    logRepositoryProxy,
                     timestampProvider,
                     instance));
             responseHandlers.add(new InAppCleanUpResponseHandler(

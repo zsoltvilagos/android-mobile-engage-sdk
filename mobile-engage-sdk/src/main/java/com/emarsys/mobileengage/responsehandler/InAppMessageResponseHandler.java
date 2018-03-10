@@ -28,6 +28,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Arrays;
+import java.util.Map;
 
 public class InAppMessageResponseHandler extends AbstractResponseHandler {
 
@@ -37,6 +38,7 @@ public class InAppMessageResponseHandler extends AbstractResponseHandler {
     private IamDialogProvider dialogProvider;
     private Repository<ButtonClicked, SqlSpecification> buttonClickedRepository;
     private Repository<DisplayedIam, SqlSpecification> displayedIamRepository;
+    private Repository<Map<String, Object>, SqlSpecification> logRepository;
     private TimestampProvider timestampProvider;
     private MobileEngageInternal mobileEngageInternal;
 
@@ -47,6 +49,7 @@ public class InAppMessageResponseHandler extends AbstractResponseHandler {
             IamDialogProvider dialogProvider,
             Repository<ButtonClicked, SqlSpecification> buttonClickedRepository,
             Repository<DisplayedIam, SqlSpecification> displayedIamRepository,
+            Repository<Map<String, Object>, SqlSpecification> logRepository,
             TimestampProvider timestampProvider,
             MobileEngageInternal mobileEngageInternal) {
         Assert.notNull(webViewProvider, "WebViewProvider must not be null!");
@@ -55,6 +58,7 @@ public class InAppMessageResponseHandler extends AbstractResponseHandler {
         Assert.notNull(coreSdkHandler, "CoreSdkHandler must not be null!");
         Assert.notNull(buttonClickedRepository, "ButtonClickRepository must not be null!");
         Assert.notNull(displayedIamRepository, "DisplayedIamRepository must not be null!");
+        Assert.notNull(logRepository, "LogRepository must not be null!");
         Assert.notNull(timestampProvider, "TimestampProvider must not be null!");
         Assert.notNull(mobileEngageInternal, "MobileEngageInternal must not be null!");
         this.webViewProvider = webViewProvider;
@@ -63,6 +67,7 @@ public class InAppMessageResponseHandler extends AbstractResponseHandler {
         this.coreSdkHandler = coreSdkHandler;
         this.buttonClickedRepository = buttonClickedRepository;
         this.displayedIamRepository = displayedIamRepository;
+        this.logRepository = logRepository;
         this.timestampProvider = timestampProvider;
         this.mobileEngageInternal = mobileEngageInternal;
     }
@@ -97,7 +102,7 @@ public class InAppMessageResponseHandler extends AbstractResponseHandler {
             IamDialog iamDialog = dialogProvider.provideDialog(id);
             setupDialogWithActions(iamDialog);
 
-            DefaultMessageLoadedListener listener = new DefaultMessageLoadedListener(iamDialog);
+            DefaultMessageLoadedListener listener = new DefaultMessageLoadedListener(iamDialog, logRepository, responseModel.getTimestamp(), timestampProvider);
             IamJsBridge jsBridge = new IamJsBridge(
                     messageHandlerProvider,
                     buttonClickedRepository,
