@@ -8,7 +8,6 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Build;
-import android.os.Bundle;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SdkSuppress;
 import android.support.test.runner.AndroidJUnit4;
@@ -26,8 +25,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
-import org.mockito.MockSettings;
-import org.mockito.Mockito;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
@@ -42,9 +39,6 @@ import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -232,6 +226,7 @@ public class MessagingServiceUtilsTest {
     }
 
     @Test
+    @SdkSuppress(minSdkVersion = LOLLIPOP)
     public void testCreateNotification_setsNotificationColor() throws PackageManager.NameNotFoundException {
         Integer expected = Color.MAGENTA;
         when(metaDataReader.getIntOrNull(any(Context.class), any(String.class))).thenReturn(expected);
@@ -245,6 +240,7 @@ public class MessagingServiceUtilsTest {
     }
 
     @Test
+    @SdkSuppress(minSdkVersion = LOLLIPOP)
     public void testCreateNotification_doesNotSet_notificationColor_when() throws PackageManager.NameNotFoundException {
         Map<String, String> input = new HashMap<>();
         input.put("title", TITLE);
