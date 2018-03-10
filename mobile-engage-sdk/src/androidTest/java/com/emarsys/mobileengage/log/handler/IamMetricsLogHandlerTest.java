@@ -14,7 +14,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 
 public class IamMetricsLogHandlerTest {
@@ -27,6 +26,9 @@ public class IamMetricsLogHandlerTest {
     private static final String LOADING_TIME = "loading_time";
     private static final String ON_SCREEN_TIME = "on_screen_time";
 
+    private IamMetricsLogHandler handlerWithMockBuffer;
+    private Map<String, Map<String, Object>> mockMetricsBuffer;
+
     private IamMetricsLogHandler handler;
     private Map<String, Map<String, Object>> metricsBuffer;
 
@@ -36,7 +38,10 @@ public class IamMetricsLogHandlerTest {
     @Before
     @SuppressWarnings("unchecked")
     public void init() {
-        metricsBuffer = mock(HashMap.class, Mockito.CALLS_REAL_METHODS);
+        mockMetricsBuffer = mock(HashMap.class, Mockito.CALLS_REAL_METHODS);
+        handlerWithMockBuffer = new IamMetricsLogHandler(mockMetricsBuffer);
+
+        metricsBuffer = new HashMap<>();
         handler = new IamMetricsLogHandler(metricsBuffer);
     }
 
@@ -47,7 +52,7 @@ public class IamMetricsLogHandlerTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testHandle_itemMustNotBeNull() {
-        handler.handle(null);
+        handlerWithMockBuffer.handle(null);
     }
 
     @Test
@@ -59,9 +64,9 @@ public class IamMetricsLogHandlerTest {
         metric.put(LOADING_TIME, 200);
         metric.put(ON_SCREEN_TIME, 200);
 
-        handler.handle(metric);
+        handlerWithMockBuffer.handle(metric);
 
-        verifyZeroInteractions(metricsBuffer);
+        verifyZeroInteractions(mockMetricsBuffer);
     }
 
     @Test
@@ -74,9 +79,9 @@ public class IamMetricsLogHandlerTest {
         metric.put(LOADING_TIME, 200);
         metric.put(ON_SCREEN_TIME, 200);
 
-        handler.handle(metric);
+        handlerWithMockBuffer.handle(metric);
 
-        verifyZeroInteractions(metricsBuffer);
+        verifyZeroInteractions(mockMetricsBuffer);
     }
 
     @Test
@@ -85,9 +90,9 @@ public class IamMetricsLogHandlerTest {
         metric.put(REQUEST_ID, "hash");
         metric.put(URL, CUSTOM_EVENT_V3_URL);
 
-        handler.handle(metric);
+        handlerWithMockBuffer.handle(metric);
 
-        verifyZeroInteractions(metricsBuffer);
+        verifyZeroInteractions(mockMetricsBuffer);
     }
 
     @Test
@@ -96,9 +101,9 @@ public class IamMetricsLogHandlerTest {
         metric.put(IN_DATABASE, 123);
         metric.put(REQUEST_ID, "hash");
 
-        handler.handle(metric);
+        handlerWithMockBuffer.handle(metric);
 
-        verifyZeroInteractions(metricsBuffer);
+        verifyZeroInteractions(mockMetricsBuffer);
     }
 
     @Test
@@ -108,9 +113,9 @@ public class IamMetricsLogHandlerTest {
         metric.put(REQUEST_ID, "hash");
         metric.put(URL, Math.PI);
 
-        handler.handle(metric);
+        handlerWithMockBuffer.handle(metric);
 
-        verifyZeroInteractions(metricsBuffer);
+        verifyZeroInteractions(mockMetricsBuffer);
     }
 
     @Test
@@ -120,9 +125,9 @@ public class IamMetricsLogHandlerTest {
         metric.put(REQUEST_ID, "hash");
         metric.put(URL, NOT_CUSTOM_EVENT_V3_URL);
 
-        handler.handle(metric);
+        handlerWithMockBuffer.handle(metric);
 
-        verifyZeroInteractions(metricsBuffer);
+        verifyZeroInteractions(mockMetricsBuffer);
     }
 
     @Test
@@ -135,7 +140,7 @@ public class IamMetricsLogHandlerTest {
         Map<String, Object> expectedStoredMetric = new HashMap<>(input);
 
         handler.handle(input);
-        verify(metricsBuffer).put("id", expectedStoredMetric);
+        Assert.assertEquals(expectedStoredMetric, metricsBuffer.get("id"));
     }
 
     @Test
@@ -154,9 +159,9 @@ public class IamMetricsLogHandlerTest {
         metric.put(NETWORKING_TIME, 1200);
         metric.put(REQUEST_ID, "hash");
 
-        handler.handle(metric);
+        handlerWithMockBuffer.handle(metric);
 
-        verifyZeroInteractions(metricsBuffer);
+        verifyZeroInteractions(mockMetricsBuffer);
     }
 
     @Test
@@ -166,9 +171,9 @@ public class IamMetricsLogHandlerTest {
         metric.put(REQUEST_ID, "hash");
         metric.put(URL, Math.PI);
 
-        handler.handle(metric);
+        handlerWithMockBuffer.handle(metric);
 
-        verifyZeroInteractions(metricsBuffer);
+        verifyZeroInteractions(mockMetricsBuffer);
     }
 
     @Test
@@ -178,9 +183,9 @@ public class IamMetricsLogHandlerTest {
         metric.put(REQUEST_ID, "hash");
         metric.put(URL, NOT_CUSTOM_EVENT_V3_URL);
 
-        handler.handle(metric);
+        handlerWithMockBuffer.handle(metric);
 
-        verifyZeroInteractions(metricsBuffer);
+        verifyZeroInteractions(mockMetricsBuffer);
     }
 
     @Test
@@ -193,7 +198,7 @@ public class IamMetricsLogHandlerTest {
         handler.handle(input);
         Map<String, Object> expectedStoredMetric = new HashMap<>(input);
 
-        verify(metricsBuffer).put("id", expectedStoredMetric);
+        Assert.assertEquals(expectedStoredMetric, metricsBuffer.get("id"));
     }
 
     @Test
