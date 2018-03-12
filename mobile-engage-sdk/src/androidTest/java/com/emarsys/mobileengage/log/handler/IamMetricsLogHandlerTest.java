@@ -1,5 +1,6 @@
 package com.emarsys.mobileengage.log.handler;
 
+import com.emarsys.core.util.CollectionUtils;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
 import junit.framework.Assert;
@@ -245,8 +246,10 @@ public class IamMetricsLogHandlerTest {
         Assert.assertNull(handler.handle(input));
     }
 
+
     @Test
-    public void testHandle_mergesMetrics() {
+    @SuppressWarnings("unchecked")
+    public void testHandle_returnsCompleteMetric() {
         Map<String, Object> inDatabase = new HashMap<>();
         inDatabase.put(IN_DATABASE, 200);
         inDatabase.put(REQUEST_ID, "id");
@@ -257,15 +260,80 @@ public class IamMetricsLogHandlerTest {
         networkingTime.put(REQUEST_ID, "id");
         networkingTime.put(URL, CUSTOM_EVENT_V3_URL);
 
-        Map<String, Object> merged = new HashMap<>();
-        merged.put(IN_DATABASE, 200);
-        merged.put(NETWORKING_TIME, 1200);
-        merged.put(REQUEST_ID, "id");
-        merged.put(URL, CUSTOM_EVENT_V3_URL);
+        Map<String, Object> loadingTime = new HashMap<>();
+        loadingTime.put(LOADING_TIME, 1200);
+        loadingTime.put(REQUEST_ID, "id");
+        loadingTime.put(CAMPAIGN_ID, "campaignId");
+
+        Map<String, Object> merged = CollectionUtils.mergeMaps(inDatabase, networkingTime, loadingTime);
+
+        Assert.assertNull(handler.handle(inDatabase));
+        Assert.assertNull(handler.handle(networkingTime));
+        Assert.assertEquals(merged, handler.handle(loadingTime));
+    }
+
+
+    @Test
+    public void testHandle_removesMetricFromBuffer_afterReturningCompleteMetric() {
+        Map<String, Object> inDatabase = new HashMap<>();
+        inDatabase.put(IN_DATABASE, 200);
+        inDatabase.put(REQUEST_ID, "id");
+        inDatabase.put(URL, CUSTOM_EVENT_V3_URL);
+
+        Map<String, Object> networkingTime = new HashMap<>();
+        networkingTime.put(NETWORKING_TIME, 1200);
+        networkingTime.put(REQUEST_ID, "id");
+        networkingTime.put(URL, CUSTOM_EVENT_V3_URL);
+
+        Map<String, Object> loadingTime = new HashMap<>();
+        loadingTime.put(LOADING_TIME, 1200);
+        loadingTime.put(REQUEST_ID, "id");
+        loadingTime.put(CAMPAIGN_ID, "campaignId");
 
         handler.handle(inDatabase);
-        handler.handle(networkingTime);
+        Assert.assertEquals(1, metricsBuffer.size());
 
-        Assert.assertEquals(merged, metricsBuffer.get("id"));
+        handler.handle(networkingTime);
+        Assert.assertEquals(1, metricsBuffer.size());
+
+        handler.handle(loadingTime);
+        Assert.assertEquals(0, metricsBuffer.size());
+    }
+
+    @Test
+    public void testHandle_removeMetricFromBuffer_afterReturningCompleteMetric_andKeepsOtherMetrics() {
+        String id2 = "id2";
+
+        Map<String, Object> inDatabase = new HashMap<>();
+        inDatabase.put(IN_DATABASE, 200);
+        inDatabase.put(REQUEST_ID, "id");
+        inDatabase.put(URL, CUSTOM_EVENT_V3_URL);
+
+        Map<String, Object> networkingTime = new HashMap<>();
+        networkingTime.put(NETWORKING_TIME, 1200);
+        networkingTime.put(REQUEST_ID, "id");
+        networkingTime.put(URL, CUSTOM_EVENT_V3_URL);
+
+        Map<String, Object> loadingTime = new HashMap<>();
+        loadingTime.put(LOADING_TIME, 1700);
+        loadingTime.put(REQUEST_ID, "id");
+        loadingTime.put(CAMPAIGN_ID, "campaignId");
+
+        Map<String, Object> inDatabase2 = new HashMap<>();
+        inDatabase2.put(IN_DATABASE, 500);
+        inDatabase2.put(REQUEST_ID, id2);
+        inDatabase2.put(URL, CUSTOM_EVENT_V3_URL);
+        handler.handle(inDatabase2);
+
+        handler.handle(inDatabase);
+        Assert.assertEquals(2, metricsBuffer.size());
+
+        handler.handle(networkingTime);
+        Assert.assertEquals(2, metricsBuffer.size());
+
+        handler.handle(loadingTime);
+        Assert.assertEquals(1, metricsBuffer.size());
+
+        Assert.assertEquals(inDatabase2, metricsBuffer.get(id2));
     }
 }

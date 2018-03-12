@@ -26,13 +26,27 @@ public class IamMetricsLogHandler implements Handler<Map<String, Object>, Map<St
     @Override
     public Map<String, Object> handle(Map<String, Object> item) {
         Assert.notNull(item, "Item must not be null!");
+        Map<String, Object> completeMetric = null;
         if (hasValidId(item)
                 && (isInDatabaseMetric(item) || isNetworkingTimeMetric(item) || isLoadingTimeMetric(item))) {
 
             String id = (String) item.get(REQUEST_ID);
             updateBuffer(id, item);
+            if (isMetricComplete(id)) {
+                completeMetric = metricsBuffer.get(id);
+                metricsBuffer.remove(id);
+            }
         }
-        return null;
+        return completeMetric;
+    }
+
+    private boolean isMetricComplete(String id) {
+        Map<String, Object> metric = metricsBuffer.get(id);
+        return metric != null
+                && metric.containsKey(IN_DATABASE)
+                && metric.containsKey(NETWORKING_TIME)
+                && metric.containsKey(LOADING_TIME)
+                && metric.containsKey(CAMPAIGN_ID);
     }
 
     private boolean isInDatabaseMetric(Map<String, Object> item) {
