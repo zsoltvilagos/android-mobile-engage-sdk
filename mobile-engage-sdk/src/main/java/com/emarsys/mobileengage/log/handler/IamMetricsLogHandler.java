@@ -10,6 +10,7 @@ import java.util.Map;
 
 public class IamMetricsLogHandler implements Handler<Map<String, Object>, Map<String, Object>> {
     private static final String REQUEST_ID = "request_id";
+    private static final String CAMPAIGN_ID = "campaign_id";
     private static final String URL = "url";
     private static final String IN_DATABASE = "in_database";
     private static final String NETWORKING_TIME = "networking_time";
@@ -43,7 +44,7 @@ public class IamMetricsLogHandler implements Handler<Map<String, Object>, Map<St
     }
 
     private boolean isLoadingTimeMetric(Map<String, Object> item) {
-        return item.containsKey(LOADING_TIME);
+        return item.containsKey(LOADING_TIME) && item.containsKey(CAMPAIGN_ID);
     }
 
     private boolean hasValidId(Map<String, Object> item) {

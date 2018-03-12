@@ -25,6 +25,7 @@ public class IamMetricsLogHandlerTest {
     private static final String NETWORKING_TIME = "networking_time";
     private static final String LOADING_TIME = "loading_time";
     private static final String ON_SCREEN_TIME = "on_screen_time";
+    private static final String CAMPAIGN_ID = "campaign_id";
 
     private IamMetricsLogHandler handlerWithMockBuffer;
     private Map<String, Map<String, Object>> mockMetricsBuffer;
@@ -212,10 +213,22 @@ public class IamMetricsLogHandlerTest {
     }
 
     @Test
+    public void testHandle_doesNotStore_loadingTimeMetric_ifCampaignIdIsMissing() {
+        Map<String, Object> input = new HashMap<>();
+        input.put(LOADING_TIME, 1200);
+        input.put(REQUEST_ID, "id");
+
+        handlerWithMockBuffer.handle(input);
+
+        verifyZeroInteractions(mockMetricsBuffer);
+    }
+
+    @Test
     public void testHandle_storesLoadingTimeMetric() {
         Map<String, Object> input = new HashMap<>();
         input.put(LOADING_TIME, 200);
         input.put(REQUEST_ID, "id");
+        input.put(CAMPAIGN_ID, "campaign_id");
 
         Map<String, Object> expectedStoredMetric = new HashMap<>(input);
 
