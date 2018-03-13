@@ -11,6 +11,7 @@ import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.ContextCompat;
 
 import com.emarsys.core.resource.MetaDataReader;
 import com.emarsys.core.util.Assert;
@@ -44,7 +45,7 @@ public class MessagingServiceUtils {
             MetaDataReader metaDataReader) {
 
         int smallIconResourceId = metaDataReader.getInt(context, METADATA_SMALL_NOTIFICATION_ICON_KEY, DEFAULT_SMALL_NOTIFICATION_ICON);
-        Integer color = metaDataReader.getIntOrNull(context, METADATA_NOTIFICATION_COLOR);
+        int colorResourceId = metaDataReader.getInt(context, METADATA_NOTIFICATION_COLOR);
         Bitmap image = ImageUtils.loadOptimizedBitmap(context, remoteMessageData.get("image_url"));
         String title = getTitle(remoteMessageData, context);
         String body = remoteMessageData.get("body");
@@ -63,8 +64,8 @@ public class MessagingServiceUtils {
                 .setAutoCancel(true)
                 .setContentIntent(resultPendingIntent);
 
-        if (color != null) {
-            builder.setColor(color);
+        if (colorResourceId != 0) {
+            builder.setColor(ContextCompat.getColor(context, colorResourceId));
         }
 
         styleNotification(builder, title, body, image);

@@ -6,12 +6,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.os.Build;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SdkSuppress;
 import android.support.test.runner.AndroidJUnit4;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.ContextCompat;
 
 import com.emarsys.core.resource.MetaDataReader;
 import com.emarsys.mobileengage.config.OreoConfig;
@@ -228,15 +228,16 @@ public class MessagingServiceUtilsTest {
     @Test
     @SdkSuppress(minSdkVersion = LOLLIPOP)
     public void testCreateNotification_setsNotificationColor() throws PackageManager.NameNotFoundException {
-        Integer expected = Color.MAGENTA;
-        when(metaDataReader.getIntOrNull(any(Context.class), any(String.class))).thenReturn(expected);
+        int colorResourceId = android.R.color.darker_gray;
+        int expectedColor = ContextCompat.getColor(context, colorResourceId);
+        when(metaDataReader.getInt(any(Context.class), any(String.class))).thenReturn(colorResourceId);
 
         Map<String, String> input = new HashMap<>();
         input.put("title", TITLE);
         input.put("body", BODY);
 
         android.app.Notification result = MessagingServiceUtils.createNotification(context, input, disabledOreoConfig, metaDataReader);
-        assertEquals(Color.MAGENTA, result.color);
+        assertEquals(expectedColor, result.color);
     }
 
     @Test
