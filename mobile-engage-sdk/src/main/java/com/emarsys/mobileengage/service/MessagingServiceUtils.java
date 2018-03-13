@@ -7,9 +7,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
@@ -26,7 +24,7 @@ import org.json.JSONObject;
 
 import java.util.Map;
 
-class MessagingServiceUtils {
+public class MessagingServiceUtils {
 
     public static final String MESSAGE_FILTER = "ems_msg";
     public static final String METADATA_SMALL_NOTIFICATION_ICON_KEY = "com.emarsys.mobileengage.small_notification_icon";
@@ -35,11 +33,11 @@ class MessagingServiceUtils {
 
     static NotificationCache notificationCache = new NotificationCache();
 
-    static boolean isMobileEngageMessage(Map<String, String> remoteMessageData) {
+    public static boolean isMobileEngageMessage(Map<String, String> remoteMessageData) {
         return remoteMessageData != null && remoteMessageData.size() > 0 && remoteMessageData.containsKey(MESSAGE_FILTER);
     }
 
-    static Notification createNotification(
+    public static Notification createNotification(
             Context context,
             Map<String, String> remoteMessageData,
             OreoConfig oreoConfig,
