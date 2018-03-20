@@ -3,12 +3,15 @@ package com.emarsys.mobileengage.deeplink;
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.request.model.RequestModel;
+import com.emarsys.mobileengage.MobileEngageInternal;
 import com.emarsys.mobileengage.MobileEngageUtils;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import static com.emarsys.mobileengage.endpoint.Endpoint.DEEP_LINK_CLICK;
 
@@ -37,6 +40,7 @@ public class DeepLinkInternal {
 
                 RequestModel model = new RequestModel.Builder()
                         .url(DEEP_LINK_CLICK)
+                        .headers(createHeaders())
                         .payload(payload)
                         .build();
 
@@ -45,6 +49,18 @@ public class DeepLinkInternal {
                 manager.submit(model);
             }
         }
+    }
+
+    private Map<String, String> createHeaders() {
+        Map<String, String> headers = new HashMap<>();
+
+        String userAgentValue = String.format(
+                "Mobile Engage SDK %s Android %s",
+                MobileEngageInternal.MOBILEENGAGE_SDK_VERSION,
+                Build.VERSION.SDK_INT);
+        headers.put("User-Agent", userAgentValue);
+
+        return headers;
     }
 
 }

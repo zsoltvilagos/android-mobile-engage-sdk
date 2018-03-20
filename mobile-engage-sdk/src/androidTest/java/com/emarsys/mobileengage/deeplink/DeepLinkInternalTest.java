@@ -3,9 +3,11 @@ package com.emarsys.mobileengage.deeplink;
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.request.model.RequestModel;
+import com.emarsys.mobileengage.MobileEngageInternal;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
 import org.junit.Before;
@@ -16,6 +18,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -50,11 +53,16 @@ public class DeepLinkInternalTest {
     public void testTrackDeepLink_requestManagerCalledWithCorrectRequestModel() {
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://demo-mobileengage.emarsys.net/something?fancy_url=1&ems_dl=1_2_3_4_5"));
 
-        HashMap<String, Object> payload = new HashMap<>();
+        Map<String, Object> payload = new HashMap<>();
         payload.put("ems_dl", "1_2_3_4_5");
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put("User-Agent",
+                String.format("Mobile Engage SDK %s Android %s", MobileEngageInternal.MOBILEENGAGE_SDK_VERSION, Build.VERSION.SDK_INT));
 
         RequestModel expected = new RequestModel.Builder()
                 .url("https://deep-link.eservice.emarsys.net/api/clicks")
+                .headers(headers)
                 .payload(payload)
                 .build();
 
@@ -115,5 +123,6 @@ public class DeepLinkInternalTest {
         assertEquals(expected.getUrl(), result.getUrl());
         assertEquals(expected.getMethod(), result.getMethod());
         assertEquals(expected.getPayload(), result.getPayload());
+        assertEquals(expected.getHeaders(), result.getHeaders());
     }
 }
