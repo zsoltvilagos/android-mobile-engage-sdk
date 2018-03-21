@@ -1,9 +1,7 @@
-package com.emarsys.mobileengage.iam.webview;
+package com.emarsys.mobileengage.iam.dialog;
 
 import android.annotation.SuppressLint;
 import android.support.test.filters.SdkSuppress;
-
-import com.emarsys.mobileengage.iam.dialog.IamDialog;
 
 import java.util.concurrent.CountDownLatch;
 
@@ -31,6 +29,12 @@ public class TestIamDialog extends IamDialog {
     @Override
     public void onResume() {
         super.onResume();
+        latch.countDown();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
         latch.countDown();
     }
 

@@ -14,6 +14,7 @@ import android.view.WindowManager;
 import android.webkit.WebView;
 import android.widget.FrameLayout;
 
+import com.emarsys.core.timestamp.TimestampProvider;
 import com.emarsys.core.util.Assert;
 import com.emarsys.mobileengage.R;
 import com.emarsys.mobileengage.iam.dialog.action.OnDialogShownAction;
@@ -26,10 +27,15 @@ public class IamDialog extends DialogFragment {
 
     public static final String TAG = "MOBILE_ENGAGE_IAM_DIALOG_TAG";
     public static final String CAMPAIGN_ID = "campaign_id";
+    public static final String IS_SHOWN = "isShown";
+    public static final String ON_SCREEN_TIME = "on_screen_time";
 
     private List<OnDialogShownAction> actions;
     private FrameLayout webViewContainer;
     private WebView webView;
+    private long startTime;
+
+    TimestampProvider timestampProvider;
 
     public static IamDialog create(String campaignId) {
         Assert.notNull(campaignId, "CampaignId must not be null!");
@@ -41,6 +47,7 @@ public class IamDialog extends DialogFragment {
     }
 
     public IamDialog() {
+        timestampProvider = new TimestampProvider();
     }
 
     public void setActions(List<OnDialogShownAction> actions) {
@@ -87,16 +94,26 @@ public class IamDialog extends DialogFragment {
     @Override
     public void onResume() {
         super.onResume();
+        startTime = timestampProvider.provideTimestamp();
+
         Bundle args = getArguments();
-        boolean notShown = !args.getBoolean("isShown", false);
+        boolean notShown = !args.getBoolean(IS_SHOWN, false);
 
         if (actions != null && notShown) {
             for (OnDialogShownAction action : actions) {
                 String campaignId = args.getString(CAMPAIGN_ID);
                 action.execute(campaignId);
-                args.putBoolean("isShown", true);
+                args.putBoolean(IS_SHOWN, true);
             }
         }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        long currentDuration = timestampProvider.provideTimestamp() - startTime;
+        long previousDuration = getArguments().getLong(ON_SCREEN_TIME);
+        getArguments().putLong(ON_SCREEN_TIME, previousDuration + currentDuration);
     }
 
     @Override

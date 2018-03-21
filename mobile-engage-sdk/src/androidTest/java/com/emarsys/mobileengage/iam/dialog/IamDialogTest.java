@@ -1,4 +1,4 @@
-package com.emarsys.mobileengage.iam.webview;
+package com.emarsys.mobileengage.iam.dialog;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -9,9 +9,10 @@ import android.support.test.filters.SdkSuppress;
 import android.support.test.rule.ActivityTestRule;
 import android.webkit.WebView;
 
+import com.emarsys.core.timestamp.TimestampProvider;
 import com.emarsys.mobileengage.fake.FakeActivity;
-import com.emarsys.mobileengage.iam.dialog.IamDialog;
 import com.emarsys.mobileengage.iam.dialog.action.OnDialogShownAction;
+import com.emarsys.mobileengage.iam.webview.IamWebViewProvider;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
 import org.junit.After;
@@ -20,6 +21,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 
+import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -32,6 +34,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @SdkSuppress(minSdkVersion = KITKAT)
 public class IamDialogTest {
@@ -54,8 +57,8 @@ public class IamDialogTest {
     }
 
     @After
-    public void tearDown() {
-        IamWebViewProvider.webView = null;
+    public void tearDown() throws Exception {
+        setWebViewInProvider(null);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -141,6 +144,43 @@ public class IamDialogTest {
         }
     }
 
+    @Test
+    public void testOnScreenTime_savesDuration_betweenResumeAndPause() throws InterruptedException {
+        TimestampProvider timestampProvider = mock(TimestampProvider.class);
+        when(timestampProvider.provideTimestamp()).thenReturn(100L, 250L);
+
+        dialog.timestampProvider = timestampProvider;
+
+        displayDialog();
+        latch.await();
+
+        pauseDialog();
+
+        long onScreenTime = dialog.getArguments().getLong("on_screen_time");
+        assertEquals(150L, onScreenTime);
+    }
+
+    @Test
+    public void testOnScreenTime_aggregatesDurations_betweenMultipleResumeAndPause() throws InterruptedException {
+        TimestampProvider timestampProvider = mock(TimestampProvider.class);
+        when(timestampProvider.provideTimestamp()).thenReturn(100L, 250L, 1000L, 1003L);
+
+        dialog.timestampProvider = timestampProvider;
+
+        displayDialog();
+        latch.await();
+
+        pauseDialog();
+
+        assertEquals(150L, dialog.getArguments().getLong("on_screen_time"));
+
+        resumeDialog();
+
+        pauseDialog();
+
+        assertEquals(150L + 3, dialog.getArguments().getLong("on_screen_time"));
+    }
+
     private void displayDialog() {
         final Activity activity = activityRule.getActivity();
         activity.runOnUiThread(new Runnable() {
@@ -149,6 +189,34 @@ public class IamDialogTest {
                 dialog.show(activity.getFragmentManager(), "testDialog");
             }
         });
+    }
+
+    private void pauseDialog() throws InterruptedException {
+        dialog.latch = latch = new CountDownLatch(1);
+
+        final Activity activity = activityRule.getActivity();
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                dialog.onPause();
+            }
+        });
+
+        dialog.latch.await();
+    }
+
+    private void resumeDialog() throws InterruptedException {
+        dialog.latch = latch = new CountDownLatch(1);
+
+        final Activity activity = activityRule.getActivity();
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                dialog.onResume();
+            }
+        });
+
+        dialog.latch.await();
     }
 
     private void dismissDialog() {
@@ -161,13 +229,23 @@ public class IamDialogTest {
         });
     }
 
+    private void setWebViewInProvider(WebView webView) throws Exception {
+        Field webViewField = IamWebViewProvider.class.getDeclaredField("webView");
+        webViewField.setAccessible(true);
+        webViewField.set(null, webView);
+    }
+
     private void initWebViewProvider() throws InterruptedException {
         final CountDownLatch initLatch = new CountDownLatch(1);
 
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
-                IamWebViewProvider.webView = new WebView(InstrumentationRegistry.getTargetContext());
+                try {
+                    setWebViewInProvider(new WebView(InstrumentationRegistry.getTargetContext()));
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
                 initLatch.countDown();
             }
         });
@@ -182,5 +260,6 @@ public class IamDialogTest {
                 mock(OnDialogShownAction.class)
         );
     }
+
 
 }
