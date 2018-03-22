@@ -1,6 +1,7 @@
 package com.emarsys.mobileengage.iam.dialog;
 
 import android.app.Activity;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -9,6 +10,8 @@ import android.support.test.filters.SdkSuppress;
 import android.support.test.rule.ActivityTestRule;
 import android.webkit.WebView;
 
+import com.emarsys.core.database.repository.Repository;
+import com.emarsys.core.database.repository.SqlSpecification;
 import com.emarsys.core.timestamp.TimestampProvider;
 import com.emarsys.mobileengage.fake.FakeActivity;
 import com.emarsys.mobileengage.iam.dialog.action.OnDialogShownAction;
@@ -23,7 +26,9 @@ import org.junit.rules.TestRule;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 import static android.os.Build.VERSION_CODES.KITKAT;
@@ -39,8 +44,10 @@ import static org.mockito.Mockito.when;
 @SdkSuppress(minSdkVersion = KITKAT)
 public class IamDialogTest {
 
+    public static final String CAMPAIGN_ID = "id";
+    public static final String ON_SCREEN_TIME_KEY = "on_screen_time";
+    public static final String CAMPAIGN_ID_KEY = "campaign_id";
     private TestIamDialog dialog;
-    private CountDownLatch latch;
 
     @Rule
     public TestRule timeout = TimeoutUtils.getTimeoutRule();
@@ -50,8 +57,13 @@ public class IamDialogTest {
 
     @Before
     public void init() throws InterruptedException {
-        latch = new CountDownLatch(1);
-        dialog = TestIamDialog.create("", latch);
+        dialog = TestIamDialog.create(
+                CAMPAIGN_ID,
+                new CountDownLatch(1),
+                new CountDownLatch(1),
+                new CountDownLatch(1),
+                new CountDownLatch(1)
+        );
 
         initWebViewProvider();
     }
@@ -83,7 +95,6 @@ public class IamDialogTest {
     @Test
     public void testInitialization_setsDimAmountToZero() throws InterruptedException {
         displayDialog();
-        latch.await();
 
         float expected = 0.0f;
         float actual = dialog.getDialog().getWindow().getAttributes().dimAmount;
@@ -94,7 +105,6 @@ public class IamDialogTest {
     @Test
     public void testInitialization_setsDialogToFullscreen() throws InterruptedException {
         displayDialog();
-        latch.await();
 
         float dialogWidth = activityRule.getActivity().getWindow().getAttributes().width;
         float dialogHeight = activityRule.getActivity().getWindow().getAttributes().height;
@@ -116,7 +126,6 @@ public class IamDialogTest {
         dialog.setActions(actions);
 
         displayDialog();
-        latch.await();
 
         for (OnDialogShownAction action : actions) {
             verify(action).execute(eq("123456789"));
@@ -129,15 +138,10 @@ public class IamDialogTest {
         dialog.setActions(actions);
 
         displayDialog();
-        latch.await();
 
-        dialog.latch = latch = new CountDownLatch(1);
         dismissDialog();
-        latch.await();
 
-        dialog.latch = latch = new CountDownLatch(1);
         displayDialog();
-        latch.await();
 
         for (OnDialogShownAction action : actions) {
             verify(action, times(1)).execute(any(String.class));
@@ -152,7 +156,6 @@ public class IamDialogTest {
         dialog.timestampProvider = timestampProvider;
 
         displayDialog();
-        latch.await();
 
         pauseDialog();
 
@@ -168,7 +171,6 @@ public class IamDialogTest {
         dialog.timestampProvider = timestampProvider;
 
         displayDialog();
-        latch.await();
 
         pauseDialog();
 
@@ -181,7 +183,59 @@ public class IamDialogTest {
         assertEquals(150L + 3, dialog.getArguments().getLong("on_screen_time"));
     }
 
-    private void displayDialog() {
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testDismiss_savesMetric() throws InterruptedException {
+        TimestampProvider timestampProvider = mock(TimestampProvider.class);
+        when(timestampProvider.provideTimestamp()).thenReturn(100L, 250L, 1000L);
+        dialog.timestampProvider = timestampProvider;
+
+        Repository<Map<String, Object>, SqlSpecification> repository = mock(Repository.class);
+
+        displayDialog();
+
+        dialog.logRepository = repository;
+
+        dismissDialog();
+
+        long onScreenTime = dialog.getArguments().getLong("on_screen_time");
+        assertEquals(150L, onScreenTime);
+
+        Map<String, Object> expectedMetric = new HashMap<>();
+        expectedMetric.put(ON_SCREEN_TIME_KEY, 150L);
+        expectedMetric.put(CAMPAIGN_ID_KEY, CAMPAIGN_ID);
+
+        verify(repository).add(expectedMetric);
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testOnCancel_savesMetric() throws InterruptedException {
+        TimestampProvider timestampProvider = mock(TimestampProvider.class);
+        when(timestampProvider.provideTimestamp()).thenReturn(100L, 250L, 1000L);
+        dialog.timestampProvider = timestampProvider;
+
+        Repository<Map<String, Object>, SqlSpecification> repository = mock(Repository.class);
+
+        displayDialog();
+
+        dialog.logRepository = repository;
+
+        cancelDialog();
+
+        long onScreenTime = dialog.getArguments().getLong("on_screen_time");
+        assertEquals(150L, onScreenTime);
+
+        Map<String, Object> expectedMetric = new HashMap<>();
+        expectedMetric.put(ON_SCREEN_TIME_KEY, 150L);
+        expectedMetric.put(CAMPAIGN_ID_KEY, CAMPAIGN_ID);
+
+        verify(repository).add(expectedMetric);
+    }
+
+    private void displayDialog() throws InterruptedException {
+        dialog.resumeLatch = new CountDownLatch(1);
+
         final Activity activity = activityRule.getActivity();
         activity.runOnUiThread(new Runnable() {
             @Override
@@ -189,24 +243,12 @@ public class IamDialogTest {
                 dialog.show(activity.getFragmentManager(), "testDialog");
             }
         });
-    }
 
-    private void pauseDialog() throws InterruptedException {
-        dialog.latch = latch = new CountDownLatch(1);
-
-        final Activity activity = activityRule.getActivity();
-        activity.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                dialog.onPause();
-            }
-        });
-
-        dialog.latch.await();
+        dialog.resumeLatch.await();
     }
 
     private void resumeDialog() throws InterruptedException {
-        dialog.latch = latch = new CountDownLatch(1);
+        dialog.resumeLatch = new CountDownLatch(1);
 
         final Activity activity = activityRule.getActivity();
         activity.runOnUiThread(new Runnable() {
@@ -216,10 +258,40 @@ public class IamDialogTest {
             }
         });
 
-        dialog.latch.await();
+        dialog.resumeLatch.await();
     }
 
-    private void dismissDialog() {
+    private void pauseDialog() throws InterruptedException {
+        dialog.pauseLatch = new CountDownLatch(1);
+
+        final Activity activity = activityRule.getActivity();
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                dialog.onPause();
+            }
+        });
+
+        dialog.pauseLatch.await();
+    }
+
+    private void cancelDialog() throws InterruptedException {
+        dialog.cancelLatch = new CountDownLatch(1);
+
+        final Activity activity = activityRule.getActivity();
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                dialog.onCancel(mock(DialogInterface.class));
+            }
+        });
+
+        dialog.cancelLatch.await();
+    }
+
+    private void dismissDialog() throws InterruptedException {
+        dialog.stopLatch = new CountDownLatch(1);
+
         final Activity activity = activityRule.getActivity();
         activity.runOnUiThread(new Runnable() {
             @Override
@@ -227,6 +299,8 @@ public class IamDialogTest {
                 dialog.dismiss();
             }
         });
+
+        dialog.stopLatch.await();
     }
 
     private void setWebViewInProvider(WebView webView) throws Exception {

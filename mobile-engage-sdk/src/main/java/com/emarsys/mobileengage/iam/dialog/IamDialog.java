@@ -1,6 +1,7 @@
 package com.emarsys.mobileengage.iam.dialog;
 
 import android.app.DialogFragment;
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
@@ -14,13 +15,18 @@ import android.view.WindowManager;
 import android.webkit.WebView;
 import android.widget.FrameLayout;
 
+import com.emarsys.core.database.repository.Repository;
+import com.emarsys.core.database.repository.SqlSpecification;
+import com.emarsys.core.database.repository.log.LogRepository;
 import com.emarsys.core.timestamp.TimestampProvider;
 import com.emarsys.core.util.Assert;
 import com.emarsys.mobileengage.R;
 import com.emarsys.mobileengage.iam.dialog.action.OnDialogShownAction;
 import com.emarsys.mobileengage.iam.webview.IamWebViewProvider;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RequiresApi(api = Build.VERSION_CODES.KITKAT)
 public class IamDialog extends DialogFragment {
@@ -34,8 +40,10 @@ public class IamDialog extends DialogFragment {
     private FrameLayout webViewContainer;
     private WebView webView;
     private long startTime;
+    private boolean dismissed;
 
     TimestampProvider timestampProvider;
+    Repository<Map<String, Object>, SqlSpecification> logRepository;
 
     public static IamDialog create(String campaignId) {
         Assert.notNull(campaignId, "CampaignId must not be null!");
@@ -59,6 +67,7 @@ public class IamDialog extends DialogFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setStyle(DialogFragment.STYLE_NO_FRAME, android.R.style.Theme_Dialog);
+        logRepository = new LogRepository(getActivity());
     }
 
     @Override
@@ -109,16 +118,44 @@ public class IamDialog extends DialogFragment {
     }
 
     @Override
+    public void onCancel(DialogInterface dialog) {
+        saveOnScreenTime();
+        super.onCancel(dialog);
+    }
+
+    @Override
+    public void dismiss() {
+        saveOnScreenTime();
+        super.dismiss();
+    }
+
+    @Override
     public void onPause() {
+        updateOnScreenTime();
         super.onPause();
-        long currentDuration = timestampProvider.provideTimestamp() - startTime;
-        long previousDuration = getArguments().getLong(ON_SCREEN_TIME);
-        getArguments().putLong(ON_SCREEN_TIME, previousDuration + currentDuration);
     }
 
     @Override
     public void onStop() {
         webViewContainer.removeView(webView);
         super.onStop();
+    }
+
+    private void updateOnScreenTime() {
+        if (!dismissed) {
+            long currentDuration = timestampProvider.provideTimestamp() - startTime;
+            long previousDuration = getArguments().getLong(ON_SCREEN_TIME);
+            getArguments().putLong(ON_SCREEN_TIME, previousDuration + currentDuration);
+        }
+    }
+
+    private void saveOnScreenTime() {
+        updateOnScreenTime();
+        Map<String, Object> onScreenMetric = new HashMap<>();
+        Bundle args = getArguments();
+        onScreenMetric.put(CAMPAIGN_ID, args.getString(CAMPAIGN_ID));
+        onScreenMetric.put(ON_SCREEN_TIME, args.getLong(ON_SCREEN_TIME));
+        logRepository.add(onScreenMetric);
+        dismissed = true;
     }
 }
