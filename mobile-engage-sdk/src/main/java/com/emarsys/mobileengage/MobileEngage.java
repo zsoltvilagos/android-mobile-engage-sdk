@@ -215,7 +215,7 @@ public class MobileEngage {
 
         requestModelRepository = createRequestModelRepository(application);
 
-        Repository<Map<String, Object>, SqlSpecification> logRepository = new LogRepository();
+        Repository<Map<String, Object>, SqlSpecification> logRepository = new LogRepository(application);
         List<com.emarsys.core.handler.Handler<Map<String, Object>, Map<String, Object>>> logHandlers = Arrays.<com.emarsys.core.handler.Handler<Map<String, Object>, Map<String, Object>>>asList(
                 new IamMetricsLogHandler(new HashMap<String, Map<String, Object>>())
         );
