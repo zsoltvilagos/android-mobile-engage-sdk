@@ -32,7 +32,7 @@ import java.util.Map;
 public class IamDialog extends DialogFragment {
 
     public static final String TAG = "MOBILE_ENGAGE_IAM_DIALOG_TAG";
-    public static final String CAMPAIGN_ID = "campaign_id";
+    public static final String CAMPAIGN_ID = "id";
     public static final String IS_SHOWN = "isShown";
     public static final String ON_SCREEN_TIME = "on_screen_time";
 

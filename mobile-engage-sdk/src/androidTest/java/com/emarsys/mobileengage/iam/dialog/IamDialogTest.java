@@ -44,9 +44,9 @@ import static org.mockito.Mockito.when;
 @SdkSuppress(minSdkVersion = KITKAT)
 public class IamDialogTest {
 
-    public static final String CAMPAIGN_ID = "id";
+    public static final String CAMPAIGN_ID = "id_value";
     public static final String ON_SCREEN_TIME_KEY = "on_screen_time";
-    public static final String CAMPAIGN_ID_KEY = "campaign_id";
+    public static final String CAMPAIGN_ID_KEY = "id";
     private TestIamDialog dialog;
 
     @Rule
@@ -89,7 +89,7 @@ public class IamDialogTest {
         IamDialog dialog = IamDialog.create(campaignId);
 
         Bundle result = dialog.getArguments();
-        assertEquals(campaignId, result.getString("campaign_id"));
+        assertEquals(campaignId, result.getString(CAMPAIGN_ID_KEY));
     }
 
     @Test
@@ -119,7 +119,7 @@ public class IamDialogTest {
     @Test
     public void testOnResume_callsActions_ifProvided() throws InterruptedException {
         Bundle args = new Bundle();
-        args.putString("campaign_id", "123456789");
+        args.putString(CAMPAIGN_ID_KEY, "123456789");
         dialog.setArguments(args);
 
         List<OnDialogShownAction> actions = createMockActions();
