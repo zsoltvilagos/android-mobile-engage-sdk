@@ -29,7 +29,7 @@ dependencies {
     if (project.hasProperty('development') || System.env.DEVELOPMENT_MODE) {
         compile 'com.emarsys:core-sdk:+'
     } else {
-        compile 'com.emarsys:core-sdk:1.2.0'
+        compile 'com.emarsys:core-sdk:1.2.1'
     }
 
     compile 'com.android.support:appcompat-v7:26.0.2'
