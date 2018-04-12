@@ -46,7 +46,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-public class InboxInternalTest {
+public class InboxInternal_V1Test {
 
     public static final String APPLICATION_ID = "id";
     private static List<Notification> notificationList;
@@ -57,7 +57,7 @@ public class InboxInternalTest {
     private MobileEngageConfig config;
     private RequestManager manager;
     private CountDownLatch latch;
-    private InboxInternal inbox;
+    private InboxInternal_V1 inbox;
 
     private AppLoginParameters appLoginParameters_withCredentials;
     private AppLoginParameters appLoginParameters_noCredentials;
@@ -89,7 +89,7 @@ public class InboxInternalTest {
 
         defaultHeaders = RequestUtils.createDefaultHeaders(config);
         restClient = mock(RestClient.class);
-        inbox = new InboxInternal(config, manager, restClient);
+        inbox = new InboxInternal_V1(config, manager, restClient);
 
         resultListenerMock = mock(InboxResultListener.class);
         resetListenerMock = mock(ResetBadgeCountResultListener.class);
@@ -106,17 +106,17 @@ public class InboxInternalTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_mobileEngageInternal_shouldNotBeNull() {
-        inbox = new InboxInternal(null, manager, restClient);
+        inbox = new InboxInternal_V1(null, manager, restClient);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_requestManager_shouldNotBeNull() {
-        inbox = new InboxInternal(config, null, restClient);
+        inbox = new InboxInternal_V1(config, null, restClient);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_restClient_shouldNotBeNull() {
-        inbox = new InboxInternal(config, manager, null);
+        inbox = new InboxInternal_V1(config, manager, null);
     }
 
     @Test(expected = IllegalArgumentException.class)
