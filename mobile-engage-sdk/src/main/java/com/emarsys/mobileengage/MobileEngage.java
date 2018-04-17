@@ -68,11 +68,11 @@ import java.util.Map;
 
 public class MobileEngage {
 
+    static MobileEngageInternal instance;
     static InboxInternal inboxInstance;
     static DeepLinkInternal deepLinkInstance;
     static MobileEngageCoreCompletionHandler completionHandler;
     static Handler coreSdkHandler;
-    static MobileEngageInternal instance;
     static MobileEngageConfig config;
     private static Handler uiHandler;
     private static TimestampProvider timestampProvider;
