@@ -12,6 +12,7 @@ import com.emarsys.core.response.ResponseModel;
 import com.emarsys.mobileengage.MobileEngageException;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.fake.FakeInboxResultListener;
+import com.emarsys.mobileengage.fake.FakeResetBadgeCountResultListener;
 import com.emarsys.mobileengage.fake.FakeRestClient;
 import com.emarsys.mobileengage.inbox.model.Notification;
 import com.emarsys.mobileengage.inbox.model.NotificationCache;
@@ -55,6 +56,7 @@ public class InboxInternal_V2Test {
     private MeIdStorage meIdStorage;
     private MobileEngageConfig config;
     private InboxResultListener<NotificationInboxStatus> resultListener;
+    private ResetBadgeCountResultListener resetListenerMock;
     private CountDownLatch latch;
     private NotificationCache cache;
 
@@ -79,6 +81,7 @@ public class InboxInternal_V2Test {
         inbox = new InboxInternal_V2(config, manager, restClient, meIdStorage);
 
         resultListener = mock(InboxResultListener.class);
+        resetListenerMock = mock(ResetBadgeCountResultListener.class);
         cache = new NotificationCache();
 
         latch = new CountDownLatch(1);
@@ -284,6 +287,156 @@ public class InboxInternal_V2Test {
 
         FakeInboxResultListener listener = new FakeInboxResultListener(latch);
         inbox.fetchNotifications(listener);
+
+        latch.await();
+
+        Assert.assertEquals(NotificationInboxException.class, listener.errorCause.getClass());
+        Assert.assertEquals(1, listener.errorCount);
+    }
+
+    @Test
+    public void testResetBadgeCount_shouldMakeRequest_viaRestClient() {
+        RequestModel expected = createRequestModel(
+                "https://me-inbox.eservice.emarsys.net/api/v1/notifications/" + ME_ID + "/count",
+                RequestMethod.DELETE);
+
+        inbox.resetBadgeCount(resetListenerMock);
+
+        ArgumentCaptor<RequestModel> requestCaptor = ArgumentCaptor.forClass(RequestModel.class);
+        verify(restClient).execute(requestCaptor.capture(), any(CoreCompletionHandler.class));
+
+        RequestModel requestModel = requestCaptor.getValue();
+        Assert.assertNotNull(requestModel.getId());
+        Assert.assertNotNull(requestModel.getTimestamp());
+        Assert.assertEquals(expected.getUrl(), requestModel.getUrl());
+        Assert.assertEquals(expected.getHeaders(), requestModel.getHeaders());
+        Assert.assertEquals(expected.getMethod(), requestModel.getMethod());
+    }
+
+    @Test
+    public void testResetBadgeCount_listener_success() throws InterruptedException {
+        inbox = new InboxInternal_V2(
+                config,
+                manager,
+                new FakeRestClient(mock(ResponseModel.class), FakeRestClient.Mode.SUCCESS),
+                meIdStorage);
+
+        FakeResetBadgeCountResultListener listener = new FakeResetBadgeCountResultListener(latch);
+        inbox.resetBadgeCount(listener);
+
+        latch.await();
+
+        Assert.assertEquals(1, listener.successCount);
+    }
+
+    @Test
+    public void testResetBadgeCount_listener_success_shouldBeCalledOnMainThread() throws InterruptedException {
+        inbox = new InboxInternal_V2(
+                config,
+                manager,
+                new FakeRestClient(mock(ResponseModel.class), FakeRestClient.Mode.SUCCESS),
+                meIdStorage);
+
+        FakeResetBadgeCountResultListener listener = new FakeResetBadgeCountResultListener(latch, FakeResetBadgeCountResultListener.Mode.MAIN_THREAD);
+        inbox.resetBadgeCount(listener);
+
+        latch.await();
+
+        Assert.assertEquals(1, listener.successCount);
+    }
+
+    @Test
+    public void testResetBadgeCount_listener_failureWithException() throws InterruptedException {
+        Exception expectedException = new Exception("FakeRestClientException");
+        inbox = new InboxInternal_V2(
+                config,
+                manager,
+                new FakeRestClient(expectedException),
+                meIdStorage);
+
+        FakeResetBadgeCountResultListener listener = new FakeResetBadgeCountResultListener(latch);
+        inbox.resetBadgeCount(listener);
+
+        latch.await();
+
+        Assert.assertEquals(expectedException, listener.errorCause);
+        Assert.assertEquals(1, listener.errorCount);
+    }
+
+    @Test
+    public void testResetBadgeCount_listener_failureWithException_shouldBeCalledOnMainThread() throws InterruptedException {
+        Exception expectedException = new Exception("FakeRestClientException");
+        inbox = new InboxInternal_V2(
+                config,
+                manager,
+                new FakeRestClient(expectedException),
+                meIdStorage);
+
+        FakeResetBadgeCountResultListener listener = new FakeResetBadgeCountResultListener(latch, FakeResetBadgeCountResultListener.Mode.MAIN_THREAD);
+        inbox.resetBadgeCount(listener);
+
+        latch.await();
+
+        Assert.assertEquals(1, listener.errorCount);
+    }
+
+    @Test
+    public void testResetBadgeCount_listener_failureWithResponseModel() throws InterruptedException {
+        ResponseModel responseModel = new ResponseModel.Builder()
+                .statusCode(400)
+                .message("Bad request")
+                .requestModel(mock(RequestModel.class))
+                .build();
+        inbox = new InboxInternal_V2(
+                config,
+                manager,
+                new FakeRestClient(responseModel, FakeRestClient.Mode.ERROR_RESPONSE_MODEL),
+                meIdStorage);
+
+        FakeResetBadgeCountResultListener listener = new FakeResetBadgeCountResultListener(latch);
+        inbox.resetBadgeCount(listener);
+
+        latch.await();
+
+        MobileEngageException expectedException = new MobileEngageException(
+                responseModel.getStatusCode(),
+                responseModel.getMessage(),
+                responseModel.getBody());
+
+        MobileEngageException resultException = (MobileEngageException) listener.errorCause;
+        Assert.assertEquals(expectedException.getStatusCode(), resultException.getStatusCode());
+        Assert.assertEquals(expectedException.getMessage(), resultException.getMessage());
+        Assert.assertEquals(expectedException.getBody(), resultException.getBody());
+        Assert.assertEquals(1, listener.errorCount);
+    }
+
+    @Test
+    public void testResetBadgeCount_listener_failureWithResponseModel_shouldBeCalledOnMainThread() throws InterruptedException {
+        ResponseModel responseModel = new ResponseModel.Builder()
+                .statusCode(400)
+                .message("Bad request")
+                .requestModel(mock(RequestModel.class))
+                .build();
+        inbox = new InboxInternal_V2(
+                config,
+                manager,
+                new FakeRestClient(responseModel, FakeRestClient.Mode.ERROR_RESPONSE_MODEL),
+                meIdStorage);
+
+        FakeResetBadgeCountResultListener listener = new FakeResetBadgeCountResultListener(latch, FakeResetBadgeCountResultListener.Mode.MAIN_THREAD);
+        inbox.resetBadgeCount(listener);
+
+        latch.await();
+
+        Assert.assertEquals(1, listener.errorCount);
+    }
+
+    @Test
+    public void testResetBadgeCount_listener_failureWithMissingMeId() throws InterruptedException {
+        when(meIdStorage.get()).thenReturn(null);
+
+        FakeResetBadgeCountResultListener listener = new FakeResetBadgeCountResultListener(latch, FakeResetBadgeCountResultListener.Mode.MAIN_THREAD);
+        inbox.resetBadgeCount(listener);
 
         latch.await();
 

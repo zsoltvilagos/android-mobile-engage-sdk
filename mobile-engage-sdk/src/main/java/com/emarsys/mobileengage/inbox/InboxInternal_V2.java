@@ -25,6 +25,8 @@ import com.emarsys.mobileengage.util.log.MobileEngageTopic;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.emarsys.mobileengage.endpoint.Endpoint.INBOX_RESET_BADGE_COUNT_V2;
+
 public class InboxInternal_V2 implements InboxInternal {
 
     private Handler mainHandler;
@@ -99,8 +101,51 @@ public class InboxInternal_V2 implements InboxInternal {
     }
 
     @Override
-    public void resetBadgeCount(ResetBadgeCountResultListener listener) {
+    public void resetBadgeCount(final ResetBadgeCountResultListener listener) {
+        EMSLogger.log(MobileEngageTopic.INBOX, "Arguments: resultListener %s", listener);
+        String meId = meIdStorage.get();
+        if (meId != null) {
+            RequestModel model = new RequestModel.Builder()
+                    .url(String.format(INBOX_RESET_BADGE_COUNT_V2, meId))
+                    .headers(createBaseHeaders(config))
+                    .method(RequestMethod.DELETE)
+                    .build();
 
+            client.execute(model, new CoreCompletionHandler() {
+                @Override
+                public void onSuccess(String id, ResponseModel responseModel) {
+                    EMSLogger.log(MobileEngageTopic.INBOX, "Arguments: id %s, responseModel %s", id, responseModel);
+                    if (listener != null) {
+                        listener.onSuccess();
+                    }
+                }
+
+                @Override
+                public void onError(String id, ResponseModel responseModel) {
+                    EMSLogger.log(MobileEngageTopic.INBOX, "Arguments: id %s, responseModel %s", id, responseModel);
+                    if (listener != null) {
+                        listener.onError(new MobileEngageException(responseModel));
+                    }
+                }
+
+                @Override
+                public void onError(String id, Exception cause) {
+                    EMSLogger.log(MobileEngageTopic.INBOX, "Arguments: id %s, cause %s", id, cause);
+                    if (listener != null) {
+                        listener.onError(cause);
+                    }
+                }
+            });
+        } else {
+            if (listener != null) {
+                mainHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        listener.onError(new NotificationInboxException("AppLogin must be called before calling fetchNotifications!"));
+                    }
+                });
+            }
+        }
     }
 
     @Override
