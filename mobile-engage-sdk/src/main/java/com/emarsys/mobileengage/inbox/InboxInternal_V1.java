@@ -19,8 +19,8 @@ import com.emarsys.mobileengage.inbox.model.Notification;
 import com.emarsys.mobileengage.inbox.model.NotificationCache;
 import com.emarsys.mobileengage.inbox.model.NotificationInboxStatus;
 import com.emarsys.mobileengage.util.RequestHeaderUtils;
+import com.emarsys.mobileengage.util.RequestPayloadUtils;
 import com.emarsys.mobileengage.util.RequestUrlUtils;
-import com.emarsys.mobileengage.util.RequestUtils;
 import com.emarsys.mobileengage.util.log.MobileEngageTopic;
 
 import java.util.HashMap;
@@ -37,14 +37,17 @@ public class InboxInternal_V1 implements InboxInternal {
     AppLoginParameters appLoginParameters;
     NotificationCache cache;
     RequestManager manager;
+    DeviceInfo deviceInfo;
 
     public InboxInternal_V1(
             MobileEngageConfig config,
             RequestManager requestManager,
-            RestClient restClient) {
+            RestClient restClient,
+            DeviceInfo deviceInfo) {
         Assert.notNull(config, "Config must not be null!");
         Assert.notNull(requestManager, "RequestManager must not be null!");
         Assert.notNull(restClient, "RestClient must not be null!");
+        Assert.notNull(deviceInfo, "DeviceInfo must not be null!");
         EMSLogger.log(MobileEngageTopic.INBOX, "Arguments: config %s, requestManager %s", config, requestManager);
 
         this.config = config;
@@ -52,6 +55,7 @@ public class InboxInternal_V1 implements InboxInternal {
         this.handler = new Handler(Looper.getMainLooper());
         this.cache = new NotificationCache();
         this.manager = requestManager;
+        this.deviceInfo = deviceInfo;
     }
 
     @Override
@@ -122,7 +126,7 @@ public class InboxInternal_V1 implements InboxInternal {
     public String trackMessageOpen(Notification message) {
         EMSLogger.log(MobileEngageTopic.INBOX, "Argument: %s", message);
 
-        Map<String, Object> payload = RequestUtils.createBasePayload(config, appLoginParameters);
+        Map<String, Object> payload = RequestPayloadUtils.createBasePayload(config, appLoginParameters, deviceInfo);
         payload.put("source", "inbox");
         payload.put("sid", message.getSid());
         RequestModel model = new RequestModel.Builder()

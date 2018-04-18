@@ -21,7 +21,6 @@ import com.emarsys.mobileengage.inbox.model.NotificationCache;
 import com.emarsys.mobileengage.inbox.model.NotificationInboxStatus;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 import com.emarsys.mobileengage.util.RequestHeaderUtils;
-import com.emarsys.mobileengage.util.RequestUtils;
 
 import junit.framework.Assert;
 
@@ -67,6 +66,7 @@ public class InboxInternal_V1Test {
     private Application application;
     private NotificationCache cache;
     private RestClient restClient;
+    private DeviceInfo deviceInfo;
 
     @Rule
     public TestRule timeout = TimeoutUtils.getTimeoutRule();
@@ -90,7 +90,8 @@ public class InboxInternal_V1Test {
 
         defaultHeaders = RequestHeaderUtils.createDefaultHeaders(config);
         restClient = mock(RestClient.class);
-        inbox = new InboxInternal_V1(config, manager, restClient);
+        deviceInfo = new DeviceInfo(application);
+        inbox = new InboxInternal_V1(config, manager, restClient, deviceInfo);
 
         resultListenerMock = mock(InboxResultListener.class);
         resetListenerMock = mock(ResetBadgeCountResultListener.class);
@@ -107,17 +108,22 @@ public class InboxInternal_V1Test {
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_mobileEngageInternal_shouldNotBeNull() {
-        inbox = new InboxInternal_V1(null, manager, restClient);
+        new InboxInternal_V1(null, manager, restClient, deviceInfo);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_requestManager_shouldNotBeNull() {
-        inbox = new InboxInternal_V1(config, null, restClient);
+        new InboxInternal_V1(config, null, restClient, deviceInfo);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_restClient_shouldNotBeNull() {
-        inbox = new InboxInternal_V1(config, manager, null);
+        new InboxInternal_V1(config, manager, null, deviceInfo);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructor_deviceInfo_shouldNotBeNull() {
+        new InboxInternal_V1(config, manager, restClient, null);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -178,7 +184,7 @@ public class InboxInternal_V1Test {
     @Test
     public void testFetchNotifications_listener_success_withCachedNotifications() throws Exception {
         List<Notification> cachedNotifications = createCacheList();
-        for(int i=cachedNotifications.size()-1; i>=0; --i){
+        for (int i = cachedNotifications.size() - 1; i >= 0; --i) {
             cache.cache(cachedNotifications.get(i));
         }
 

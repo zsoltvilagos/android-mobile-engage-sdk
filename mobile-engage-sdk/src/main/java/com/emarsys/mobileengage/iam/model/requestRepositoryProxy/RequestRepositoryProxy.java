@@ -15,6 +15,7 @@ import com.emarsys.mobileengage.iam.model.buttonclicked.ButtonClicked;
 import com.emarsys.mobileengage.iam.model.buttonclicked.ButtonClickedContract;
 import com.emarsys.mobileengage.iam.model.displayediam.DisplayedIam;
 import com.emarsys.mobileengage.iam.model.displayediam.DisplayedIamContract;
+import com.emarsys.mobileengage.util.RequestPayloadUtils;
 import com.emarsys.mobileengage.util.RequestUtils;
 
 import java.util.ArrayList;
@@ -125,7 +126,7 @@ public class RequestRepositoryProxy implements Repository<RequestModel, SqlSpeci
             }
         }
 
-        return RequestUtils.createCompositeRequestModelPayload(
+        return RequestPayloadUtils.createCompositeRequestModelPayload(
                 events,
                 iamRepository.query(new QueryAll(DisplayedIamContract.TABLE_NAME)),
                 buttonClickedRepository.query(new QueryAll(ButtonClickedContract.TABLE_NAME)),

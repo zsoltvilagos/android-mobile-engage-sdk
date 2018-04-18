@@ -1,5 +1,6 @@
 package com.emarsys.mobileengage.inbox;
 
+import com.emarsys.core.DeviceInfo;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.request.RestClient;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
@@ -34,7 +35,8 @@ public class InboxInternalProviderTest {
                 mock(MobileEngageConfig.class),
                 mock(RequestManager.class),
                 mock(RestClient.class),
-                mock(MeIdStorage.class)
+                mock(MeIdStorage.class),
+                mock(DeviceInfo.class)
         );
         Assert.assertEquals(InboxInternal_V1.class, inboxInternal.getClass());
     }
@@ -46,7 +48,8 @@ public class InboxInternalProviderTest {
                 mock(MobileEngageConfig.class),
                 mock(RequestManager.class),
                 mock(RestClient.class),
-                mock(MeIdStorage.class)
+                mock(MeIdStorage.class),
+                mock(DeviceInfo.class)
         );
         Assert.assertEquals(InboxInternal_V2.class, inboxInternal.getClass());
     }

@@ -252,7 +252,7 @@ public class MobileEngage {
                         meIdSignatureStorage,
                         timestampProvider)
         );
-        inboxInstance = new InboxInternal_V1(config, requestManager, restClient);
+        inboxInstance = new InboxInternal_V1(config, requestManager, restClient, deviceInfo);
         deepLinkInstance = new DeepLinkInternal(requestManager);
     }
 

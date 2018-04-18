@@ -23,8 +23,8 @@ import com.emarsys.mobileengage.iam.model.displayediam.DisplayedIamRepository;
 import com.emarsys.mobileengage.testUtil.DatabaseTestUtils;
 import com.emarsys.mobileengage.testUtil.RandomTestUtils;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
+import com.emarsys.mobileengage.util.RequestPayloadUtils;
 import com.emarsys.mobileengage.util.RequestUrlUtils;
-import com.emarsys.mobileengage.util.RequestUtils;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -232,7 +232,7 @@ public class RequestRepositoryProxyTest {
         event3.put("name", "event3");
         event3.put("timestamp", TimestampUtils.formatTimestampWithUTC(1200));
 
-        Map<String, Object> payload = RequestUtils.createCompositeRequestModelPayload(
+        Map<String, Object> payload = RequestPayloadUtils.createCompositeRequestModelPayload(
                 Arrays.asList(event1, event2, event3),
                 Collections.<DisplayedIam>emptyList(),
                 Collections.<ButtonClicked>emptyList(),
@@ -295,7 +295,7 @@ public class RequestRepositoryProxyTest {
         event1.put("timestamp", TimestampUtils.formatTimestampWithUTC(1000));
         event1.put("attributes", eventAttributes);
 
-        Map<String, Object> payload = RequestUtils.createCompositeRequestModelPayload(
+        Map<String, Object> payload = RequestPayloadUtils.createCompositeRequestModelPayload(
                 Collections.singletonList(event1),
                 Arrays.asList(
                         new DisplayedIam("campaign1", 100),
@@ -384,7 +384,7 @@ public class RequestRepositoryProxyTest {
         event3.put("name", "event3");
         event3.put("timestamp", TimestampUtils.formatTimestampWithUTC(1200));
 
-        Map<String, Object> payload = RequestUtils.createCompositeRequestModelPayload(
+        Map<String, Object> payload = RequestPayloadUtils.createCompositeRequestModelPayload(
                 Arrays.asList(event1, event2, event3),
                 Arrays.asList(
                         new DisplayedIam("campaign1", 100),

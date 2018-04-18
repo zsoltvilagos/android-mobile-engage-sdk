@@ -1,26 +1,11 @@
 package com.emarsys.mobileengage.util;
 
-import android.app.Application;
-import android.content.Context;
-import android.support.test.InstrumentationRegistry;
-
-import com.emarsys.core.DeviceInfo;
 import com.emarsys.core.request.model.RequestMethod;
 import com.emarsys.core.request.model.RequestModel;
 import com.emarsys.core.timestamp.TimestampProvider;
-import com.emarsys.core.util.HeaderUtils;
 import com.emarsys.core.util.TimestampUtils;
-import com.emarsys.mobileengage.BuildConfig;
-import com.emarsys.mobileengage.MobileEngageInternal;
-import com.emarsys.mobileengage.config.MobileEngageConfig;
-import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
-import com.emarsys.mobileengage.iam.model.IamConversionUtils;
-import com.emarsys.mobileengage.iam.model.buttonclicked.ButtonClicked;
-import com.emarsys.mobileengage.iam.model.displayediam.DisplayedIam;
 import com.emarsys.mobileengage.storage.MeIdSignatureStorage;
 import com.emarsys.mobileengage.storage.MeIdStorage;
-import com.emarsys.mobileengage.testUtil.ApplicationTestUtils;
-import com.emarsys.mobileengage.testUtil.RandomTestUtils;
 import com.emarsys.mobileengage.testUtil.SharedPrefsUtils;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
@@ -30,26 +15,19 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static junit.framework.Assert.assertFalse;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class RequestUtilsTest {
     private static final String APPLICATION_CODE = "applicationCode";
-    private static final String APPLICATION_PASSWORD = "applicationPassword";
     public static final String VALID_CUSTOM_EVENT_V3 = "https://mobile-events.eservice.emarsys.net/v3/devices/12345/events";
-
-    private MobileEngageConfig realConfig;
-    private DeviceInfo deviceInfo;
 
     @Rule
     public TestRule timeout = TimeoutUtils.getTimeoutRule();
@@ -57,14 +35,6 @@ public class RequestUtilsTest {
     @Before
     public void setup() {
         SharedPrefsUtils.deleteMobileEngageSharedPrefs();
-
-        realConfig = new MobileEngageConfig.Builder()
-                .application((Application) InstrumentationRegistry.getTargetContext().getApplicationContext())
-                .credentials(APPLICATION_CODE, APPLICATION_PASSWORD)
-                .disableDefaultChannel()
-                .build();
-
-        deviceInfo = new DeviceInfo(InstrumentationRegistry.getContext());
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -88,170 +58,6 @@ public class RequestUtilsTest {
                 .build();
 
         assertFalse(RequestUtils.isCustomEvent_V3(requestModel));
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testCreateBasePayload_config_configShouldNotBeNull() {
-        RequestUtils.createBasePayload(null, null);
-    }
-
-    @Test
-    public void testCreateBasePayload_config_shouldReturnTheCorrectPayload() {
-        Map<String, Object> payload = RequestUtils.createBasePayload(realConfig, null);
-        Map<String, Object> expected = RequestUtils.createBasePayload(new HashMap<String, Object>(), realConfig, null);
-        assertEquals(expected, payload);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testCreateBasePayload_map_config_additionalPayloadShouldNotBeNull() {
-        RequestUtils.createBasePayload(null, realConfig, null);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testCreateBasePayload_map_config_configShouldNotBeNull() {
-        RequestUtils.createBasePayload(new HashMap<String, Object>(), null, null);
-    }
-
-    @Test
-    public void testCreateBasePayload_map_config_shouldReturnTheCorrectMap() {
-        Map<String, Object> expected = new HashMap<>();
-        expected.put("application_id", realConfig.getApplicationCode());
-        expected.put("hardware_id", deviceInfo.getHwid());
-        expected.put("key1", "value1");
-        expected.put("key2", "value2");
-
-        Map<String, Object> input = new HashMap<>();
-        input.put("key1", "value1");
-        input.put("key2", "value2");
-
-        Map<String, Object> result = RequestUtils.createBasePayload(input, realConfig, null);
-
-        assertEquals(expected, result);
-    }
-
-    @Test
-    public void testCreateBasePayload_config_appLoginParameters_hasCredentials() {
-        int contactFieldId = 123;
-        String contactFieldValue = "contactFieldValue";
-
-        Map<String, Object> expected = new HashMap<>();
-        expected.put("application_id", realConfig.getApplicationCode());
-        expected.put("hardware_id", deviceInfo.getHwid());
-        expected.put("contact_field_id", contactFieldId);
-        expected.put("contact_field_value", contactFieldValue);
-
-        Map<String, Object> result = RequestUtils.createBasePayload(realConfig, new AppLoginParameters(contactFieldId, contactFieldValue));
-
-        assertEquals(expected, result);
-    }
-
-    @Test
-    public void testCreateBasePayload_config_appLoginParameters_withoutCredentials() {
-        Map<String, Object> expected = new HashMap<>();
-        expected.put("application_id", realConfig.getApplicationCode());
-        expected.put("hardware_id", deviceInfo.getHwid());
-
-        Map<String, Object> result = RequestUtils.createBasePayload(realConfig, new AppLoginParameters());
-
-        assertEquals(expected, result);
-    }
-
-    @Test
-    public void testCreateBasePayload_config_whenAppLoginParameters_isNull() {
-        Map<String, Object> expected = new HashMap<>();
-        expected.put("application_id", realConfig.getApplicationCode());
-        expected.put("hardware_id", deviceInfo.getHwid());
-
-        Map<String, Object> result = RequestUtils.createBasePayload(realConfig, null);
-
-        assertEquals(expected, result);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testCreateCompositeRequestModelPayload_eventsMustNotBeNull() {
-        RequestUtils.createCompositeRequestModelPayload(
-                null,
-                Collections.<DisplayedIam>emptyList(),
-                Collections.<ButtonClicked>emptyList(),
-                deviceInfo,
-                false);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testCreateCompositeRequestModelPayload_displayedIamsMustNotBeNull() {
-        RequestUtils.createCompositeRequestModelPayload(
-                Collections.emptyList(),
-                null,
-                Collections.<ButtonClicked>emptyList(),
-                deviceInfo,
-                false);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testCreateCompositeRequestModelPayload_buttonClicksMustNotBeNull() {
-        RequestUtils.createCompositeRequestModelPayload(
-                Collections.emptyList(),
-                Collections.<DisplayedIam>emptyList(),
-                null,
-                deviceInfo,
-                false);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testCreateCompositeRequestModelPayload_deviceInfoMustNotBeNull() {
-        RequestUtils.createCompositeRequestModelPayload(
-                Collections.emptyList(),
-                Collections.<DisplayedIam>emptyList(),
-                Collections.<ButtonClicked>emptyList(),
-                null,
-                false);
-    }
-
-    @Test
-    public void testCreateCompositeRequestModelPayload_payloadContainsDoNotDisturb_whenDoNotDisturbIsTrue() {
-        Map<String, Object> payload = RequestUtils.createCompositeRequestModelPayload(
-                Collections.emptyList(),
-                Collections.<DisplayedIam>emptyList(),
-                Collections.<ButtonClicked>emptyList(),
-                deviceInfo,
-                true);
-
-        assertTrue((Boolean) payload.get("dnd"));
-    }
-
-    @Test
-    public void testCreateCompositeRequestModelPayload() {
-        List<Object> events = Arrays.asList(
-                RandomTestUtils.randomMap(),
-                RandomTestUtils.randomMap(),
-                RandomTestUtils.randomMap()
-        );
-        List<DisplayedIam> displayedIams = Arrays.asList(
-                RandomTestUtils.randomDisplayedIam(),
-                RandomTestUtils.randomDisplayedIam()
-        );
-        List<ButtonClicked> buttonClicks = Arrays.asList(
-                RandomTestUtils.randomButtonClick(),
-                RandomTestUtils.randomButtonClick(),
-                RandomTestUtils.randomButtonClick()
-        );
-        Map<String, Object> expectedPayload = new HashMap<>();
-        expectedPayload.put("events", events);
-        expectedPayload.put("viewed_messages", IamConversionUtils.displayedIamsToArray(displayedIams));
-        expectedPayload.put("clicks", IamConversionUtils.buttonClicksToArray(buttonClicks));
-        expectedPayload.put("hardware_id", deviceInfo.getHwid());
-        expectedPayload.put("language", deviceInfo.getLanguage());
-        expectedPayload.put("application_version", deviceInfo.getApplicationVersion());
-        expectedPayload.put("ems_sdk", MobileEngageInternal.MOBILEENGAGE_SDK_VERSION);
-
-        Map<String, Object> resultPayload = RequestUtils.createCompositeRequestModelPayload(
-                events,
-                displayedIams,
-                buttonClicks,
-                deviceInfo,
-                false);
-
-        assertEquals(expectedPayload, resultPayload);
     }
 
     @Test(expected = IllegalArgumentException.class)
