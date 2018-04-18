@@ -49,10 +49,7 @@ public class RequestUtilsTest {
     public static final String VALID_CUSTOM_EVENT_V3 = "https://mobile-events.eservice.emarsys.net/v3/devices/12345/events";
 
     private MobileEngageConfig realConfig;
-    private MobileEngageConfig mockDebugConfig;
-    private MobileEngageConfig mockReleaseConfig;
     private DeviceInfo deviceInfo;
-    private Context context;
 
     @Rule
     public TestRule timeout = TimeoutUtils.getTimeoutRule();
@@ -61,22 +58,8 @@ public class RequestUtilsTest {
     public void setup() {
         SharedPrefsUtils.deleteMobileEngageSharedPrefs();
 
-        context = InstrumentationRegistry.getTargetContext();
-
         realConfig = new MobileEngageConfig.Builder()
                 .application((Application) InstrumentationRegistry.getTargetContext().getApplicationContext())
-                .credentials(APPLICATION_CODE, APPLICATION_PASSWORD)
-                .disableDefaultChannel()
-                .build();
-
-        mockDebugConfig = new MobileEngageConfig.Builder()
-                .application(ApplicationTestUtils.applicationDebug())
-                .credentials(APPLICATION_CODE, APPLICATION_PASSWORD)
-                .disableDefaultChannel()
-                .build();
-
-        mockReleaseConfig = new MobileEngageConfig.Builder()
-                .application(ApplicationTestUtils.applicationRelease())
                 .credentials(APPLICATION_CODE, APPLICATION_PASSWORD)
                 .disableDefaultChannel()
                 .build();
@@ -105,92 +88,6 @@ public class RequestUtilsTest {
                 .build();
 
         assertFalse(RequestUtils.isCustomEvent_V3(requestModel));
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testCreateBaseHeaders_V2_configShouldNotBeNull() {
-        RequestUtils.createBaseHeaders_V2(null);
-    }
-
-    @Test
-    public void testCreateBaseHeaders_V2_shouldReturnCorrectMap() {
-        Map<String, String> expected = new HashMap<>();
-        expected.put("Authorization", HeaderUtils.createBasicAuth(realConfig.getApplicationCode(), realConfig.getApplicationPassword()));
-
-        Map<String, String> result = RequestUtils.createBaseHeaders_V2(realConfig);
-
-        assertEquals(expected, result);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testCreateBaseHeaders_V3_configShouldNotBeNull() {
-        RequestUtils.createBaseHeaders_V3(null, mock(MeIdStorage.class), mock(MeIdSignatureStorage.class));
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testCreateBaseHeaders_V3_meIdStorageShouldNotBeNull() {
-        RequestUtils.createBaseHeaders_V3("1234-ABCD", null, mock(MeIdSignatureStorage.class));
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testCreateBaseHeaders_V3_meIdSignatureStorageShouldNotBeNull() {
-        RequestUtils.createBaseHeaders_V3("1234-ABCD", mock(MeIdStorage.class), null);
-    }
-
-    @Test
-    public void testCreateBaseHeaders_V3_shouldReturnCorrectMap() {
-        String meId = "meid";
-        String meIdSignature = "meidsignature";
-        MeIdStorage meIdStorage = new MeIdStorage(context);
-        meIdStorage.set(meId);
-        MeIdSignatureStorage meIdSignatureStorage = new MeIdSignatureStorage(context);
-        meIdSignatureStorage.set(meIdSignature);
-
-        Map<String, String> expected = new HashMap<>();
-        expected.put("X-ME-ID", meId);
-        expected.put("X-ME-ID-SIGNATURE", meIdSignature);
-        expected.put("X-ME-APPLICATIONCODE", APPLICATION_CODE);
-
-        Map<String, String> result = RequestUtils.createBaseHeaders_V3(
-                APPLICATION_CODE,
-                meIdStorage,
-                meIdSignatureStorage);
-
-        assertEquals(expected, result);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testCreateDefaultHeaders_configShouldNotBeNull() {
-        RequestUtils.createDefaultHeaders(null);
-    }
-
-    @Test
-    public void testCreateDefaultHeaders_returnedValueShouldNotBeNull() {
-        assertNotNull(RequestUtils.createDefaultHeaders(mockDebugConfig));
-    }
-
-    @Test
-    public void testCreateDefaultHeaders_debug_shouldReturnCorrectMap() {
-        Map<String, String> expected = new HashMap<>();
-        expected.put("Content-Type", "application/json");
-        expected.put("X-MOBILEENGAGE-SDK-VERSION", BuildConfig.VERSION_NAME);
-        expected.put("X-MOBILEENGAGE-SDK-MODE", "debug");
-
-        Map<String, String> result = RequestUtils.createDefaultHeaders(mockDebugConfig);
-
-        assertEquals(expected, result);
-    }
-
-    @Test
-    public void testCreateDefaultHeaders_release_shouldReturnCorrectMap() {
-        Map<String, String> expected = new HashMap<>();
-        expected.put("Content-Type", "application/json");
-        expected.put("X-MOBILEENGAGE-SDK-VERSION", BuildConfig.VERSION_NAME);
-        expected.put("X-MOBILEENGAGE-SDK-MODE", "production");
-
-        Map<String, String> result = RequestUtils.createDefaultHeaders(mockReleaseConfig);
-
-        assertEquals(expected, result);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -452,7 +349,7 @@ public class RequestUtilsTest {
                 RequestUrlUtils.createEventUrl_V3(meId),
                 RequestMethod.POST,
                 payload,
-                RequestUtils.createBaseHeaders_V3(APPLICATION_CODE, meIdStorage, meIdSignatureStorage),
+                RequestHeaderUtils.createBaseHeaders_V3(APPLICATION_CODE, meIdStorage, meIdSignatureStorage),
                 timestamp,
                 Long.MAX_VALUE,
                 actual.getId());
@@ -501,7 +398,7 @@ public class RequestUtilsTest {
                 RequestUrlUtils.createEventUrl_V3(meId),
                 RequestMethod.POST,
                 payload,
-                RequestUtils.createBaseHeaders_V3(APPLICATION_CODE, meIdStorage, meIdSignatureStorage),
+                RequestHeaderUtils.createBaseHeaders_V3(APPLICATION_CODE, meIdStorage, meIdSignatureStorage),
                 timestamp,
                 Long.MAX_VALUE,
                 actual.getId());

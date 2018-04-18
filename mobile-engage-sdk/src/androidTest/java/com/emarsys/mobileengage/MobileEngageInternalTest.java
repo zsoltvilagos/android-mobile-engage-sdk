@@ -21,7 +21,7 @@ import com.emarsys.mobileengage.storage.MeIdSignatureStorage;
 import com.emarsys.mobileengage.storage.MeIdStorage;
 import com.emarsys.mobileengage.testUtil.ExperimentalTestUtils;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
-import com.emarsys.mobileengage.util.RequestUtils;
+import com.emarsys.mobileengage.util.RequestHeaderUtils;
 
 import org.junit.After;
 import org.junit.Before;
@@ -100,7 +100,7 @@ public class MobileEngageInternalTest {
                 .disableDefaultChannel()
                 .build();
 
-        defaultHeaders = RequestUtils.createDefaultHeaders(baseConfig);
+        defaultHeaders = RequestHeaderUtils.createDefaultHeaders(baseConfig);
 
         TimestampProvider timestampProvider = mock(TimestampProvider.class);
         when(timestampProvider.provideTimestamp()).thenReturn(TIMESTAMP);

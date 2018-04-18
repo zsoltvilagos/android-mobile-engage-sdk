@@ -32,40 +32,6 @@ public class RequestUtils {
         return RequestUrlUtils.isCustomEvent_V3(url);
     }
 
-    public static Map<String, String> createBaseHeaders_V2(MobileEngageConfig config) {
-        Assert.notNull(config, "Config must not be null!");
-        Map<String, String> baseHeaders = new HashMap<>();
-        baseHeaders.put("Authorization", HeaderUtils.createBasicAuth(config.getApplicationCode(), config.getApplicationPassword()));
-        return baseHeaders;
-    }
-
-    public static Map<String, String> createBaseHeaders_V3(
-            String applicationCode,
-            MeIdStorage meIdStorage,
-            MeIdSignatureStorage meIdSignatureStorage) {
-        Assert.notNull(applicationCode, "ApplicationCode must not be null!");
-        Assert.notNull(meIdStorage, "MeIdStorage must not be null!");
-        Assert.notNull(meIdSignatureStorage, "MeIdSignatureStorage must not be null!");
-
-        Map<String, String> baseHeaders = new HashMap<>();
-        baseHeaders.put("X-ME-ID", meIdStorage.get());
-        baseHeaders.put("X-ME-ID-SIGNATURE", meIdSignatureStorage.get());
-        baseHeaders.put("X-ME-APPLICATIONCODE", applicationCode);
-
-        return baseHeaders;
-    }
-
-    public static Map<String, String> createDefaultHeaders(MobileEngageConfig config) {
-        Assert.notNull(config, "Config must not be null!");
-
-        HashMap<String, String> defaultHeaders = new HashMap<>();
-        defaultHeaders.put("Content-Type", "application/json");
-        defaultHeaders.put("X-MOBILEENGAGE-SDK-VERSION", BuildConfig.VERSION_NAME);
-        defaultHeaders.put("X-MOBILEENGAGE-SDK-MODE", config.isDebugMode() ? "debug" : "production");
-
-        return defaultHeaders;
-    }
-
     @SuppressWarnings("unchecked")
     public static Map<String, Object> createBasePayload(MobileEngageConfig config, AppLoginParameters parameters) {
         Assert.notNull(config, "Config must not be null!");
@@ -148,7 +114,7 @@ public class RequestUtils {
                 RequestUrlUtils.createEventUrl_V3(meIdStorage.get()),
                 RequestMethod.POST,
                 payload,
-                RequestUtils.createBaseHeaders_V3(applicationCode, meIdStorage, meIdSignatureStorage),
+                RequestHeaderUtils.createBaseHeaders_V3(applicationCode, meIdStorage, meIdSignatureStorage),
                 timestampProvider.provideTimestamp(),
                 Long.MAX_VALUE,
                 RequestModel.nextId());

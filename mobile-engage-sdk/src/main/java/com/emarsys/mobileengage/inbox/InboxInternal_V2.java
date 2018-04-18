@@ -19,7 +19,7 @@ import com.emarsys.mobileengage.inbox.model.Notification;
 import com.emarsys.mobileengage.inbox.model.NotificationCache;
 import com.emarsys.mobileengage.inbox.model.NotificationInboxStatus;
 import com.emarsys.mobileengage.storage.MeIdStorage;
-import com.emarsys.mobileengage.util.RequestUtils;
+import com.emarsys.mobileengage.util.RequestHeaderUtils;
 import com.emarsys.mobileengage.util.log.MobileEngageTopic;
 
 import java.util.HashMap;
@@ -162,8 +162,8 @@ public class InboxInternal_V2 implements InboxInternal {
         Map<String, String> result = new HashMap<>();
 
         result.put("x-ems-me-application-code", config.getApplicationCode());
-        result.putAll(RequestUtils.createDefaultHeaders(config));
-        result.putAll(RequestUtils.createBaseHeaders_V2(config));
+        result.putAll(RequestHeaderUtils.createDefaultHeaders(config));
+        result.putAll(RequestHeaderUtils.createBaseHeaders_V2(config));
 
         return result;
     }

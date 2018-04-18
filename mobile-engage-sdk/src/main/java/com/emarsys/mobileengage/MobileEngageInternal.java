@@ -16,6 +16,7 @@ import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
 import com.emarsys.mobileengage.experimental.MobileEngageExperimental;
 import com.emarsys.mobileengage.experimental.MobileEngageFeature;
 import com.emarsys.mobileengage.storage.MeIdStorage;
+import com.emarsys.mobileengage.util.RequestHeaderUtils;
 import com.emarsys.mobileengage.util.RequestUrlUtils;
 import com.emarsys.mobileengage.util.RequestUtils;
 import com.emarsys.mobileengage.util.log.MobileEngageTopic;
@@ -100,7 +101,7 @@ public class MobileEngageInternal {
         Integer storedHashCode = requestContext.getAppLoginStorage().get();
         int currentHashCode = payload.hashCode();
 
-        Map<String, String> headers = RequestUtils.createBaseHeaders_V2(config);
+        Map<String, String> headers = RequestHeaderUtils.createBaseHeaders_V2(config);
 
         if (shouldDoAppLogin(storedHashCode, currentHashCode, requestContext.getMeIdStorage())) {
             model = new RequestModel.Builder()
@@ -128,7 +129,7 @@ public class MobileEngageInternal {
         RequestModel model = new RequestModel.Builder()
                 .url(ME_LOGOUT_V2)
                 .payload(RequestUtils.createBasePayload(config, appLoginParameters))
-                .headers(RequestUtils.createBaseHeaders_V2(config))
+                .headers(RequestHeaderUtils.createBaseHeaders_V2(config))
                 .build();
 
         MobileEngageUtils.incrementIdlingResource();
@@ -158,7 +159,7 @@ public class MobileEngageInternal {
         RequestModel model = new RequestModel.Builder()
                 .url(RequestUrlUtils.createEventUrl_V2(eventName))
                 .payload(payload)
-                .headers(RequestUtils.createBaseHeaders_V2(config))
+                .headers(RequestHeaderUtils.createBaseHeaders_V2(config))
                 .build();
 
         MobileEngageUtils.incrementIdlingResource();
@@ -186,7 +187,7 @@ public class MobileEngageInternal {
         RequestModel model = new RequestModel.Builder()
                 .url(RequestUrlUtils.createEventUrl_V3(requestContext.getMeIdStorage().get()))
                 .payload(payload)
-                .headers(RequestUtils.createBaseHeaders_V3(
+                .headers(RequestHeaderUtils.createBaseHeaders_V3(
                         requestContext.getApplicationCode(),
                         requestContext.getMeIdStorage(),
                         requestContext.getMeIdSignatureStorage()))
@@ -248,7 +249,7 @@ public class MobileEngageInternal {
             RequestModel model = new RequestModel.Builder()
                     .url(RequestUrlUtils.createEventUrl_V2("message_open"))
                     .payload(payload)
-                    .headers(RequestUtils.createBaseHeaders_V2(config))
+                    .headers(RequestHeaderUtils.createBaseHeaders_V2(config))
                     .build();
 
             MobileEngageUtils.incrementIdlingResource();

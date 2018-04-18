@@ -22,7 +22,7 @@ import com.emarsys.mobileengage.fake.FakeStatusListener;
 import com.emarsys.mobileengage.testUtil.ConnectionTestUtils;
 import com.emarsys.mobileengage.testUtil.DatabaseTestUtils;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
-import com.emarsys.mobileengage.util.RequestUtils;
+import com.emarsys.mobileengage.util.RequestHeaderUtils;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -94,7 +94,7 @@ public class NotificationInboxIntegrationTest {
                 restClient);
 
         MobileEngage.instance.manager = new RequestManager(handler, requestRepository, worker);
-        MobileEngage.instance.manager.setDefaultHeaders(RequestUtils.createDefaultHeaders(config));
+        MobileEngage.instance.manager.setDefaultHeaders(RequestHeaderUtils.createDefaultHeaders(config));
 
         inboxLatch = new CountDownLatch(1);
         resetLatch = new CountDownLatch(1);

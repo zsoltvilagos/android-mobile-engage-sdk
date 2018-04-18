@@ -18,6 +18,7 @@ import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
 import com.emarsys.mobileengage.inbox.model.Notification;
 import com.emarsys.mobileengage.inbox.model.NotificationCache;
 import com.emarsys.mobileengage.inbox.model.NotificationInboxStatus;
+import com.emarsys.mobileengage.util.RequestHeaderUtils;
 import com.emarsys.mobileengage.util.RequestUrlUtils;
 import com.emarsys.mobileengage.util.RequestUtils;
 import com.emarsys.mobileengage.util.log.MobileEngageTopic;
@@ -127,7 +128,7 @@ public class InboxInternal_V1 implements InboxInternal {
         RequestModel model = new RequestModel.Builder()
                 .url(RequestUrlUtils.createEventUrl_V2("message_open"))
                 .payload(payload)
-                .headers(RequestUtils.createBaseHeaders_V2(config))
+                .headers(RequestHeaderUtils.createBaseHeaders_V2(config))
                 .build();
 
         manager.submit(model);
@@ -176,8 +177,8 @@ public class InboxInternal_V1 implements InboxInternal {
         result.put("x-ems-me-contact-field-id", String.valueOf(appLoginParameters.getContactFieldId()));
         result.put("x-ems-me-contact-field-value", appLoginParameters.getContactFieldValue());
 
-        result.putAll(RequestUtils.createDefaultHeaders(config));
-        result.putAll(RequestUtils.createBaseHeaders_V2(config));
+        result.putAll(RequestHeaderUtils.createDefaultHeaders(config));
+        result.putAll(RequestHeaderUtils.createBaseHeaders_V2(config));
 
         return result;
     }

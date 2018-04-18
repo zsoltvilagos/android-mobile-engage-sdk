@@ -20,6 +20,7 @@ import com.emarsys.mobileengage.inbox.model.Notification;
 import com.emarsys.mobileengage.inbox.model.NotificationCache;
 import com.emarsys.mobileengage.inbox.model.NotificationInboxStatus;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
+import com.emarsys.mobileengage.util.RequestHeaderUtils;
 import com.emarsys.mobileengage.util.RequestUtils;
 
 import junit.framework.Assert;
@@ -87,7 +88,7 @@ public class InboxInternal_V1Test {
                 .disableDefaultChannel()
                 .build();
 
-        defaultHeaders = RequestUtils.createDefaultHeaders(config);
+        defaultHeaders = RequestHeaderUtils.createDefaultHeaders(config);
         restClient = mock(RestClient.class);
         inbox = new InboxInternal_V1(config, manager, restClient);
 
@@ -636,8 +637,8 @@ public class InboxInternal_V1Test {
         headers.put("x-ems-me-application-code", config.getApplicationCode());
         headers.put("x-ems-me-contact-field-id", String.valueOf(appLoginParameters_withCredentials.getContactFieldId()));
         headers.put("x-ems-me-contact-field-value", appLoginParameters_withCredentials.getContactFieldValue());
-        headers.putAll(RequestUtils.createDefaultHeaders(config));
-        headers.putAll(RequestUtils.createBaseHeaders_V2(config));
+        headers.putAll(RequestHeaderUtils.createDefaultHeaders(config));
+        headers.putAll(RequestHeaderUtils.createBaseHeaders_V2(config));
 
         return new RequestModel.Builder()
                 .url(path)

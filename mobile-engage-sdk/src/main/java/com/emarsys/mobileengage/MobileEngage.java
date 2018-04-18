@@ -57,7 +57,7 @@ import com.emarsys.mobileengage.responsehandler.MeIdResponseHandler;
 import com.emarsys.mobileengage.storage.AppLoginStorage;
 import com.emarsys.mobileengage.storage.MeIdSignatureStorage;
 import com.emarsys.mobileengage.storage.MeIdStorage;
-import com.emarsys.mobileengage.util.RequestUtils;
+import com.emarsys.mobileengage.util.RequestHeaderUtils;
 import com.emarsys.mobileengage.util.log.MobileEngageTopic;
 
 import java.util.ArrayList;
@@ -235,7 +235,7 @@ public class MobileEngage {
                 coreSdkHandler,
                 requestModelRepository,
                 worker);
-        requestManager.setDefaultHeaders(RequestUtils.createDefaultHeaders(config));
+        requestManager.setDefaultHeaders(RequestHeaderUtils.createDefaultHeaders(config));
     }
 
     private static void initializeInstances(@NonNull MobileEngageConfig config) {
