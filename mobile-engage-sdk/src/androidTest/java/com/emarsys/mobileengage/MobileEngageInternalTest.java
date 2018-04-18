@@ -75,6 +75,8 @@ public class MobileEngageInternalTest {
     private MobileEngageInternal mobileEngage;
     private MeIdStorage meIdStorage;
     private MeIdSignatureStorage meIdSignatureStorage;
+    private AppLoginParameters appLoginParameters;
+    private AppLoginParameters otherAppLoginParameters;
 
     @Rule
     public TestRule timeout = TimeoutUtils.getTimeoutRule();
@@ -120,12 +122,16 @@ public class MobileEngageInternalTest {
 
         meIdStorage.set(ME_ID);
         meIdSignatureStorage.set(ME_ID_SIGNATURE);
+
+        appLoginParameters = new AppLoginParameters(3, "test@test.com");
+        otherAppLoginParameters = new AppLoginParameters(3, "test2@test.com");
     }
 
     @After
-    public void tearDown() {
+    public void tearDown() throws Exception {
         meIdStorage.remove();
         meIdSignatureStorage.remove();
+        ExperimentalTestUtils.resetExperimentalFeatures();
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -159,7 +165,8 @@ public class MobileEngageInternalTest {
     }
 
     @Test
-    public void testAppLogin_anonymous_requestManagerCalledWithCorrectRequestModel() throws Exception {
+    public void testAppLogin_anonymous_requestManagerCalledWithCorrectRequestModel() {
+        meIdStorage.remove();
         Map<String, Object> payload = injectLoginPayload(createBasePayload());
         RequestModel expected = new RequestModel.Builder()
                 .url(ENDPOINT_LOGIN)
@@ -179,6 +186,7 @@ public class MobileEngageInternalTest {
 
     @Test
     public void testAppLogin_anonymous_returnsRequestModelId() {
+        meIdStorage.remove();
         ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
 
         String result = mobileEngage.appLogin();
@@ -189,7 +197,8 @@ public class MobileEngageInternalTest {
     }
 
     @Test
-    public void testAppLogin_withApploginParameters_requestManagerCalledWithCorrectRequestModel() throws Exception {
+    public void testAppLogin_withApploginParameters_requestManagerCalledWithCorrectRequestModel() {
+        meIdStorage.remove();
         int contactFieldId = 3;
         String contactFieldValue = "value";
         RequestModel expected = createLoginRequestModel(new AppLoginParameters(contactFieldId, contactFieldValue));
@@ -207,6 +216,7 @@ public class MobileEngageInternalTest {
 
     @Test
     public void testAppLogin_returnsRequestModelId() {
+        meIdStorage.remove();
         ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
 
         mobileEngage.setAppLoginParameters(new AppLoginParameters(5, "value"));
@@ -218,33 +228,32 @@ public class MobileEngageInternalTest {
     }
 
     @Test
-    public void testAppLogin_shouldNotResult_inMultipleAppLoginRequests_evenIfPayloadIsTheSame() {
-        AppLoginParameters sameAppLoginParameter = new AppLoginParameters(3, "test@test.com");
-
-        testSequentialApplogins(
-                sameAppLoginParameter,
-                createLoginRequestModel(sameAppLoginParameter),
-                sameAppLoginParameter,
-                createLastMobileActivityRequestModel(sameAppLoginParameter)
-        );
-    }
-
-    @Test
-    public void testAppLogin_shouldResult_inMultipleAppLoginRequests_ifPayloadIsNotTheSame() {
-        AppLoginParameters appLoginParameters = new AppLoginParameters(3, "test@test.com");
-        AppLoginParameters otherAppLoginParameter = new AppLoginParameters(3, "test2@test.com");
+    public void testAppLogin_shouldNotResult_inMultipleAppLoginRequests_evenIfPayloadIsTheSame() throws Exception {
+        ExperimentalTestUtils.resetExperimentalFeatures();
 
         testSequentialApplogins(
                 appLoginParameters,
                 createLoginRequestModel(appLoginParameters),
-                otherAppLoginParameter,
-                createLoginRequestModel(otherAppLoginParameter)
+                appLoginParameters,
+                createLastMobileActivityRequestModel(appLoginParameters)
         );
     }
 
     @Test
-    public void testAppLogin_shouldResult_inMultipleAppLoginRequests_when_thereWasALogout() {
-        AppLoginParameters appLoginParameters = new AppLoginParameters(3, "test@test.com");
+    public void testAppLogin_shouldResult_inMultipleAppLoginRequests_ifPayloadIsDifferent() throws Exception {
+        ExperimentalTestUtils.resetExperimentalFeatures();
+
+        testSequentialApplogins(
+                appLoginParameters,
+                createLoginRequestModel(appLoginParameters),
+                otherAppLoginParameters,
+                createLoginRequestModel(otherAppLoginParameters)
+        );
+    }
+
+    @Test
+    public void testAppLogin_shouldResult_inMultipleAppLoginRequests_when_thereWasALogout() throws Exception {
+        ExperimentalTestUtils.resetExperimentalFeatures();
 
         ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
 
@@ -272,27 +281,88 @@ public class MobileEngageInternalTest {
     }
 
     @Test
-    public void testAppLogin_shouldNotResult_inMultipleAppLoginRequests_ifPayloadIsTheSame_evenIfMobileEngageIsReInitialized() {
-        AppLoginParameters sameLoginParameters = new AppLoginParameters(3, "test@test.com");
-
-        testSequentialApplogins_withReinstantiationOfMobileEngage(
-                sameLoginParameters,
-                createLoginRequestModel(sameLoginParameters),
-                sameLoginParameters,
-                createLastMobileActivityRequestModel(sameLoginParameters)
-        );
-    }
-
-    @Test
-    public void testAppLogin_shouldResult_inMultipleAppLoginRequests_ifPayloadIsNotTheSame_evenIfMobileEngageIsReInitialized() {
-        AppLoginParameters appLoginParameters = new AppLoginParameters(3, "test@test.com");
-        AppLoginParameters otherAppLoginParameter = new AppLoginParameters(3, "test2@test.com");
+    public void testAppLogin_shouldNotResult_inMultipleAppLoginRequests_ifPayloadIsTheSame_evenIfMobileEngageIsReInitialized() throws Exception {
+        ExperimentalTestUtils.resetExperimentalFeatures();
 
         testSequentialApplogins_withReinstantiationOfMobileEngage(
                 appLoginParameters,
                 createLoginRequestModel(appLoginParameters),
-                otherAppLoginParameter,
-                createLoginRequestModel(otherAppLoginParameter)
+                appLoginParameters,
+                createLastMobileActivityRequestModel(appLoginParameters)
+        );
+    }
+
+    @Test
+    public void testAppLogin_shouldResult_inMultipleAppLoginRequests_ifPayloadIsDifferent_evenIfMobileEngageIsReInitialized() throws Exception {
+        ExperimentalTestUtils.resetExperimentalFeatures();
+
+        testSequentialApplogins_withReinstantiationOfMobileEngage(
+                appLoginParameters,
+                createLoginRequestModel(appLoginParameters),
+                otherAppLoginParameters,
+                createLoginRequestModel(otherAppLoginParameters)
+        );
+    }
+
+    @Test
+    public void testAppLogin_V3_shouldResult_inMultipleAppLoginRequests_ifPayloadIsTheSame_ifMeIdIsMissing() {
+
+        testSequentialAppLogins_withMeIds(
+                appLoginParameters,
+                null,
+                createLoginRequestModel(appLoginParameters),
+                appLoginParameters,
+                null,
+                createLoginRequestModel(appLoginParameters)
+        );
+    }
+
+    @Test
+    public void testAppLogin_V3_shouldResult_inMultipleAppLoginRequests_ifPayloadIsDifferent_ifMeIdIsMissing() {
+
+        testSequentialAppLogins_withMeIds(
+                appLoginParameters,
+                null,
+                createLoginRequestModel(appLoginParameters),
+                otherAppLoginParameters,
+                null,
+                createLoginRequestModel(otherAppLoginParameters)
+        );
+    }
+
+    @Test
+    public void testAppLogin_V3_shouldResult_inMultipleAppLoginRequests_ifPayloadIsDifferent_ifMeIdIsPresent() {
+        testSequentialAppLogins_withMeIds(
+                appLoginParameters,
+                ME_ID,
+                createLoginRequestModel(appLoginParameters),
+                otherAppLoginParameters,
+                ME_ID,
+                createLoginRequestModel(otherAppLoginParameters)
+        );
+    }
+
+    @Test
+    public void testAppLogin_V3_shouldNotResult_inMultipleAppLoginRequests_ifPayloadIsTheSame_ifMeIdIsPresent() {
+        testSequentialAppLogins_withMeIds(
+                appLoginParameters,
+                ME_ID,
+                createLoginRequestModel(appLoginParameters),
+                appLoginParameters,
+                ME_ID,
+                createLastMobileActivityRequestModel(appLoginParameters)
+        );
+    }
+
+    @Test
+    public void testAppLogin_V3_shouldResult_inAppLoginRequests_ifPayloadIsTheSame_ifMeIdIsPresentTheSecondTime() {
+        testSequentialAppLogins_withMeIds(
+                appLoginParameters,
+                null,
+                createLoginRequestModel(appLoginParameters),
+                appLoginParameters,
+                ME_ID,
+                createLastMobileActivityRequestModel(appLoginParameters)
         );
     }
 
@@ -629,7 +699,15 @@ public class MobileEngageInternalTest {
             RequestModel firstExpectedRequestModel,
             AppLoginParameters secondAppLoginParameter,
             RequestModel secondExpectedRequestModel) {
-        testSequentialApplogins(firstAppLoginParameter, firstExpectedRequestModel, secondAppLoginParameter, secondExpectedRequestModel, false);
+        testSequentialApplogins(
+                firstAppLoginParameter,
+                null,
+                firstExpectedRequestModel,
+                secondAppLoginParameter,
+                null,
+                secondExpectedRequestModel,
+                false
+        );
     }
 
     private void testSequentialApplogins_withReinstantiationOfMobileEngage(
@@ -637,18 +715,48 @@ public class MobileEngageInternalTest {
             RequestModel firstExpectedRequestModel,
             AppLoginParameters secondAppLoginParameter,
             RequestModel secondExpectedRequestModel) {
-        testSequentialApplogins(firstAppLoginParameter, firstExpectedRequestModel, secondAppLoginParameter, secondExpectedRequestModel, true);
+        testSequentialApplogins(
+                firstAppLoginParameter,
+                null,
+                firstExpectedRequestModel,
+                secondAppLoginParameter,
+                null,
+                secondExpectedRequestModel,
+                true
+        );
+    }
+
+    private void testSequentialAppLogins_withMeIds(
+            AppLoginParameters firstAppLoginParameter,
+            String firstMeId,
+            RequestModel firstExpectedRequestModel,
+            AppLoginParameters secondAppLoginParameter,
+            String secondMeId,
+            RequestModel secondExpectedRequestModel
+    ) {
+        testSequentialApplogins(
+                firstAppLoginParameter,
+                firstMeId,
+                firstExpectedRequestModel,
+                secondAppLoginParameter,
+                secondMeId,
+                secondExpectedRequestModel,
+                false
+        );
     }
 
     private void testSequentialApplogins(
             AppLoginParameters firstAppLoginParameter,
+            String firstMeId,
             RequestModel firstExpectedRequestModel,
             AppLoginParameters secondAppLoginParameter,
+            String secondMeId,
             RequestModel secondExpectedRequestModel,
             boolean shouldReinstantiateMobileEngage) {
         ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
 
         mobileEngage.setAppLoginParameters(firstAppLoginParameter);
+        meIdStorage.set(firstMeId);
         mobileEngage.appLogin();
 
         verify(manager).submit(captor.capture());
@@ -675,6 +783,7 @@ public class MobileEngageInternalTest {
         captor = ArgumentCaptor.forClass(RequestModel.class);
 
         mobileEngage.setAppLoginParameters(secondAppLoginParameter);
+        meIdStorage.set(secondMeId);
         mobileEngage.appLogin();
 
         verify(manager).submit(captor.capture());

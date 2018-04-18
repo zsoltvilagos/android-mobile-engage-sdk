@@ -15,6 +15,7 @@ import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
 import com.emarsys.mobileengage.experimental.MobileEngageExperimental;
 import com.emarsys.mobileengage.experimental.MobileEngageFeature;
+import com.emarsys.mobileengage.storage.MeIdStorage;
 import com.emarsys.mobileengage.util.RequestUtils;
 import com.emarsys.mobileengage.util.log.MobileEngageTopic;
 import com.google.firebase.iid.FirebaseInstanceId;
@@ -100,7 +101,7 @@ public class MobileEngageInternal {
 
         Map<String, String> headers = RequestUtils.createBaseHeaders_V2(config);
 
-        if (storedHashCode == null || currentHashCode != storedHashCode) {
+        if (shouldDoAppLogin(storedHashCode, currentHashCode, requestContext.getMeIdStorage())) {
             model = new RequestModel.Builder()
                     .url(ME_LOGIN_V2)
                     .payload(payload)
@@ -262,6 +263,16 @@ public class MobileEngageInternal {
             });
             return uuid;
         }
+    }
+
+    private boolean shouldDoAppLogin(Integer storedHashCode, int currentHashCode, MeIdStorage meIdStorage) {
+        boolean result = storedHashCode == null || currentHashCode != storedHashCode;
+
+        if (MobileEngageExperimental.isFeatureEnabled(MobileEngageFeature.IN_APP_MESSAGING)) {
+            result = result || meIdStorage.get() == null;
+        }
+
+        return result;
     }
 
     private Map<String, Object> injectLoginPayload(Map<String, Object> payload) {
