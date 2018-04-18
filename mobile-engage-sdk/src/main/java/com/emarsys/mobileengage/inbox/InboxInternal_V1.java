@@ -18,6 +18,7 @@ import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
 import com.emarsys.mobileengage.inbox.model.Notification;
 import com.emarsys.mobileengage.inbox.model.NotificationCache;
 import com.emarsys.mobileengage.inbox.model.NotificationInboxStatus;
+import com.emarsys.mobileengage.util.RequestUrlUtils;
 import com.emarsys.mobileengage.util.RequestUtils;
 import com.emarsys.mobileengage.util.log.MobileEngageTopic;
 
@@ -124,7 +125,7 @@ public class InboxInternal_V1 implements InboxInternal {
         payload.put("source", "inbox");
         payload.put("sid", message.getSid());
         RequestModel model = new RequestModel.Builder()
-                .url(RequestUtils.createEventUrl_V2("message_open"))
+                .url(RequestUrlUtils.createEventUrl_V2("message_open"))
                 .payload(payload)
                 .headers(RequestUtils.createBaseHeaders_V2(config))
                 .build();

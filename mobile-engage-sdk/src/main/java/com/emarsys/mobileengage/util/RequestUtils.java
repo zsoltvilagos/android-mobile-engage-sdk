@@ -21,38 +21,15 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import static com.emarsys.mobileengage.endpoint.Endpoint.ME_BASE_V2;
-import static com.emarsys.mobileengage.endpoint.Endpoint.ME_BASE_V3;
 
 public class RequestUtils {
 
     private static DeviceInfo deviceInfo;
-    private static Pattern customEventPattern = Pattern.compile("^" + ME_BASE_V3 + "\\w+/events$");
-
-    public static String createEventUrl_V2(String eventName) {
-        Assert.notNull(eventName, "EventName must not be null!");
-        return ME_BASE_V2 + "events/" + eventName;
-    }
-
-    public static String createEventUrl_V3(String meId) {
-        Assert.notNull(meId, "MEID must not be null!");
-
-        return ME_BASE_V3 + meId + "/events";
-    }
 
     public static boolean isCustomEvent_V3(RequestModel requestModel) {
         Assert.notNull(requestModel, "RequestModel must not be null");
         String url = requestModel.getUrl().toString();
-        return RequestUtils.isCustomEvent_V3(url);
-    }
-
-    public static boolean isCustomEvent_V3(String url) {
-        Assert.notNull(url, "Url must not be null");
-        Matcher matcher = customEventPattern.matcher(url);
-        return matcher.matches();
+        return RequestUrlUtils.isCustomEvent_V3(url);
     }
 
     public static Map<String, String> createBaseHeaders_V2(MobileEngageConfig config) {
@@ -168,7 +145,7 @@ public class RequestUtils {
         payload.put("events", Collections.singletonList(event));
 
         return new RequestModel(
-                RequestUtils.createEventUrl_V3(meIdStorage.get()),
+                RequestUrlUtils.createEventUrl_V3(meIdStorage.get()),
                 RequestMethod.POST,
                 payload,
                 RequestUtils.createBaseHeaders_V3(applicationCode, meIdStorage, meIdSignatureStorage),

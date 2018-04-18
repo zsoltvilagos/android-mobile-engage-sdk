@@ -16,6 +16,7 @@ import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
 import com.emarsys.mobileengage.experimental.MobileEngageExperimental;
 import com.emarsys.mobileengage.experimental.MobileEngageFeature;
 import com.emarsys.mobileengage.storage.MeIdStorage;
+import com.emarsys.mobileengage.util.RequestUrlUtils;
 import com.emarsys.mobileengage.util.RequestUtils;
 import com.emarsys.mobileengage.util.log.MobileEngageTopic;
 import com.google.firebase.iid.FirebaseInstanceId;
@@ -155,7 +156,7 @@ public class MobileEngageInternal {
             payload.put("attributes", eventAttributes);
         }
         RequestModel model = new RequestModel.Builder()
-                .url(RequestUtils.createEventUrl_V2(eventName))
+                .url(RequestUrlUtils.createEventUrl_V2(eventName))
                 .payload(payload)
                 .headers(RequestUtils.createBaseHeaders_V2(config))
                 .build();
@@ -183,7 +184,7 @@ public class MobileEngageInternal {
         payload.put("events", Collections.singletonList(event));
 
         RequestModel model = new RequestModel.Builder()
-                .url(RequestUtils.createEventUrl_V3(requestContext.getMeIdStorage().get()))
+                .url(RequestUrlUtils.createEventUrl_V3(requestContext.getMeIdStorage().get()))
                 .payload(payload)
                 .headers(RequestUtils.createBaseHeaders_V3(
                         requestContext.getApplicationCode(),
@@ -245,7 +246,7 @@ public class MobileEngageInternal {
             Map<String, Object> payload = RequestUtils.createBasePayload(config, appLoginParameters);
             payload.put("sid", messageId);
             RequestModel model = new RequestModel.Builder()
-                    .url(RequestUtils.createEventUrl_V2("message_open"))
+                    .url(RequestUrlUtils.createEventUrl_V2("message_open"))
                     .payload(payload)
                     .headers(RequestUtils.createBaseHeaders_V2(config))
                     .build();

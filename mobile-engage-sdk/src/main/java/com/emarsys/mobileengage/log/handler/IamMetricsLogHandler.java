@@ -3,7 +3,7 @@ package com.emarsys.mobileengage.log.handler;
 import com.emarsys.core.handler.Handler;
 import com.emarsys.core.util.Assert;
 import com.emarsys.core.util.CollectionUtils;
-import com.emarsys.mobileengage.util.RequestUtils;
+import com.emarsys.mobileengage.util.RequestUrlUtils;
 
 import java.util.Collections;
 import java.util.Map;
@@ -68,7 +68,7 @@ public class IamMetricsLogHandler implements Handler<Map<String, Object>, Map<St
     private boolean hasValidCustomEventUrl(Map<String, Object> item) {
         return item.containsKey(URL)
                 && item.get(URL) instanceof String
-                && RequestUtils.isCustomEvent_V3((String) item.get(URL));
+                && RequestUrlUtils.isCustomEvent_V3((String) item.get(URL));
     }
 
     private boolean hasInDatabase(Map<String, Object> item) {

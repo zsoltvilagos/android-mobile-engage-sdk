@@ -85,36 +85,12 @@ public class RequestUtilsTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testCreateEventUrl_shouldNotAcceptNull() {
-        RequestUtils.createEventUrl_V2(null);
-    }
-
-    @Test
-    public void testCreateEventUrl_shouldReturnTheCorrectEventUrl() {
-        String url = RequestUtils.createEventUrl_V2("my-custom-event");
-        String expected = "https://push.eservice.emarsys.net/api/mobileengage/v2/events/my-custom-event";
-        assertEquals(expected, url);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testCreateEventUrl_V3_meIdShouldNotBeNull() {
-        RequestUtils.createEventUrl_V3(null);
-    }
-
-    @Test
-    public void testCreateEventUrl_V3_shouldReturnTheCorrectEventUrl() {
-        String url = RequestUtils.createEventUrl_V3("meId");
-        String expected = "https://mobile-events.eservice.emarsys.net/v3/devices/meId/events";
-        assertEquals(expected, url);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testIsCustomEvent_requestModel_mustNotBeNull() {
+    public void testIsCustomEvent_V3_mustNotBeNull() {
         RequestUtils.isCustomEvent_V3((RequestModel) null);
     }
 
     @Test
-    public void testIsCustomEvent_requestModel_V3_returnsTrue_ifIndeedV3Event() {
+    public void testIsCustomEvent_V3_returnsTrue_ifIndeedV3Event() {
         RequestModel requestModel = new RequestModel.Builder()
                 .url(VALID_CUSTOM_EVENT_V3)
                 .build();
@@ -123,32 +99,12 @@ public class RequestUtilsTest {
     }
 
     @Test
-    public void testIsCustomEvent_requestModel_V3_returnsFalse_ifThereIsNoMatch() {
+    public void testIsCustomEvent_V3_returnsFalse_ifThereIsNoMatch() {
         RequestModel requestModel = new RequestModel.Builder()
                 .url("https://www.google.com")
                 .build();
 
         assertFalse(RequestUtils.isCustomEvent_V3(requestModel));
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testIsCustomEvent_string_mustNotBeNull() {
-        RequestUtils.isCustomEvent_V3((String) null);
-    }
-
-    @Test
-    public void testIsCustomEvent_string_V3_returnsTrue_ifIndeedV3Event() {
-        assertTrue(RequestUtils.isCustomEvent_V3(VALID_CUSTOM_EVENT_V3));
-    }
-
-    @Test
-    public void testIsCustomEvent_string_matchesWholeString() {
-        assertFalse(RequestUtils.isCustomEvent_V3("prefix" + VALID_CUSTOM_EVENT_V3 + "suffix"));
-    }
-
-    @Test
-    public void testIsCustomEvent_string_V3_returnsFalse_ifThereIsNoMatch() {
-        assertFalse(RequestUtils.isCustomEvent_V3("https://www.google.com"));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -493,7 +449,7 @@ public class RequestUtilsTest {
                 timestampProvider);
 
         RequestModel expected = new RequestModel(
-                RequestUtils.createEventUrl_V3(meId),
+                RequestUrlUtils.createEventUrl_V3(meId),
                 RequestMethod.POST,
                 payload,
                 RequestUtils.createBaseHeaders_V3(APPLICATION_CODE, meIdStorage, meIdSignatureStorage),
@@ -542,7 +498,7 @@ public class RequestUtilsTest {
                 timestampProvider);
 
         RequestModel expected = new RequestModel(
-                RequestUtils.createEventUrl_V3(meId),
+                RequestUrlUtils.createEventUrl_V3(meId),
                 RequestMethod.POST,
                 payload,
                 RequestUtils.createBaseHeaders_V3(APPLICATION_CODE, meIdStorage, meIdSignatureStorage),

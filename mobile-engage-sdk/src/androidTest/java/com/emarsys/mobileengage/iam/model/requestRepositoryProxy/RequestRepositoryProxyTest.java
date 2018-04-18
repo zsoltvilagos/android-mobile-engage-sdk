@@ -23,6 +23,7 @@ import com.emarsys.mobileengage.iam.model.displayediam.DisplayedIamRepository;
 import com.emarsys.mobileengage.testUtil.DatabaseTestUtils;
 import com.emarsys.mobileengage.testUtil.RandomTestUtils;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
+import com.emarsys.mobileengage.util.RequestUrlUtils;
 import com.emarsys.mobileengage.util.RequestUtils;
 
 import org.junit.Before;
@@ -239,7 +240,7 @@ public class RequestRepositoryProxyTest {
                 false);
 
         RequestModel expectedComposite = new CompositeRequestModel(
-                RequestUtils.createEventUrl_V3(MEID),
+                RequestUrlUtils.createEventUrl_V3(MEID),
                 RequestMethod.POST,
                 payload,
                 customEvent1.getHeaders(),
@@ -310,7 +311,7 @@ public class RequestRepositoryProxyTest {
                 false);
 
         RequestModel expectedComposite = new CompositeRequestModel(
-                RequestUtils.createEventUrl_V3(MEID),
+                RequestUrlUtils.createEventUrl_V3(MEID),
                 RequestMethod.POST,
                 payload,
                 customEvent1.getHeaders(),
@@ -399,7 +400,7 @@ public class RequestRepositoryProxyTest {
                 false);
 
         RequestModel expectedComposite = new CompositeRequestModel(
-                RequestUtils.createEventUrl_V3(MEID),
+                RequestUrlUtils.createEventUrl_V3(MEID),
                 RequestMethod.POST,
                 payload,
                 customEvent1.getHeaders(),
@@ -478,7 +479,15 @@ public class RequestRepositoryProxyTest {
         headers.put("custom_event_header1", "custom_event_value1");
         headers.put("custom_event_header2", "custom_event_value2");
 
-        return new RequestModel(RequestUtils.createEventUrl_V3(MEID), RequestMethod.POST, payload, headers, System.currentTimeMillis(), 999, RequestModel.nextId());
+        return new RequestModel(
+                RequestUrlUtils.createEventUrl_V3(MEID),
+                RequestMethod.POST,
+                payload,
+                headers,
+                System.currentTimeMillis(),
+                999,
+                RequestModel.nextId()
+        );
     }
 
     private RequestModel requestModel() {
