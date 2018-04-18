@@ -39,7 +39,7 @@ public class RequestUtilsTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testIsCustomEvent_V3_mustNotBeNull() {
-        RequestUtils.isCustomEvent_V3((RequestModel) null);
+        RequestUtils.isCustomEvent_V3(null);
     }
 
     @Test
