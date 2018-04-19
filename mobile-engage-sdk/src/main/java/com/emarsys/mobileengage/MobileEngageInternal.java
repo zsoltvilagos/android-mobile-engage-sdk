@@ -97,25 +97,24 @@ public class MobileEngageInternal {
         EMSLogger.log(MobileEngageTopic.MOBILE_ENGAGE, "Called");
 
         RequestModel model;
-        Map<String, Object> payload = injectLoginPayload(RequestPayloadUtils.createBasePayload(config, appLoginParameters, requestContext.getDeviceInfo()));
+        Map<String, Object> payload = RequestPayloadUtils.createAppLoginPayload(config, appLoginParameters, requestContext, pushToken);
 
         Integer storedHashCode = requestContext.getAppLoginStorage().get();
         int currentHashCode = payload.hashCode();
 
-        Map<String, String> headers = RequestHeaderUtils.createBaseHeaders_V2(config);
 
         if (shouldDoAppLogin(storedHashCode, currentHashCode, requestContext.getMeIdStorage())) {
             model = new RequestModel.Builder()
                     .url(ME_LOGIN_V2)
                     .payload(payload)
-                    .headers(headers)
+                    .headers(RequestHeaderUtils.createBaseHeaders_V2(config))
                     .build();
             requestContext.getAppLoginStorage().set(currentHashCode);
         } else {
             model = new RequestModel.Builder()
                     .url(ME_LAST_MOBILE_ACTIVITY_V2)
                     .payload(RequestPayloadUtils.createBasePayload(config, appLoginParameters, requestContext.getDeviceInfo()))
-                    .headers(headers)
+                    .headers(RequestHeaderUtils.createBaseHeaders_V2(config))
                     .build();
         }
 
@@ -276,24 +275,6 @@ public class MobileEngageInternal {
         }
 
         return result;
-    }
-
-    private Map<String, Object> injectLoginPayload(Map<String, Object> payload) {
-        payload.put("platform", requestContext.getDeviceInfo().getPlatform());
-        payload.put("language", requestContext.getDeviceInfo().getLanguage());
-        payload.put("timezone", requestContext.getDeviceInfo().getTimezone());
-        payload.put("device_model", requestContext.getDeviceInfo().getModel());
-        payload.put("application_version", requestContext.getDeviceInfo().getApplicationVersion());
-        payload.put("os_version", requestContext.getDeviceInfo().getOsVersion());
-        payload.put("ems_sdk", MOBILEENGAGE_SDK_VERSION);
-
-        if (pushToken == null) {
-            payload.put("push_token", false);
-        } else {
-            payload.put("push_token", pushToken);
-        }
-
-        return payload;
     }
 
 }
