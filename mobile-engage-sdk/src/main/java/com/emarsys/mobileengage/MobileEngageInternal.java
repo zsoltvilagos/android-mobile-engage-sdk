@@ -17,9 +17,9 @@ import com.emarsys.mobileengage.experimental.MobileEngageExperimental;
 import com.emarsys.mobileengage.experimental.MobileEngageFeature;
 import com.emarsys.mobileengage.storage.MeIdStorage;
 import com.emarsys.mobileengage.util.RequestHeaderUtils;
+import com.emarsys.mobileengage.util.RequestModelUtils;
 import com.emarsys.mobileengage.util.RequestPayloadUtils;
 import com.emarsys.mobileengage.util.RequestUrlUtils;
-import com.emarsys.mobileengage.util.RequestUtils;
 import com.emarsys.mobileengage.util.log.MobileEngageTopic;
 import com.google.firebase.iid.FirebaseInstanceId;
 
@@ -31,7 +31,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.emarsys.mobileengage.endpoint.Endpoint.ME_LAST_MOBILE_ACTIVITY_V2;
 import static com.emarsys.mobileengage.endpoint.Endpoint.ME_LOGIN_V2;
 import static com.emarsys.mobileengage.endpoint.Endpoint.ME_LOGOUT_V2;
 
@@ -111,11 +110,7 @@ public class MobileEngageInternal {
                     .build();
             requestContext.getAppLoginStorage().set(currentHashCode);
         } else {
-            model = new RequestModel.Builder()
-                    .url(ME_LAST_MOBILE_ACTIVITY_V2)
-                    .payload(RequestPayloadUtils.createBasePayload(config, appLoginParameters, requestContext.getDeviceInfo()))
-                    .headers(RequestHeaderUtils.createBaseHeaders_V2(config))
-                    .build();
+            model = RequestModelUtils.createLastMobileActivity(config, appLoginParameters, requestContext);
         }
 
         MobileEngageUtils.incrementIdlingResource();
@@ -204,7 +199,7 @@ public class MobileEngageInternal {
         EMSLogger.log(MobileEngageTopic.MOBILE_ENGAGE, "Arguments: eventName %s, eventAttributes %s", eventName, eventAttributes);
 
         if (requestContext.getMeIdStorage().get() != null && requestContext.getMeIdSignatureStorage().get() != null) {
-            RequestModel model = RequestUtils.createInternalCustomEvent(
+            RequestModel model = RequestModelUtils.createInternalCustomEvent(
                     eventName,
                     eventAttributes,
                     requestContext.getApplicationCode(),

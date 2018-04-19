@@ -1,11 +1,20 @@
 package com.emarsys.mobileengage.util;
 
+import android.app.Application;
+import android.support.test.InstrumentationRegistry;
+
+import com.emarsys.core.DeviceInfo;
 import com.emarsys.core.request.model.RequestMethod;
 import com.emarsys.core.request.model.RequestModel;
 import com.emarsys.core.timestamp.TimestampProvider;
 import com.emarsys.core.util.TimestampUtils;
+import com.emarsys.mobileengage.RequestContext;
+import com.emarsys.mobileengage.config.MobileEngageConfig;
+import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
+import com.emarsys.mobileengage.storage.AppLoginStorage;
 import com.emarsys.mobileengage.storage.MeIdSignatureStorage;
 import com.emarsys.mobileengage.storage.MeIdStorage;
+import com.emarsys.mobileengage.testUtil.RequestModelTestUtils;
 import com.emarsys.mobileengage.testUtil.SharedPrefsUtils;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
@@ -25,9 +34,14 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class RequestUtilsTest {
+public class RequestModelUtilsTest {
     private static final String APPLICATION_CODE = "applicationCode";
+    private static final String APPLICATION_PASSWORD = "applicationPassword";
     public static final String VALID_CUSTOM_EVENT_V3 = "https://mobile-events.eservice.emarsys.net/v3/devices/12345/events";
+
+    private DeviceInfo deviceInfo;
+    private MobileEngageConfig config;
+    private AppLoginParameters appLoginParameters;
 
     @Rule
     public TestRule timeout = TimeoutUtils.getTimeoutRule();
@@ -35,11 +49,18 @@ public class RequestUtilsTest {
     @Before
     public void setup() {
         SharedPrefsUtils.deleteMobileEngageSharedPrefs();
+        config = new MobileEngageConfig.Builder()
+                .application((Application) InstrumentationRegistry.getTargetContext().getApplicationContext())
+                .credentials(APPLICATION_CODE, APPLICATION_PASSWORD)
+                .disableDefaultChannel()
+                .build();
+        deviceInfo = new DeviceInfo(InstrumentationRegistry.getContext());
+        appLoginParameters = new AppLoginParameters(3, "test@test.com");
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testIsCustomEvent_V3_mustNotBeNull() {
-        RequestUtils.isCustomEvent_V3(null);
+        RequestModelUtils.isCustomEvent_V3(null);
     }
 
     @Test
@@ -48,7 +69,7 @@ public class RequestUtilsTest {
                 .url(VALID_CUSTOM_EVENT_V3)
                 .build();
 
-        assertTrue(RequestUtils.isCustomEvent_V3(requestModel));
+        assertTrue(RequestModelUtils.isCustomEvent_V3(requestModel));
     }
 
     @Test
@@ -57,12 +78,43 @@ public class RequestUtilsTest {
                 .url("https://www.google.com")
                 .build();
 
-        assertFalse(RequestUtils.isCustomEvent_V3(requestModel));
+        assertFalse(RequestModelUtils.isCustomEvent_V3(requestModel));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testCreateLastMobileActivity_config_mustNotBeNull() {
+        RequestModelUtils.createLastMobileActivity(null, appLoginParameters, mock(RequestContext.class));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testCreateLastMobileActivity_deviceInfo_mustNotBeNull() {
+        RequestModelUtils.createLastMobileActivity(config, appLoginParameters, null);
+    }
+
+    @Test
+    public void testCreateLastMobileActivity() {
+        RequestModel expected = new RequestModel.Builder()
+                .url("https://push.eservice.emarsys.net/api/mobileengage/v2/events/ems_lastMobileActivity")
+                .payload(RequestPayloadUtils.createBasePayload(config, appLoginParameters, deviceInfo))
+                .headers(RequestHeaderUtils.createBaseHeaders_V2(config))
+                .build();
+
+        RequestContext requestContext = new RequestContext(
+                APPLICATION_CODE,
+                deviceInfo,
+                mock(AppLoginStorage.class),
+                mock(MeIdStorage.class),
+                mock(MeIdSignatureStorage.class),
+                mock(TimestampProvider.class));
+
+        RequestModel result = RequestModelUtils.createLastMobileActivity(config, appLoginParameters, requestContext);
+
+        RequestModelTestUtils.assertEqualsRequestModels(expected, result);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testCreateInternalCustomEvent_eventNameShouldNotBeNull() {
-        RequestUtils.createInternalCustomEvent(
+        RequestModelUtils.createInternalCustomEvent(
                 null,
                 new HashMap<String, String>(),
                 APPLICATION_CODE,
@@ -74,7 +126,7 @@ public class RequestUtilsTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testCreateInternalCustomEvent_applicationCodeShouldNotBeNull() {
-        RequestUtils.createInternalCustomEvent(
+        RequestModelUtils.createInternalCustomEvent(
                 "eventname",
                 new HashMap<String, String>(),
                 null,
@@ -86,7 +138,7 @@ public class RequestUtilsTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testCreateInternalCustomEvent_meIdStorageShouldNotBeNull() {
-        RequestUtils.createInternalCustomEvent(
+        RequestModelUtils.createInternalCustomEvent(
                 "eventname",
                 new HashMap<String, String>(),
                 APPLICATION_CODE,
@@ -98,7 +150,7 @@ public class RequestUtilsTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testCreateInternalCustomEvent_meIdSignatureStorageShouldNotBeNull() {
-        RequestUtils.createInternalCustomEvent(
+        RequestModelUtils.createInternalCustomEvent(
                 "eventname",
                 new HashMap<String, String>(),
                 APPLICATION_CODE,
@@ -110,7 +162,7 @@ public class RequestUtilsTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testCreateInternalCustomEvent_timestampProviderShouldNotBeNull() {
-        RequestUtils.createInternalCustomEvent(
+        RequestModelUtils.createInternalCustomEvent(
                 "eventname",
                 new HashMap<String, String>(),
                 APPLICATION_CODE,
@@ -143,7 +195,7 @@ public class RequestUtilsTest {
         payload.put("viewed_messages", new ArrayList<>());
         payload.put("events", Collections.singletonList(event));
 
-        RequestModel actual = RequestUtils.createInternalCustomEvent(
+        RequestModel actual = RequestModelUtils.createInternalCustomEvent(
                 eventName,
                 null,
                 APPLICATION_CODE,
@@ -192,7 +244,7 @@ public class RequestUtilsTest {
         payload.put("viewed_messages", new ArrayList<>());
         payload.put("events", Collections.singletonList(event));
 
-        RequestModel actual = RequestUtils.createInternalCustomEvent(
+        RequestModel actual = RequestModelUtils.createInternalCustomEvent(
                 eventName,
                 attributes,
                 APPLICATION_CODE,
