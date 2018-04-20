@@ -12,7 +12,7 @@ public class IamMetricsLogHandler implements Handler<Map<String, Object>, Map<St
     private static final String REQUEST_ID = "request_id";
     private static final String CAMPAIGN_ID = "campaign_id";
     private static final String URL = "url";
-    private static final String IN_DATABASE = "in_database";
+    private static final String IN_DATABASE = "in_database_time";
     private static final String NETWORKING_TIME = "networking_time";
     private static final String LOADING_TIME = "loading_time";
 
