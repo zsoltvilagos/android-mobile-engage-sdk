@@ -42,6 +42,7 @@ public class RequestModelUtilsTest {
     private DeviceInfo deviceInfo;
     private MobileEngageConfig config;
     private AppLoginParameters appLoginParameters;
+    private RequestContext requestContext;
 
     @Rule
     public TestRule timeout = TimeoutUtils.getTimeoutRule();
@@ -56,6 +57,14 @@ public class RequestModelUtilsTest {
                 .build();
         deviceInfo = new DeviceInfo(InstrumentationRegistry.getContext());
         appLoginParameters = new AppLoginParameters(3, "test@test.com");
+
+        requestContext = new RequestContext(
+                APPLICATION_CODE,
+                deviceInfo,
+                mock(AppLoginStorage.class),
+                mock(MeIdStorage.class),
+                mock(MeIdSignatureStorage.class),
+                mock(TimestampProvider.class));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -83,12 +92,7 @@ public class RequestModelUtilsTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testCreateAppLogin_V2_config_mustNotBeNull() {
-        RequestModelUtils.createAppLogin_V2(null, appLoginParameters, mock(RequestContext.class), "pushtoken");
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testCreateAppLogin_V2_appLoginParameters_mustNotBeNull() {
-        RequestModelUtils.createAppLogin_V2(config, null, mock(RequestContext.class), "pushtoken");
+        RequestModelUtils.createAppLogin_V2(null, appLoginParameters, requestContext, "pushtoken");
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -98,14 +102,6 @@ public class RequestModelUtilsTest {
 
     @Test
     public void testCreateAppLogin_V2() {
-        RequestContext requestContext = new RequestContext(
-                APPLICATION_CODE,
-                deviceInfo,
-                mock(AppLoginStorage.class),
-                mock(MeIdStorage.class),
-                mock(MeIdSignatureStorage.class),
-                mock(TimestampProvider.class));
-
         RequestModel expected = new RequestModel.Builder()
                 .url("https://push.eservice.emarsys.net/api/mobileengage/v2/users/login")
                 .payload(RequestPayloadUtils.createAppLoginPayload(config, appLoginParameters, requestContext, null))
