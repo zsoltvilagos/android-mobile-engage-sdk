@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static com.emarsys.mobileengage.endpoint.Endpoint.ME_LAST_MOBILE_ACTIVITY_V2;
+import static com.emarsys.mobileengage.endpoint.Endpoint.ME_LOGIN_V2;
 
 public class RequestModelUtils {
 
@@ -23,6 +24,22 @@ public class RequestModelUtils {
         Assert.notNull(requestModel, "RequestModel must not be null");
         String url = requestModel.getUrl().toString();
         return RequestUrlUtils.isCustomEvent_V3(url);
+    }
+
+    public static RequestModel createApplogin(MobileEngageConfig config,
+                                              AppLoginParameters appLoginParameters,
+                                              RequestContext requestContext,
+                                              String pushToken) {
+        Assert.notNull(config, "Config must not be null");
+        Assert.notNull(requestContext, "RequestContext must not be null");
+
+        Map<String, Object> payload = RequestPayloadUtils.createAppLoginPayload(config, appLoginParameters, requestContext, pushToken);
+
+        return new RequestModel.Builder()
+                .url(ME_LOGIN_V2)
+                .payload(payload)
+                .headers(RequestHeaderUtils.createBaseHeaders_V2(config))
+                .build();
     }
 
     public static RequestModel createLastMobileActivity(MobileEngageConfig config, AppLoginParameters appLoginParameters, RequestContext requestContext) {

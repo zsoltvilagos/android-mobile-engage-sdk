@@ -82,6 +82,42 @@ public class RequestModelUtilsTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
+    public void testCreateApplogin_config_mustNotBeNull() {
+        RequestModelUtils.createApplogin(null, appLoginParameters, mock(RequestContext.class), "pushtoken");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testCreateApplogin_appLoginParameters_mustNotBeNull() {
+        RequestModelUtils.createApplogin(config, null, mock(RequestContext.class), "pushtoken");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testCreateApplogin_requestContext_mustNotBeNull() {
+        RequestModelUtils.createApplogin(config, appLoginParameters, null, "pushtoken");
+    }
+
+    @Test
+    public void testCreateApplogin() {
+        RequestContext requestContext = new RequestContext(
+                APPLICATION_CODE,
+                deviceInfo,
+                mock(AppLoginStorage.class),
+                mock(MeIdStorage.class),
+                mock(MeIdSignatureStorage.class),
+                mock(TimestampProvider.class));
+
+        RequestModel expected = new RequestModel.Builder()
+                .url("https://push.eservice.emarsys.net/api/mobileengage/v2/users/login")
+                .payload(RequestPayloadUtils.createAppLoginPayload(config, appLoginParameters, requestContext, null))
+                .headers(RequestHeaderUtils.createBaseHeaders_V2(config))
+                .build();
+
+        RequestModel result = RequestModelUtils.createApplogin(config, appLoginParameters, requestContext, null);
+
+        RequestModelTestUtils.assertEqualsRequestModels(expected, result);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
     public void testCreateLastMobileActivity_config_mustNotBeNull() {
         RequestModelUtils.createLastMobileActivity(null, appLoginParameters, mock(RequestContext.class));
     }

@@ -95,22 +95,15 @@ public class MobileEngageInternal {
     public String appLogin() {
         EMSLogger.log(MobileEngageTopic.MOBILE_ENGAGE, "Called");
 
-        RequestModel model;
-        Map<String, Object> payload = RequestPayloadUtils.createAppLoginPayload(config, appLoginParameters, requestContext, pushToken);
+        RequestModel model = RequestModelUtils.createApplogin(config, appLoginParameters, requestContext, pushToken);
 
         Integer storedHashCode = requestContext.getAppLoginStorage().get();
-        int currentHashCode = payload.hashCode();
+        int currentHashCode = model.getPayload().hashCode();
 
-
-        if (shouldDoAppLogin(storedHashCode, currentHashCode, requestContext.getMeIdStorage())) {
-            model = new RequestModel.Builder()
-                    .url(ME_LOGIN_V2)
-                    .payload(payload)
-                    .headers(RequestHeaderUtils.createBaseHeaders_V2(config))
-                    .build();
-            requestContext.getAppLoginStorage().set(currentHashCode);
-        } else {
+        if (!shouldDoAppLogin(storedHashCode, currentHashCode, requestContext.getMeIdStorage())) {
             model = RequestModelUtils.createLastMobileActivity(config, appLoginParameters, requestContext);
+        } else {
+            requestContext.getAppLoginStorage().set(currentHashCode);
         }
 
         MobileEngageUtils.incrementIdlingResource();
