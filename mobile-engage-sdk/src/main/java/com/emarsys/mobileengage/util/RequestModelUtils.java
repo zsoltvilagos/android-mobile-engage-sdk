@@ -26,10 +26,10 @@ public class RequestModelUtils {
         return RequestUrlUtils.isCustomEvent_V3(url);
     }
 
-    public static RequestModel createApplogin(MobileEngageConfig config,
-                                              AppLoginParameters appLoginParameters,
-                                              RequestContext requestContext,
-                                              String pushToken) {
+    public static RequestModel createAppLogin_V2(MobileEngageConfig config,
+                                                 AppLoginParameters appLoginParameters,
+                                                 RequestContext requestContext,
+                                                 String pushToken) {
         Assert.notNull(config, "Config must not be null");
         Assert.notNull(requestContext, "RequestContext must not be null");
 

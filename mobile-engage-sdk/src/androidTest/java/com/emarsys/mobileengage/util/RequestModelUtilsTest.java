@@ -82,22 +82,22 @@ public class RequestModelUtilsTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testCreateApplogin_config_mustNotBeNull() {
-        RequestModelUtils.createApplogin(null, appLoginParameters, mock(RequestContext.class), "pushtoken");
+    public void testCreateAppLogin_V2_config_mustNotBeNull() {
+        RequestModelUtils.createAppLogin_V2(null, appLoginParameters, mock(RequestContext.class), "pushtoken");
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testCreateApplogin_appLoginParameters_mustNotBeNull() {
-        RequestModelUtils.createApplogin(config, null, mock(RequestContext.class), "pushtoken");
+    public void testCreateAppLogin_V2_appLoginParameters_mustNotBeNull() {
+        RequestModelUtils.createAppLogin_V2(config, null, mock(RequestContext.class), "pushtoken");
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testCreateApplogin_requestContext_mustNotBeNull() {
-        RequestModelUtils.createApplogin(config, appLoginParameters, null, "pushtoken");
+    public void testCreateAppLogin_V2_requestContext_mustNotBeNull() {
+        RequestModelUtils.createAppLogin_V2(config, appLoginParameters, null, "pushtoken");
     }
 
     @Test
-    public void testCreateApplogin() {
+    public void testCreateAppLogin_V2() {
         RequestContext requestContext = new RequestContext(
                 APPLICATION_CODE,
                 deviceInfo,
@@ -112,7 +112,7 @@ public class RequestModelUtilsTest {
                 .headers(RequestHeaderUtils.createBaseHeaders_V2(config))
                 .build();
 
-        RequestModel result = RequestModelUtils.createApplogin(config, appLoginParameters, requestContext, null);
+        RequestModel result = RequestModelUtils.createAppLogin_V2(config, appLoginParameters, requestContext, null);
 
         RequestModelTestUtils.assertEqualsRequestModels(expected, result);
     }

@@ -31,7 +31,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.emarsys.mobileengage.endpoint.Endpoint.ME_LOGIN_V2;
 import static com.emarsys.mobileengage.endpoint.Endpoint.ME_LOGOUT_V2;
 
 public class MobileEngageInternal {
@@ -95,7 +94,7 @@ public class MobileEngageInternal {
     public String appLogin() {
         EMSLogger.log(MobileEngageTopic.MOBILE_ENGAGE, "Called");
 
-        RequestModel model = RequestModelUtils.createApplogin(config, appLoginParameters, requestContext, pushToken);
+        RequestModel model = RequestModelUtils.createAppLogin_V2(config, appLoginParameters, requestContext, pushToken);
 
         Integer storedHashCode = requestContext.getAppLoginStorage().get();
         int currentHashCode = model.getPayload().hashCode();
