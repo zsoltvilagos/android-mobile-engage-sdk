@@ -164,4 +164,8 @@ public class InboxInternal_V2 implements InboxInternal {
 
         return result;
     }
+
+    public RequestContext getRequestContext() {
+        return requestContext;
+    }
 }

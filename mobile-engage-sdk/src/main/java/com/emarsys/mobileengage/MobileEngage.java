@@ -43,7 +43,7 @@ import com.emarsys.mobileengage.iam.model.displayediam.DisplayedIamRepository;
 import com.emarsys.mobileengage.iam.model.requestRepositoryProxy.RequestRepositoryProxy;
 import com.emarsys.mobileengage.iam.webview.IamWebViewProvider;
 import com.emarsys.mobileengage.inbox.InboxInternal;
-import com.emarsys.mobileengage.inbox.InboxInternal_V1;
+import com.emarsys.mobileengage.inbox.InboxInternalProvider;
 import com.emarsys.mobileengage.inbox.InboxResultListener;
 import com.emarsys.mobileengage.inbox.ResetBadgeCountResultListener;
 import com.emarsys.mobileengage.inbox.model.Notification;
@@ -250,7 +250,14 @@ public class MobileEngage {
                 completionHandler,
                 requestContext
         );
-        inboxInstance = new InboxInternal_V1(config, requestManager, restClient, deviceInfo, requestContext);
+        inboxInstance = new InboxInternalProvider().provideInboxInternal(
+                MobileEngageExperimental.isFeatureEnabled(MobileEngageFeature.USER_CENTRIC_INBOX),
+                config,
+                requestManager,
+                restClient,
+                deviceInfo,
+                requestContext
+        );
         deepLinkInstance = new DeepLinkInternal(requestManager);
     }
 

@@ -18,6 +18,7 @@ import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.deeplink.DeepLinkAction;
 import com.emarsys.mobileengage.deeplink.DeepLinkInternal;
 import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
+import com.emarsys.mobileengage.experimental.FlipperFeature;
 import com.emarsys.mobileengage.experimental.MobileEngageExperimental;
 import com.emarsys.mobileengage.experimental.MobileEngageFeature;
 import com.emarsys.mobileengage.fake.FakeRequestManager;
@@ -26,6 +27,7 @@ import com.emarsys.mobileengage.iam.InAppStartAction;
 import com.emarsys.mobileengage.iam.model.requestRepositoryProxy.RequestRepositoryProxy;
 import com.emarsys.mobileengage.inbox.InboxInternal;
 import com.emarsys.mobileengage.inbox.InboxInternal_V1;
+import com.emarsys.mobileengage.inbox.InboxInternal_V2;
 import com.emarsys.mobileengage.inbox.InboxResultListener;
 import com.emarsys.mobileengage.inbox.ResetBadgeCountResultListener;
 import com.emarsys.mobileengage.inbox.model.Notification;
@@ -93,6 +95,7 @@ public class MobileEngageTest {
     private DeepLinkInternal deepLinkInternal;
     private Application application;
     private MobileEngageConfig baseConfig;
+    private MobileEngageConfig userCentricConfig;
 
     @Rule
     public TestRule timeout = TimeoutUtils.getTimeoutRule();
@@ -114,6 +117,9 @@ public class MobileEngageTest {
                 .credentials(appID, appSecret)
                 .disableDefaultChannel()
                 .build();
+
+        userCentricConfig = createConfigWithFlippers(MobileEngageFeature.USER_CENTRIC_INBOX);
+
         MobileEngage.inboxInstance = inboxInternal;
         MobileEngage.instance = mobileEngageInternal;
         MobileEngage.deepLinkInstance = deepLinkInternal;
@@ -239,6 +245,16 @@ public class MobileEngageTest {
         MobileEngage.setup(baseConfig);
 
         assertNotNull(MobileEngage.inboxInstance);
+        assertEquals(InboxInternal_V1.class, MobileEngage.inboxInstance.getClass());
+    }
+
+    @Test
+    public void testSetup_initializesInboxInstance_V2_withUserCentricFlipper() {
+        MobileEngage.inboxInstance = null;
+        MobileEngage.setup(userCentricConfig);
+
+        assertNotNull(MobileEngage.inboxInstance);
+        assertEquals(InboxInternal_V2.class, MobileEngage.inboxInstance.getClass());
     }
 
     @Test
@@ -339,10 +355,19 @@ public class MobileEngageTest {
     public void testSetup_initializesInstances_withTheSame_requestContext() {
         MobileEngage.setup(baseConfig);
 
-        assertEquals(baseConfig, MobileEngage.getConfig());
         assertThat(MobileEngage.requestContext, Matchers.allOf(
                 Matchers.is(MobileEngage.instance.getRequestContext()),
                 Matchers.is(((InboxInternal_V1) MobileEngage.inboxInstance).getRequestContext())
+        ));
+    }
+
+    @Test
+    public void testSetup_initializesInstances_withTheSame_requestContext_withUserCentricFlipper() {
+        MobileEngage.setup(userCentricConfig);
+
+        assertThat(MobileEngage.requestContext, Matchers.allOf(
+                Matchers.is(MobileEngage.instance.getRequestContext()),
+                Matchers.is(((InboxInternal_V2) MobileEngage.inboxInstance).getRequestContext())
         ));
     }
 
@@ -542,6 +567,15 @@ public class MobileEngageTest {
                 .application(spy(application))
                 .credentials(appID, appSecret)
                 .disableDefaultChannel()
+                .build();
+    }
+
+    private MobileEngageConfig createConfigWithFlippers(FlipperFeature... experimentalFeatures) {
+        return new MobileEngageConfig.Builder()
+                .application(application)
+                .credentials(appID, appSecret)
+                .disableDefaultChannel()
+                .enableExperimentalFeatures(experimentalFeatures)
                 .build();
     }
 }
