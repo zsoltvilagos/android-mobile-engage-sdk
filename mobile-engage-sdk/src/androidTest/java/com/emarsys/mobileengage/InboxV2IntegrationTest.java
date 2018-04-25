@@ -3,6 +3,7 @@ package com.emarsys.mobileengage;
 import android.app.Application;
 import android.support.test.InstrumentationRegistry;
 
+import com.emarsys.core.DeviceInfo;
 import com.emarsys.core.database.repository.Repository;
 import com.emarsys.core.database.repository.SqlSpecification;
 import com.emarsys.core.database.repository.log.LogRepository;
@@ -17,6 +18,8 @@ import com.emarsys.mobileengage.iam.InAppMessageHandler;
 import com.emarsys.mobileengage.inbox.InboxInternal;
 import com.emarsys.mobileengage.inbox.InboxInternal_V2;
 import com.emarsys.mobileengage.log.LogRepositoryProxy;
+import com.emarsys.mobileengage.storage.AppLoginStorage;
+import com.emarsys.mobileengage.storage.MeIdSignatureStorage;
 import com.emarsys.mobileengage.storage.MeIdStorage;
 import com.emarsys.mobileengage.testUtil.ConnectionTestUtils;
 import com.emarsys.mobileengage.testUtil.DatabaseTestUtils;
@@ -48,6 +51,7 @@ public class InboxV2IntegrationTest {
     private FakeInboxResultListener inboxListener;
     private FakeResetBadgeCountResultListener resetListener;
     private InboxInternal inboxInternal;
+    private RequestContext requestContext;
 
     @Rule
     public TestRule timeout = TimeoutUtils.getTimeoutRule();
@@ -79,7 +83,15 @@ public class InboxV2IntegrationTest {
         TimestampProvider timestampProvider = new TimestampProvider();
         RestClient restClient = new RestClient(logRepositoryProxy, timestampProvider);
 
-        inboxInternal = new InboxInternal_V2(config, MobileEngage.instance.manager, restClient, new MeIdStorage(context));
+        requestContext = new RequestContext(
+                config.getApplicationCode(),
+                mock(DeviceInfo.class),
+                new AppLoginStorage(context),
+                new MeIdStorage(context),
+                mock(MeIdSignatureStorage.class),
+                mock(TimestampProvider.class));
+
+        inboxInternal = new InboxInternal_V2(config, MobileEngage.instance.manager, restClient, requestContext);
 
         inboxLatch = new CountDownLatch(1);
         resetLatch = new CountDownLatch(1);

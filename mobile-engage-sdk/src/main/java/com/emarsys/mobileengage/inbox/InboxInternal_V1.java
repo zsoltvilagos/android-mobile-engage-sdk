@@ -13,8 +13,8 @@ import com.emarsys.core.response.ResponseModel;
 import com.emarsys.core.util.Assert;
 import com.emarsys.core.util.log.EMSLogger;
 import com.emarsys.mobileengage.MobileEngageException;
+import com.emarsys.mobileengage.RequestContext;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
-import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
 import com.emarsys.mobileengage.inbox.model.Notification;
 import com.emarsys.mobileengage.inbox.model.NotificationCache;
 import com.emarsys.mobileengage.inbox.model.NotificationInboxStatus;
@@ -34,20 +34,22 @@ public class InboxInternal_V1 implements InboxInternal {
     Handler handler;
     RestClient client;
     MobileEngageConfig config;
-    AppLoginParameters appLoginParameters;
     NotificationCache cache;
     RequestManager manager;
     DeviceInfo deviceInfo;
+    RequestContext requestContext;
 
     public InboxInternal_V1(
             MobileEngageConfig config,
             RequestManager requestManager,
             RestClient restClient,
-            DeviceInfo deviceInfo) {
+            DeviceInfo deviceInfo,
+            RequestContext requestContext) {
         Assert.notNull(config, "Config must not be null!");
         Assert.notNull(requestManager, "RequestManager must not be null!");
         Assert.notNull(restClient, "RestClient must not be null!");
         Assert.notNull(deviceInfo, "DeviceInfo must not be null!");
+        Assert.notNull(requestContext, "RequestContext must not be null!");
         EMSLogger.log(MobileEngageTopic.INBOX, "Arguments: config %s, requestManager %s", config, requestManager);
 
         this.config = config;
@@ -56,6 +58,7 @@ public class InboxInternal_V1 implements InboxInternal {
         this.cache = new NotificationCache();
         this.manager = requestManager;
         this.deviceInfo = deviceInfo;
+        this.requestContext = requestContext;
     }
 
     @Override
@@ -63,7 +66,7 @@ public class InboxInternal_V1 implements InboxInternal {
         Assert.notNull(resultListener, "ResultListener should not be null!");
         EMSLogger.log(MobileEngageTopic.INBOX, "Arguments: resultListener %s", resultListener);
 
-        if (appLoginParameters != null && appLoginParameters.hasCredentials()) {
+        if (requestContext.getAppLoginParameters() != null && requestContext.getAppLoginParameters().hasCredentials()) {
             handleFetchRequest(resultListener);
         } else {
             handler.post(new Runnable() {
@@ -108,7 +111,7 @@ public class InboxInternal_V1 implements InboxInternal {
     @Override
     public void resetBadgeCount(final ResetBadgeCountResultListener listener) {
         EMSLogger.log(MobileEngageTopic.INBOX, "Arguments: resultListener %s", listener);
-        if (appLoginParameters != null && appLoginParameters.hasCredentials()) {
+        if (requestContext.getAppLoginParameters() != null && requestContext.getAppLoginParameters().hasCredentials()) {
             handleResetRequest(listener);
         } else {
             if (listener != null) {
@@ -126,7 +129,7 @@ public class InboxInternal_V1 implements InboxInternal {
     public String trackMessageOpen(Notification message) {
         EMSLogger.log(MobileEngageTopic.INBOX, "Argument: %s", message);
 
-        Map<String, Object> payload = RequestPayloadUtils.createBasePayload(config, appLoginParameters, deviceInfo);
+        Map<String, Object> payload = RequestPayloadUtils.createBasePayload(config, requestContext.getAppLoginParameters(), deviceInfo);
         payload.put("source", "inbox");
         payload.put("sid", message.getSid());
         RequestModel model = new RequestModel.Builder()
@@ -178,8 +181,8 @@ public class InboxInternal_V1 implements InboxInternal {
 
         result.put("x-ems-me-hardware-id", new DeviceInfo(config.getApplication()).getHwid());
         result.put("x-ems-me-application-code", config.getApplicationCode());
-        result.put("x-ems-me-contact-field-id", String.valueOf(appLoginParameters.getContactFieldId()));
-        result.put("x-ems-me-contact-field-value", appLoginParameters.getContactFieldValue());
+        result.put("x-ems-me-contact-field-id", String.valueOf(requestContext.getAppLoginParameters().getContactFieldId()));
+        result.put("x-ems-me-contact-field-value", requestContext.getAppLoginParameters().getContactFieldValue());
 
         result.putAll(RequestHeaderUtils.createDefaultHeaders(config));
         result.putAll(RequestHeaderUtils.createBaseHeaders_V2(config));
@@ -187,9 +190,8 @@ public class InboxInternal_V1 implements InboxInternal {
         return result;
     }
 
-    @Override
-    public void setAppLoginParameters(AppLoginParameters appLoginParameters) {
-        this.appLoginParameters = appLoginParameters;
+    public RequestContext getRequestContext() {
+        return requestContext;
     }
 
 }

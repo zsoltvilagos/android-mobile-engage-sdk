@@ -25,6 +25,7 @@ import com.emarsys.mobileengage.fake.FakeStatusListener;
 import com.emarsys.mobileengage.iam.InAppStartAction;
 import com.emarsys.mobileengage.iam.model.requestRepositoryProxy.RequestRepositoryProxy;
 import com.emarsys.mobileengage.inbox.InboxInternal;
+import com.emarsys.mobileengage.inbox.InboxInternal_V1;
 import com.emarsys.mobileengage.inbox.InboxResultListener;
 import com.emarsys.mobileengage.inbox.ResetBadgeCountResultListener;
 import com.emarsys.mobileengage.inbox.model.Notification;
@@ -41,6 +42,7 @@ import com.emarsys.mobileengage.testUtil.DatabaseTestUtils;
 import com.emarsys.mobileengage.testUtil.ExperimentalTestUtils;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
+import org.hamcrest.Matchers;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.After;
@@ -63,6 +65,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
@@ -123,6 +126,7 @@ public class MobileEngageTest {
     public void tearDown() throws Exception {
         ExperimentalTestUtils.resetExperimentalFeatures();
         MobileEngage.InApp.setPaused(false);
+        MobileEngage.coreSdkHandler.getLooper().quit();
     }
 
     @Test
@@ -332,6 +336,17 @@ public class MobileEngageTest {
     }
 
     @Test
+    public void testSetup_initializesInstances_withTheSame_requestContext() {
+        MobileEngage.setup(baseConfig);
+
+        assertEquals(baseConfig, MobileEngage.getConfig());
+        assertThat(MobileEngage.requestContext, Matchers.allOf(
+                Matchers.is(MobileEngage.instance.getRequestContext()),
+                Matchers.is(((InboxInternal_V1) MobileEngage.inboxInstance).getRequestContext())
+        ));
+    }
+
+    @Test
     public void testSetPushToken_callsInternal() {
         String pushtoken = "pushtoken";
         MobileEngage.setPushToken(pushtoken);
@@ -392,35 +407,28 @@ public class MobileEngageTest {
     }
 
     @Test
-    public void testAppLogin_anonymous_callsSetAppLoginParameters_onInternalInbox() {
+    public void testAppLogin_anonymous_setsApploginParameters_inRequestContext() {
+        MobileEngage.setup(baseConfig);
         MobileEngage.appLogin();
-        verify(inboxInternal).setAppLoginParameters(new AppLoginParameters());
-    }
 
-    @Test
-    public void testAppLogin_anonymous_callsSetAppLoginParameters_onInternalMobileEngage() {
-        MobileEngage.appLogin();
-        verify(mobileEngageInternal).setAppLoginParameters(new AppLoginParameters());
+        assertEquals(new AppLoginParameters(), MobileEngage.requestContext.getAppLoginParameters());
     }
 
     @Test
     public void testAppLogin_withUser_callsInternalMobileEngage() {
         MobileEngage.appLogin(4, "CONTACT_FIELD_VALUE");
 
-        verify(mobileEngageInternal).setAppLoginParameters(new AppLoginParameters(4, "CONTACT_FIELD_VALUE"));
         verify(mobileEngageInternal).appLogin();
     }
 
     @Test
-    public void testAppLogin_withUser_callsSetAppLoginParameters_onInternalInbox() {
-        MobileEngage.appLogin(4, "CONTACT_FIELD_VALUE");
-        verify(inboxInternal).setAppLoginParameters(new AppLoginParameters(4, "CONTACT_FIELD_VALUE"));
-    }
+    public void testAppLogin_withUser_setsApploginParameters_inRequestContext() {
+        MobileEngage.setup(baseConfig);
+        int contactFieldId = 4;
+        String contactFieldValue = "CONTACT_FIELD_VALUE";
+        MobileEngage.appLogin(contactFieldId, contactFieldValue);
 
-    @Test
-    public void testAppLogin_withUser_callsSetAppLoginParameters_onInternalMobileEngage() {
-        MobileEngage.appLogin(4, "CONTACT_FIELD_VALUE");
-        verify(mobileEngageInternal).setAppLoginParameters(new AppLoginParameters(4, "CONTACT_FIELD_VALUE"));
+        assertEquals(new AppLoginParameters(contactFieldId, contactFieldValue), MobileEngage.requestContext.getAppLoginParameters());
     }
 
     @Test
@@ -430,15 +438,12 @@ public class MobileEngageTest {
     }
 
     @Test
-    public void testAppLogout_callsSetAppLoginParameters_onInternalInbox() {
+    public void testAppLogout_clearsApploginParameters_inRequestContext() {
+        MobileEngage.setup(baseConfig);
+        MobileEngage.appLogin();
         MobileEngage.appLogout();
-        verify(inboxInternal).setAppLoginParameters(null);
-    }
 
-    @Test
-    public void testAppLogout_callsSetAppLoginParameters_onInternalMobileEngage() {
-        MobileEngage.appLogout();
-        verify(mobileEngageInternal).setAppLoginParameters(null);
+        assertNull(MobileEngage.requestContext.getAppLoginParameters());
     }
 
     @Test

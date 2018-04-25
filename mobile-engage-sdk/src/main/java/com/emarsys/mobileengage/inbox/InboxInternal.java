@@ -1,6 +1,5 @@
 package com.emarsys.mobileengage.inbox;
 
-import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
 import com.emarsys.mobileengage.inbox.model.Notification;
 import com.emarsys.mobileengage.inbox.model.NotificationInboxStatus;
 
@@ -10,6 +9,4 @@ public interface InboxInternal {
     void resetBadgeCount(ResetBadgeCountResultListener listener);
 
     String trackMessageOpen(Notification message);
-
-    void setAppLoginParameters(AppLoginParameters appLoginParameters);
 }

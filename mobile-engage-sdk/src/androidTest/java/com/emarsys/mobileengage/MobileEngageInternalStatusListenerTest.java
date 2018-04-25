@@ -65,6 +65,7 @@ public class MobileEngageInternalStatusListenerTest {
 
     @Rule
     public TestRule timeout = TimeoutUtils.getTimeoutRule();
+    private RequestContext requestContext;
 
     @Before
     public void init() throws Exception {
@@ -129,18 +130,20 @@ public class MobileEngageInternalStatusListenerTest {
         MeIdSignatureStorage meIdSignatureStorage = mock(MeIdSignatureStorage.class);
         when(meIdSignatureStorage.get()).thenReturn("meIdSignature");
 
+        requestContext = new RequestContext(
+                baseConfig.getApplicationCode(),
+                mock(DeviceInfo.class),
+                new AppLoginStorage(context),
+                meIdStorage,
+                meIdSignatureStorage,
+                mock(TimestampProvider.class));
+
         mobileEngage = new MobileEngageInternal(
                 baseConfig,
                 requestManager,
                 coreSdkHandler,
                 completionHandler,
-                new RequestContext(
-                        baseConfig.getApplicationCode(),
-                        mock(DeviceInfo.class),
-                        new AppLoginStorage(context),
-                        meIdStorage,
-                        meIdSignatureStorage,
-                        mock(TimestampProvider.class)));
+                requestContext);
     }
 
     @Test
@@ -150,7 +153,7 @@ public class MobileEngageInternalStatusListenerTest {
 
     @Test
     public void testAppLogin_statusListenerCalledWithSuccess() throws Exception {
-        mobileEngage.setAppLoginParameters(new AppLoginParameters(CONTACT_FIELD_ID, CONTACT_FIELD_VALUE));
+        requestContext.setAppLoginParameters(new AppLoginParameters(CONTACT_FIELD_ID, CONTACT_FIELD_VALUE));
         eventuallyAssertSuccess(mobileEngage.appLogin());
     }
 
@@ -178,7 +181,7 @@ public class MobileEngageInternalStatusListenerTest {
     @Test
     public void testAppLogin_statusListenerCalledWithFailure() throws Exception {
         mobileEngageWith(mainThreadStatusListener, failingManager);
-        mobileEngage.setAppLoginParameters(new AppLoginParameters(CONTACT_FIELD_ID, CONTACT_FIELD_VALUE));
+        requestContext.setAppLoginParameters(new AppLoginParameters(CONTACT_FIELD_ID, CONTACT_FIELD_VALUE));
         eventuallyAssertFailure(mobileEngage.appLogin());
     }
 

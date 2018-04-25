@@ -1,20 +1,8 @@
 package com.emarsys.mobileengage;
 
 import android.app.Application;
-import android.os.Handler;
 import android.support.test.InstrumentationRegistry;
 
-import com.emarsys.core.CoreCompletionHandler;
-import com.emarsys.core.concurrency.CoreSdkHandlerProvider;
-import com.emarsys.core.connection.ConnectionWatchDog;
-import com.emarsys.core.database.repository.Repository;
-import com.emarsys.core.request.RequestManager;
-import com.emarsys.core.request.RestClient;
-import com.emarsys.core.request.model.RequestModelRepository;
-import com.emarsys.core.response.ResponseModel;
-import com.emarsys.core.timestamp.TimestampProvider;
-import com.emarsys.core.worker.DefaultWorker;
-import com.emarsys.core.worker.Worker;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.fake.FakeInboxResultListener;
 import com.emarsys.mobileengage.fake.FakeResetBadgeCountResultListener;
@@ -22,7 +10,6 @@ import com.emarsys.mobileengage.fake.FakeStatusListener;
 import com.emarsys.mobileengage.testUtil.ConnectionTestUtils;
 import com.emarsys.mobileengage.testUtil.DatabaseTestUtils;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
-import com.emarsys.mobileengage.util.RequestHeaderUtils;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -34,7 +21,6 @@ import java.util.concurrent.CountDownLatch;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertNull;
-import static org.mockito.Mockito.mock;
 
 public class NotificationInboxIntegrationTest {
 
@@ -65,36 +51,6 @@ public class NotificationInboxIntegrationTest {
                 .disableDefaultChannel()
                 .build();
         MobileEngage.setup(config);
-        RequestModelRepository requestRepository = new RequestModelRepository(context);
-        Handler handler = new CoreSdkHandlerProvider().provideHandler();
-
-        RestClient restClient = new RestClient(mock(Repository.class), mock(TimestampProvider.class));
-
-        CoreCompletionHandler completionHandler = new CoreCompletionHandler() {
-            @Override
-            public void onSuccess(String id, ResponseModel responseModel) {
-                listener.onStatusLog(id, "");
-            }
-
-            @Override
-            public void onError(String id, ResponseModel responseModel) {
-                listener.onError(id, mock(Exception.class));
-            }
-
-            @Override
-            public void onError(String id, Exception cause) {
-                listener.onError(id, mock(Exception.class));
-            }
-        };
-        Worker worker = new DefaultWorker(
-                requestRepository,
-                new ConnectionWatchDog(context, handler),
-                handler,
-                completionHandler,
-                restClient);
-
-        MobileEngage.instance.manager = new RequestManager(handler, requestRepository, worker);
-        MobileEngage.instance.manager.setDefaultHeaders(RequestHeaderUtils.createDefaultHeaders(config));
 
         inboxLatch = new CountDownLatch(1);
         resetLatch = new CountDownLatch(1);

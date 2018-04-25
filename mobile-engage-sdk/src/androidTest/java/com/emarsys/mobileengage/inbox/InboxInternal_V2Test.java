@@ -4,12 +4,15 @@ import android.app.Application;
 import android.support.test.InstrumentationRegistry;
 
 import com.emarsys.core.CoreCompletionHandler;
+import com.emarsys.core.DeviceInfo;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.request.RestClient;
 import com.emarsys.core.request.model.RequestMethod;
 import com.emarsys.core.request.model.RequestModel;
 import com.emarsys.core.response.ResponseModel;
+import com.emarsys.core.timestamp.TimestampProvider;
 import com.emarsys.mobileengage.MobileEngageException;
+import com.emarsys.mobileengage.RequestContext;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.fake.FakeInboxResultListener;
 import com.emarsys.mobileengage.fake.FakeResetBadgeCountResultListener;
@@ -17,6 +20,8 @@ import com.emarsys.mobileengage.fake.FakeRestClient;
 import com.emarsys.mobileengage.inbox.model.Notification;
 import com.emarsys.mobileengage.inbox.model.NotificationCache;
 import com.emarsys.mobileengage.inbox.model.NotificationInboxStatus;
+import com.emarsys.mobileengage.storage.AppLoginStorage;
+import com.emarsys.mobileengage.storage.MeIdSignatureStorage;
 import com.emarsys.mobileengage.storage.MeIdStorage;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 import com.emarsys.mobileengage.util.RequestHeaderUtils;
@@ -59,6 +64,7 @@ public class InboxInternal_V2Test {
     private ResetBadgeCountResultListener resetListenerMock;
     private CountDownLatch latch;
     private NotificationCache cache;
+    private RequestContext requestContext;
 
     @Rule
     public TestRule timeout = TimeoutUtils.getTimeoutRule();
@@ -68,8 +74,10 @@ public class InboxInternal_V2Test {
     public void init() throws Exception {
         clearNotificationCache();
 
+        Application application = (Application) InstrumentationRegistry.getTargetContext().getApplicationContext();
+
         config = new MobileEngageConfig.Builder()
-                .application((Application) InstrumentationRegistry.getTargetContext().getApplicationContext())
+                .application(application)
                 .credentials(APPLICATION_ID, "applicationPassword")
                 .disableDefaultChannel()
                 .build();
@@ -78,7 +86,16 @@ public class InboxInternal_V2Test {
         restClient = mock(RestClient.class);
         meIdStorage = mock(MeIdStorage.class);
         when(meIdStorage.get()).thenReturn(ME_ID);
-        inbox = new InboxInternal_V2(config, manager, restClient, meIdStorage);
+
+        requestContext = new RequestContext(
+                config.getApplicationCode(),
+                mock(DeviceInfo.class),
+                mock(AppLoginStorage.class),
+                meIdStorage,
+                mock(MeIdSignatureStorage.class),
+                mock(TimestampProvider.class));
+
+        inbox = new InboxInternal_V2(config, manager, restClient, requestContext);
 
         resultListener = mock(InboxResultListener.class);
         resetListenerMock = mock(ResetBadgeCountResultListener.class);
@@ -94,21 +111,21 @@ public class InboxInternal_V2Test {
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_config_shouldNotBeNull() {
-        inbox = new InboxInternal_V2(null, manager, restClient, meIdStorage);
+        inbox = new InboxInternal_V2(null, manager, restClient, requestContext);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_requestManager_shouldNotBeNull() {
-        inbox = new InboxInternal_V2(config, null, restClient, meIdStorage);
+        inbox = new InboxInternal_V2(config, null, restClient, requestContext);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_restClient_shouldNotBeNull() {
-        inbox = new InboxInternal_V2(config, manager, null, meIdStorage);
+        inbox = new InboxInternal_V2(config, manager, null, requestContext);
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testConstructor_meIdStorage_shouldNotBeNull() {
+    public void testConstructor_requestContext_shouldNotBeNull() {
         inbox = new InboxInternal_V2(config, manager, restClient, null);
     }
 
@@ -142,7 +159,7 @@ public class InboxInternal_V2Test {
                 config,
                 manager,
                 new FakeRestClient(createSuccessResponse(), FakeRestClient.Mode.SUCCESS),
-                meIdStorage);
+                requestContext);
 
         FakeInboxResultListener listener = new FakeInboxResultListener(latch);
         inbox.fetchNotifications(listener);
@@ -159,7 +176,7 @@ public class InboxInternal_V2Test {
                 config,
                 manager,
                 new FakeRestClient(createSuccessResponse(), FakeRestClient.Mode.SUCCESS),
-                meIdStorage);
+                requestContext);
 
         FakeInboxResultListener listener = new FakeInboxResultListener(latch, FakeInboxResultListener.Mode.MAIN_THREAD);
         inbox.fetchNotifications(listener);
@@ -180,7 +197,7 @@ public class InboxInternal_V2Test {
                 config,
                 manager,
                 new FakeRestClient(createSuccessResponse(), FakeRestClient.Mode.SUCCESS),
-                meIdStorage);
+                requestContext);
 
         FakeInboxResultListener listener = new FakeInboxResultListener(latch, FakeInboxResultListener.Mode.MAIN_THREAD);
         inbox.fetchNotifications(listener);
@@ -202,7 +219,7 @@ public class InboxInternal_V2Test {
                 config,
                 manager,
                 new FakeRestClient(expectedException),
-                meIdStorage);
+                requestContext);
 
         FakeInboxResultListener listener = new FakeInboxResultListener(latch);
         inbox.fetchNotifications(listener);
@@ -220,7 +237,7 @@ public class InboxInternal_V2Test {
                 config,
                 manager,
                 new FakeRestClient(expectedException),
-                meIdStorage);
+                requestContext);
 
         FakeInboxResultListener listener = new FakeInboxResultListener(latch, FakeInboxResultListener.Mode.MAIN_THREAD);
         inbox.fetchNotifications(listener);
@@ -241,7 +258,7 @@ public class InboxInternal_V2Test {
                 config,
                 manager,
                 new FakeRestClient(responseModel, FakeRestClient.Mode.ERROR_RESPONSE_MODEL),
-                meIdStorage);
+                requestContext);
 
         FakeInboxResultListener listener = new FakeInboxResultListener(latch);
         inbox.fetchNotifications(listener);
@@ -271,7 +288,7 @@ public class InboxInternal_V2Test {
                 config,
                 manager,
                 new FakeRestClient(responseModel, FakeRestClient.Mode.ERROR_RESPONSE_MODEL),
-                meIdStorage);
+                requestContext);
 
         FakeInboxResultListener listener = new FakeInboxResultListener(latch, FakeInboxResultListener.Mode.MAIN_THREAD);
         inbox.fetchNotifications(listener);
@@ -319,7 +336,7 @@ public class InboxInternal_V2Test {
                 config,
                 manager,
                 new FakeRestClient(mock(ResponseModel.class), FakeRestClient.Mode.SUCCESS),
-                meIdStorage);
+                requestContext);
 
         FakeResetBadgeCountResultListener listener = new FakeResetBadgeCountResultListener(latch);
         inbox.resetBadgeCount(listener);
@@ -335,7 +352,7 @@ public class InboxInternal_V2Test {
                 config,
                 manager,
                 new FakeRestClient(mock(ResponseModel.class), FakeRestClient.Mode.SUCCESS),
-                meIdStorage);
+                requestContext);
 
         FakeResetBadgeCountResultListener listener = new FakeResetBadgeCountResultListener(latch, FakeResetBadgeCountResultListener.Mode.MAIN_THREAD);
         inbox.resetBadgeCount(listener);
@@ -352,7 +369,7 @@ public class InboxInternal_V2Test {
                 config,
                 manager,
                 new FakeRestClient(expectedException),
-                meIdStorage);
+                requestContext);
 
         FakeResetBadgeCountResultListener listener = new FakeResetBadgeCountResultListener(latch);
         inbox.resetBadgeCount(listener);
@@ -370,7 +387,7 @@ public class InboxInternal_V2Test {
                 config,
                 manager,
                 new FakeRestClient(expectedException),
-                meIdStorage);
+                requestContext);
 
         FakeResetBadgeCountResultListener listener = new FakeResetBadgeCountResultListener(latch, FakeResetBadgeCountResultListener.Mode.MAIN_THREAD);
         inbox.resetBadgeCount(listener);
@@ -391,7 +408,7 @@ public class InboxInternal_V2Test {
                 config,
                 manager,
                 new FakeRestClient(responseModel, FakeRestClient.Mode.ERROR_RESPONSE_MODEL),
-                meIdStorage);
+                requestContext);
 
         FakeResetBadgeCountResultListener listener = new FakeResetBadgeCountResultListener(latch);
         inbox.resetBadgeCount(listener);
@@ -421,7 +438,7 @@ public class InboxInternal_V2Test {
                 config,
                 manager,
                 new FakeRestClient(responseModel, FakeRestClient.Mode.ERROR_RESPONSE_MODEL),
-                meIdStorage);
+                requestContext);
 
         FakeResetBadgeCountResultListener listener = new FakeResetBadgeCountResultListener(latch, FakeResetBadgeCountResultListener.Mode.MAIN_THREAD);
         inbox.resetBadgeCount(listener);

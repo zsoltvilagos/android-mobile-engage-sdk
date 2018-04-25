@@ -77,6 +77,7 @@ public class MobileEngageInternalTest {
     private MeIdSignatureStorage meIdSignatureStorage;
     private AppLoginParameters appLoginParameters;
     private AppLoginParameters otherAppLoginParameters;
+    private RequestContext requestContext;
 
     @Rule
     public TestRule timeout = TimeoutUtils.getTimeoutRule();
@@ -107,18 +108,21 @@ public class MobileEngageInternalTest {
 
         meIdStorage = new MeIdStorage(application);
         meIdSignatureStorage = new MeIdSignatureStorage(application);
+
+        requestContext = new RequestContext(
+                baseConfig.getApplicationCode(),
+                deviceInfo,
+                appLoginStorage,
+                meIdStorage,
+                meIdSignatureStorage,
+                timestampProvider);
+
         mobileEngage = new MobileEngageInternal(
                 baseConfig,
                 manager,
                 mock(Handler.class),
                 coreCompletionHandler,
-                new RequestContext(
-                        baseConfig.getApplicationCode(),
-                        deviceInfo,
-                        appLoginStorage,
-                        meIdStorage,
-                        meIdSignatureStorage,
-                        timestampProvider));
+                requestContext);
 
         meIdStorage.set(ME_ID);
         meIdSignatureStorage.set(ME_ID_SIGNATURE);
@@ -205,7 +209,7 @@ public class MobileEngageInternalTest {
 
         ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
 
-        mobileEngage.setAppLoginParameters(new AppLoginParameters(contactFieldId, contactFieldValue));
+        requestContext.setAppLoginParameters(new AppLoginParameters(contactFieldId, contactFieldValue));
         mobileEngage.appLogin();
 
         verify(manager).submit(captor.capture());
@@ -219,7 +223,7 @@ public class MobileEngageInternalTest {
         meIdStorage.remove();
         ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
 
-        mobileEngage.setAppLoginParameters(new AppLoginParameters(5, "value"));
+        requestContext.setAppLoginParameters(new AppLoginParameters(5, "value"));
         String result = mobileEngage.appLogin();
 
         verify(manager).submit(captor.capture());
@@ -257,7 +261,7 @@ public class MobileEngageInternalTest {
 
         ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
 
-        mobileEngage.setAppLoginParameters(appLoginParameters);
+        requestContext.setAppLoginParameters(appLoginParameters);
         mobileEngage.appLogin();
 
         verify(manager).submit(captor.capture());
@@ -272,7 +276,7 @@ public class MobileEngageInternalTest {
 
         captor = ArgumentCaptor.forClass(RequestModel.class);
 
-        mobileEngage.setAppLoginParameters(appLoginParameters);
+        requestContext.setAppLoginParameters(appLoginParameters);
         mobileEngage.appLogin();
 
         verify(manager).submit(captor.capture());
@@ -487,7 +491,7 @@ public class MobileEngageInternalTest {
 
         int contactFieldId = 3;
         String contactFieldValue = "test@test.com";
-        mobileEngage.setAppLoginParameters(new AppLoginParameters(contactFieldId, contactFieldValue));
+        requestContext.setAppLoginParameters(new AppLoginParameters(contactFieldId, contactFieldValue));
         ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
 
         mobileEngage.trackCustomEvent("customEvent", null);
@@ -638,7 +642,7 @@ public class MobileEngageInternalTest {
         Intent intent = getTestIntent();
         int contactFieldId = 3;
         String contactFieldValue = "test@test.com";
-        mobileEngage.setAppLoginParameters(new AppLoginParameters(contactFieldId, contactFieldValue));
+        requestContext.setAppLoginParameters(new AppLoginParameters(contactFieldId, contactFieldValue));
         ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
 
         mobileEngage.trackMessageOpen(intent);
@@ -666,7 +670,7 @@ public class MobileEngageInternalTest {
     public void testSetPushToken_whenApploginParameters_isEmpty() {
         MobileEngageInternal spy = spy(mobileEngage);
 
-        spy.setAppLoginParameters(new AppLoginParameters());
+        requestContext.setAppLoginParameters(new AppLoginParameters());
         spy.setPushToken("123456789");
 
         verify(spy, times(1)).appLogin();
@@ -678,7 +682,7 @@ public class MobileEngageInternalTest {
         String contactFieldValue = "asdf";
         MobileEngageInternal spy = spy(mobileEngage);
 
-        spy.setAppLoginParameters(new AppLoginParameters(contactFieldId, contactFieldValue));
+        requestContext.setAppLoginParameters(new AppLoginParameters(contactFieldId, contactFieldValue));
         spy.setPushToken("123456789");
 
         verify(spy, times(1)).appLogin();
@@ -688,7 +692,7 @@ public class MobileEngageInternalTest {
     public void testSetPushToken_doesNotCallAppLogins_whenApploginParameters_isNull() {
         MobileEngageInternal spy = spy(mobileEngage);
 
-        spy.setAppLoginParameters(null);
+        requestContext.setAppLoginParameters(null);
         spy.setPushToken("123456789");
 
         verify(spy, times(0)).appLogin();
@@ -755,7 +759,7 @@ public class MobileEngageInternalTest {
             boolean shouldReinstantiateMobileEngage) {
         ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
 
-        mobileEngage.setAppLoginParameters(firstAppLoginParameter);
+        requestContext.setAppLoginParameters(firstAppLoginParameter);
         meIdStorage.set(firstMeId);
         mobileEngage.appLogin();
 
@@ -771,18 +775,12 @@ public class MobileEngageInternalTest {
                     manager,
                     mock(Handler.class),
                     coreCompletionHandler,
-                    new RequestContext(
-                            baseConfig.getApplicationCode(),
-                            new DeviceInfo(application),
-                            new AppLoginStorage(application),
-                            new MeIdStorage(application),
-                            new MeIdSignatureStorage(application),
-                            mock(TimestampProvider.class)));
+                    requestContext);
         }
 
         captor = ArgumentCaptor.forClass(RequestModel.class);
 
-        mobileEngage.setAppLoginParameters(secondAppLoginParameter);
+        requestContext.setAppLoginParameters(secondAppLoginParameter);
         meIdStorage.set(secondMeId);
         mobileEngage.appLogin();
 

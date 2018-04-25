@@ -12,7 +12,6 @@ import com.emarsys.core.util.Assert;
 import com.emarsys.core.util.TimestampUtils;
 import com.emarsys.core.util.log.EMSLogger;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
-import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
 import com.emarsys.mobileengage.experimental.MobileEngageExperimental;
 import com.emarsys.mobileengage.experimental.MobileEngageFeature;
 import com.emarsys.mobileengage.storage.MeIdStorage;
@@ -37,13 +36,11 @@ public class MobileEngageInternal {
     public static final String MOBILEENGAGE_SDK_VERSION = BuildConfig.VERSION_NAME;
 
     String pushToken;
-    AppLoginParameters appLoginParameters;
-
-    MobileEngageConfig config;
-    RequestManager manager;
-    MobileEngageCoreCompletionHandler coreCompletionHandler;
-    Handler uiHandler;
-    private final RequestContext requestContext;
+    final MobileEngageConfig config;
+    final RequestManager manager;
+    final MobileEngageCoreCompletionHandler coreCompletionHandler;
+    final Handler uiHandler;
+    final RequestContext requestContext;
 
     public MobileEngageInternal(
             MobileEngageConfig config,
@@ -73,6 +70,10 @@ public class MobileEngageInternal {
         return manager;
     }
 
+    public RequestContext getRequestContext() {
+        return requestContext;
+    }
+
     String getPushToken() {
         return pushToken;
     }
@@ -80,27 +81,28 @@ public class MobileEngageInternal {
     void setPushToken(String pushToken) {
         EMSLogger.log(MobileEngageTopic.MOBILE_ENGAGE, "Argument: %s", pushToken);
         this.pushToken = pushToken;
-        if (appLoginParameters != null) {
+        if (requestContext.getAppLoginParameters() != null) {
             appLogin();
         }
-    }
-
-    void setAppLoginParameters(AppLoginParameters parameters) {
-        EMSLogger.log(MobileEngageTopic.MOBILE_ENGAGE, "Argument: %s", parameters);
-
-        this.appLoginParameters = parameters;
     }
 
     public String appLogin() {
         EMSLogger.log(MobileEngageTopic.MOBILE_ENGAGE, "Called");
 
-        RequestModel model = RequestModelUtils.createAppLogin_V2(config, appLoginParameters, requestContext, pushToken);
+        RequestModel model = RequestModelUtils.createAppLogin_V2(
+                config,
+                requestContext.getAppLoginParameters(),
+                requestContext,
+                pushToken);
 
         Integer storedHashCode = requestContext.getAppLoginStorage().get();
         int currentHashCode = model.getPayload().hashCode();
 
         if (!shouldDoAppLogin(storedHashCode, currentHashCode, requestContext.getMeIdStorage())) {
-            model = RequestModelUtils.createLastMobileActivity(config, appLoginParameters, requestContext);
+            model = RequestModelUtils.createLastMobileActivity(
+                    config,
+                    requestContext.getAppLoginParameters(),
+                    requestContext);
         } else {
             requestContext.getAppLoginStorage().set(currentHashCode);
         }
@@ -115,7 +117,10 @@ public class MobileEngageInternal {
 
         RequestModel model = new RequestModel.Builder()
                 .url(ME_LOGOUT_V2)
-                .payload(RequestPayloadUtils.createBasePayload(config, appLoginParameters, requestContext.getDeviceInfo()))
+                .payload(RequestPayloadUtils.createBasePayload(
+                        config,
+                        requestContext.getAppLoginParameters(),
+                        requestContext.getDeviceInfo()))
                 .headers(RequestHeaderUtils.createBaseHeaders_V2(config))
                 .build();
 
@@ -139,7 +144,10 @@ public class MobileEngageInternal {
                                @Nullable Map<String, String> eventAttributes) {
         EMSLogger.log(MobileEngageTopic.MOBILE_ENGAGE, "Arguments: eventName %s, eventAttributes %s", eventName, eventAttributes);
 
-        Map<String, Object> payload = RequestPayloadUtils.createBasePayload(config, appLoginParameters, requestContext.getDeviceInfo());
+        Map<String, Object> payload = RequestPayloadUtils.createBasePayload(
+                config,
+                requestContext.getAppLoginParameters(),
+                requestContext.getDeviceInfo());
         if (eventAttributes != null && !eventAttributes.isEmpty()) {
             payload.put("attributes", eventAttributes);
         }
@@ -231,7 +239,10 @@ public class MobileEngageInternal {
 
     private String handleMessageOpen(String messageId) {
         if (messageId != null) {
-            Map<String, Object> payload = RequestPayloadUtils.createBasePayload(config, appLoginParameters, requestContext.getDeviceInfo());
+            Map<String, Object> payload = RequestPayloadUtils.createBasePayload(
+                    config,
+                    requestContext.getAppLoginParameters(),
+                    requestContext.getDeviceInfo());
             payload.put("sid", messageId);
             RequestModel model = new RequestModel.Builder()
                     .url(RequestUrlUtils.createEventUrl_V2("message_open"))

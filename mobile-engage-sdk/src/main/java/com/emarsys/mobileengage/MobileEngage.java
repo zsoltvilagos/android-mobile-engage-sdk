@@ -74,6 +74,7 @@ public class MobileEngage {
     static MobileEngageCoreCompletionHandler completionHandler;
     static Handler coreSdkHandler;
     static MobileEngageConfig config;
+    static RequestContext requestContext;
     private static Handler uiHandler;
     private static TimestampProvider timestampProvider;
     private static DoNotDisturbProvider doNotDisturbProvider;
@@ -162,19 +163,19 @@ public class MobileEngage {
     }
 
     public static String appLogin() {
-        setAppLoginParameters(new AppLoginParameters());
+        requestContext.setAppLoginParameters(new AppLoginParameters());
         return instance.appLogin();
     }
 
     public static String appLogin(int contactFieldId,
                                   @NonNull String contactFieldValue) {
         Assert.notNull(contactFieldValue, "ContactFieldValue must not be null!");
-        setAppLoginParameters(new AppLoginParameters(contactFieldId, contactFieldValue));
+        requestContext.setAppLoginParameters(new AppLoginParameters(contactFieldId, contactFieldValue));
         return instance.appLogin();
     }
 
     public static String appLogout() {
-        setAppLoginParameters(null);
+        requestContext.setAppLoginParameters(null);
         return instance.appLogout();
     }
 
@@ -194,11 +195,6 @@ public class MobileEngage {
         Assert.notNull(activity.getIntent(), "Intent from Activity must not be null!");
         Assert.notNull(intent, "Intent must not be null!");
         deepLinkInstance.trackDeepLinkOpen(activity, intent);
-    }
-
-    private static void setAppLoginParameters(AppLoginParameters parameters) {
-        instance.setAppLoginParameters(parameters);
-        inboxInstance.setAppLoginParameters(parameters);
     }
 
     private static void initializeDependencies(MobileEngageConfig config, Application application) {
@@ -236,6 +232,14 @@ public class MobileEngage {
                 requestModelRepository,
                 worker);
         requestManager.setDefaultHeaders(RequestHeaderUtils.createDefaultHeaders(config));
+
+        requestContext = new RequestContext(
+                config.getApplicationCode(),
+                deviceInfo,
+                appLoginStorage,
+                meIdStorage,
+                meIdSignatureStorage,
+                timestampProvider);
     }
 
     private static void initializeInstances(@NonNull MobileEngageConfig config) {
@@ -244,15 +248,9 @@ public class MobileEngage {
                 requestManager,
                 uiHandler,
                 completionHandler,
-                new RequestContext(
-                        config.getApplicationCode(),
-                        deviceInfo,
-                        appLoginStorage,
-                        meIdStorage,
-                        meIdSignatureStorage,
-                        timestampProvider)
+                requestContext
         );
-        inboxInstance = new InboxInternal_V1(config, requestManager, restClient, deviceInfo);
+        inboxInstance = new InboxInternal_V1(config, requestManager, restClient, deviceInfo, requestContext);
         deepLinkInstance = new DeepLinkInternal(requestManager);
     }
 

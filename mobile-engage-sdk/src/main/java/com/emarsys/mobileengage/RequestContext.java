@@ -3,9 +3,12 @@ package com.emarsys.mobileengage;
 import com.emarsys.core.DeviceInfo;
 import com.emarsys.core.timestamp.TimestampProvider;
 import com.emarsys.core.util.Assert;
+import com.emarsys.core.util.log.EMSLogger;
+import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
 import com.emarsys.mobileengage.storage.AppLoginStorage;
 import com.emarsys.mobileengage.storage.MeIdSignatureStorage;
 import com.emarsys.mobileengage.storage.MeIdStorage;
+import com.emarsys.mobileengage.util.log.MobileEngageTopic;
 
 public class RequestContext {
     private final String applicationCode;
@@ -14,6 +17,7 @@ public class RequestContext {
     private final MeIdStorage meIdStorage;
     private final MeIdSignatureStorage meIdSignatureStorage;
     private final TimestampProvider timestampProvider;
+    private AppLoginParameters appLoginParameters;
 
     public RequestContext(
             String applicationCode,
@@ -60,4 +64,12 @@ public class RequestContext {
         return timestampProvider;
     }
 
+    public AppLoginParameters getAppLoginParameters() {
+        return appLoginParameters;
+    }
+
+    public void setAppLoginParameters(AppLoginParameters appLoginParameters) {
+        EMSLogger.log(MobileEngageTopic.MOBILE_ENGAGE, "Setting appLoginParameters: %s", appLoginParameters);
+        this.appLoginParameters = appLoginParameters;
+    }
 }

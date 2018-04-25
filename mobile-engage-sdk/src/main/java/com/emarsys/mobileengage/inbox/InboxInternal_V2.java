@@ -12,9 +12,9 @@ import com.emarsys.core.response.ResponseModel;
 import com.emarsys.core.util.Assert;
 import com.emarsys.core.util.log.EMSLogger;
 import com.emarsys.mobileengage.MobileEngageException;
+import com.emarsys.mobileengage.RequestContext;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.endpoint.Endpoint;
-import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
 import com.emarsys.mobileengage.inbox.model.Notification;
 import com.emarsys.mobileengage.inbox.model.NotificationCache;
 import com.emarsys.mobileengage.inbox.model.NotificationInboxStatus;
@@ -33,17 +33,18 @@ public class InboxInternal_V2 implements InboxInternal {
     private RestClient client;
     private MobileEngageConfig config;
     private NotificationCache cache;
+    private RequestContext requestContext;
     private MeIdStorage meIdStorage;
     private RequestManager manager;
 
     public InboxInternal_V2(MobileEngageConfig config,
                             RequestManager requestManager,
                             RestClient restClient,
-                            MeIdStorage meIdStorage) {
+                            RequestContext requestContext) {
         Assert.notNull(config, "Config must not be null!");
         Assert.notNull(requestManager, "RequestManager must not be null!");
         Assert.notNull(restClient, "RestClient must not be null!");
-        Assert.notNull(meIdStorage, "MeIdStorage must not be null!");
+        Assert.notNull(requestContext, "RequestContext must not be null!");
         EMSLogger.log(MobileEngageTopic.INBOX, "Arguments: config %s, requestManager %s", config, requestManager);
 
         this.config = config;
@@ -51,7 +52,8 @@ public class InboxInternal_V2 implements InboxInternal {
         this.mainHandler = new Handler(Looper.getMainLooper());
         this.cache = new NotificationCache();
         this.manager = requestManager;
-        this.meIdStorage = meIdStorage;
+        this.requestContext = requestContext;
+        this.meIdStorage = requestContext.getMeIdStorage();
     }
 
     @Override
@@ -151,11 +153,6 @@ public class InboxInternal_V2 implements InboxInternal {
     @Override
     public String trackMessageOpen(Notification message) {
         return null;
-    }
-
-    @Override
-    public void setAppLoginParameters(AppLoginParameters appLoginParameters) {
-
     }
 
     private Map<String, String> createBaseHeaders(MobileEngageConfig config) {

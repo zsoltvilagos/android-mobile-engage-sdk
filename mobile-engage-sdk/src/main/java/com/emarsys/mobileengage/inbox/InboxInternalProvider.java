@@ -3,8 +3,8 @@ package com.emarsys.mobileengage.inbox;
 import com.emarsys.core.DeviceInfo;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.request.RestClient;
+import com.emarsys.mobileengage.RequestContext;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
-import com.emarsys.mobileengage.storage.MeIdStorage;
 
 public class InboxInternalProvider {
 
@@ -12,13 +12,13 @@ public class InboxInternalProvider {
                                               MobileEngageConfig config,
                                               RequestManager requestManager,
                                               RestClient restClient,
-                                              MeIdStorage meIdStorage,
-                                              DeviceInfo deviceInfo) {
+                                              DeviceInfo deviceInfo,
+                                              RequestContext requestContext) {
         InboxInternal result;
         if (experimental) {
-            result = new InboxInternal_V2(config, requestManager, restClient, meIdStorage);
+            result = new InboxInternal_V2(config, requestManager, restClient, requestContext);
         } else {
-            result = new InboxInternal_V1(config, requestManager, restClient, deviceInfo);
+            result = new InboxInternal_V1(config, requestManager, restClient, deviceInfo, requestContext);
         }
         return result;
     }
