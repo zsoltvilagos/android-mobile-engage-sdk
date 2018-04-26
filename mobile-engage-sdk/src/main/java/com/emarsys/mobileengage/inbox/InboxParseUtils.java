@@ -90,10 +90,16 @@ public class InboxParseUtils {
         return result;
     }
 
-    public static Notification parseNotificationFromPushMessage(Map<String, String> remoteData) {
+    public static Notification parseNotificationFromPushMessage(Map<String, String> remoteData, boolean isUserCentric) {
         Notification result = null;
         if (remoteData != null && "true".equals(remoteData.get("inbox"))) {
-            String id = remoteData.get("id");
+
+            String id;
+            if (isUserCentric) {
+                id = remoteData.get("message_id");
+            } else {
+                id = remoteData.get("id");
+            }
 
             String sid = null;
             try {

@@ -339,7 +339,7 @@ public class InboxParseUtilsTest {
         customData.put("sid", "sid_here");
 
         long before = System.currentTimeMillis();
-        Notification result = InboxParseUtils.parseNotificationFromPushMessage(remoteData);
+        Notification result = InboxParseUtils.parseNotificationFromPushMessage(remoteData, false);
         long after = System.currentTimeMillis();
 
         Assert.assertEquals("21022.150123121212.43223434c3b9", result.getId());
@@ -368,7 +368,7 @@ public class InboxParseUtilsTest {
         customData.put("sid", "sid_here");
 
         long before = System.currentTimeMillis();
-        Notification result = InboxParseUtils.parseNotificationFromPushMessage(remoteData);
+        Notification result = InboxParseUtils.parseNotificationFromPushMessage(remoteData, false);
         long after = System.currentTimeMillis();
 
         Assert.assertEquals("21022.150123121212.43223434c3b9", result.getId());
@@ -381,6 +381,24 @@ public class InboxParseUtilsTest {
     }
 
     @Test
+    public void testParseNotificationFromPushMessage_withUserCentricInbox() {
+        String messageId = "anotherId";
+        Map<String, String> remoteData = new HashMap<>();
+        remoteData.put("inbox", "true");
+        remoteData.put("ems_msg", "true");
+        remoteData.put("u", "{\"test_field\":\"\",\"image\":\"https:\\/\\/media.giphy.com\\/media\\/ktvFa67wmjDEI\\/giphy.gif\",\"deep_link\":\"lifestylelabels.com\\/mobile\\/product\\/3245678\",\"sid\":\"sid_here\"}");
+        remoteData.put("id", "21022.150123121212.43223434c3b9");
+        remoteData.put("message_id", messageId);
+        remoteData.put("title", "hello there");
+        remoteData.put("body", "o<-<");
+        remoteData.put("rootParam1", "param_param");
+
+        Notification result = InboxParseUtils.parseNotificationFromPushMessage(remoteData, true);
+
+        Assert.assertEquals(messageId, result.getId());
+    }
+
+    @Test
     public void testParseNotificationFromPushMessage_shouldNotParse_ifNotInboxMessage(){
         Map<String, String> remoteData = new HashMap<>();
         remoteData.put("inbox", "false");
@@ -390,7 +408,7 @@ public class InboxParseUtilsTest {
         remoteData.put("title", "hello there");
         remoteData.put("rootParam1", "param_param");
 
-        Assert.assertNull(InboxParseUtils.parseNotificationFromPushMessage(remoteData));
+        Assert.assertNull(InboxParseUtils.parseNotificationFromPushMessage(remoteData, false));
     }
 
     @Test
@@ -402,6 +420,6 @@ public class InboxParseUtilsTest {
         remoteData.put("title", "hello there");
         remoteData.put("rootParam1", "param_param");
 
-        Assert.assertNull(InboxParseUtils.parseNotificationFromPushMessage(remoteData));
+        Assert.assertNull(InboxParseUtils.parseNotificationFromPushMessage(remoteData, false));
     }
 }

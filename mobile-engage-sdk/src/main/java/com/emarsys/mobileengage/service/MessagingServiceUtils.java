@@ -17,6 +17,8 @@ import com.emarsys.core.resource.MetaDataReader;
 import com.emarsys.core.util.Assert;
 import com.emarsys.core.util.ImageUtils;
 import com.emarsys.mobileengage.config.OreoConfig;
+import com.emarsys.mobileengage.experimental.MobileEngageExperimental;
+import com.emarsys.mobileengage.experimental.MobileEngageFeature;
 import com.emarsys.mobileengage.inbox.InboxParseUtils;
 import com.emarsys.mobileengage.inbox.model.NotificationCache;
 
@@ -155,7 +157,8 @@ public class MessagingServiceUtils {
 
     static void cacheNotification(Map<String, String> remoteMessageData) {
         Assert.notNull(remoteMessageData, "RemoteMessageData must not be null!");
-        notificationCache.cache(InboxParseUtils.parseNotificationFromPushMessage(remoteMessageData));
+        boolean isUserCentric = MobileEngageExperimental.isFeatureEnabled(MobileEngageFeature.USER_CENTRIC_INBOX);
+        notificationCache.cache(InboxParseUtils.parseNotificationFromPushMessage(remoteMessageData, isUserCentric));
     }
 
 }
