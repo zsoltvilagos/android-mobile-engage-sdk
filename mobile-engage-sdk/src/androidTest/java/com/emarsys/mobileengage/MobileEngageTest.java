@@ -19,10 +19,10 @@ import com.emarsys.mobileengage.deeplink.DeepLinkAction;
 import com.emarsys.mobileengage.deeplink.DeepLinkInternal;
 import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
 import com.emarsys.mobileengage.experimental.FlipperFeature;
-import com.emarsys.mobileengage.experimental.MobileEngageExperimental;
 import com.emarsys.mobileengage.experimental.MobileEngageFeature;
 import com.emarsys.mobileengage.fake.FakeRequestManager;
 import com.emarsys.mobileengage.fake.FakeStatusListener;
+import com.emarsys.mobileengage.iam.InAppMessageHandler;
 import com.emarsys.mobileengage.iam.InAppStartAction;
 import com.emarsys.mobileengage.iam.model.requestRepositoryProxy.RequestRepositoryProxy;
 import com.emarsys.mobileengage.inbox.InboxInternal;
@@ -96,14 +96,14 @@ public class MobileEngageTest {
     private Application application;
     private MobileEngageConfig baseConfig;
     private MobileEngageConfig userCentricConfig;
+    private MobileEngageConfig inAppConfig;
+    private MobileEngageConfig fullConfig;
 
     @Rule
     public TestRule timeout = TimeoutUtils.getTimeoutRule();
 
     @Before
     public void init() throws Exception {
-        MobileEngageExperimental.enableFeature(MobileEngageFeature.IN_APP_MESSAGING);
-
         DatabaseTestUtils.deleteMobileEngageDatabase();
         DatabaseTestUtils.deleteCoreDatabase();
 
@@ -112,13 +112,10 @@ public class MobileEngageTest {
         mobileEngageInternal = mock(MobileEngageInternal.class);
         inboxInternal = mock(InboxInternal.class);
         deepLinkInternal = mock(DeepLinkInternal.class);
-        baseConfig = new MobileEngageConfig.Builder()
-                .application(application)
-                .credentials(appID, appSecret)
-                .disableDefaultChannel()
-                .build();
-
+        baseConfig = createConfigWithFlippers();
         userCentricConfig = createConfigWithFlippers(MobileEngageFeature.USER_CENTRIC_INBOX);
+        inAppConfig = createConfigWithFlippers(MobileEngageFeature.IN_APP_MESSAGING);
+        fullConfig = createConfigWithFlippers(MobileEngageFeature.IN_APP_MESSAGING, MobileEngageFeature.USER_CENTRIC_INBOX);
 
         MobileEngage.inboxInstance = inboxInternal;
         MobileEngage.instance = mobileEngageInternal;
@@ -144,9 +141,34 @@ public class MobileEngageTest {
     }
 
     @Test
-    public void testSetup_initializesCoreCompletionHandler_withMeIdResponseHandler() {
+    public void testSetup_initializesCoreCompletionHandler_withMeIdResponseHandler_whenInAppIsOn() throws Exception  {
+        ExperimentalTestUtils.resetExperimentalFeatures();
         MobileEngage.completionHandler = null;
-        MobileEngage.setup(baseConfig);
+        MobileEngage.setup(inAppConfig);
+
+        MobileEngageCoreCompletionHandler coreCompletionHandler = MobileEngage.completionHandler;
+        assertNotNull(coreCompletionHandler);
+        assertEquals(1, CollectionTestUtils.numberOfElementsIn(coreCompletionHandler.responseHandlers, MeIdResponseHandler.class));
+    }
+
+    @Test
+    public void testSetup_initializesCoreCompletionHandler_withMeIdResponseHandler_whenUserCentricInboxIsOn() throws Exception  {
+        ExperimentalTestUtils.resetExperimentalFeatures();
+        MobileEngage.completionHandler = null;
+        MobileEngage.setup(userCentricConfig);
+
+        MobileEngageCoreCompletionHandler coreCompletionHandler = MobileEngage.completionHandler;
+        assertNotNull(coreCompletionHandler);
+        assertEquals(1, CollectionTestUtils.numberOfElementsIn(coreCompletionHandler.responseHandlers, MeIdResponseHandler.class));
+        assertEquals(0, CollectionTestUtils.numberOfElementsIn(coreCompletionHandler.responseHandlers, InAppMessageResponseHandler.class));
+        assertEquals(0, CollectionTestUtils.numberOfElementsIn(coreCompletionHandler.responseHandlers, InAppCleanUpResponseHandler.class));
+    }
+
+    @Test
+    public void testSetup_initializesCoreCompletionHandler_withMeIdResponseHandler_onlyOnce_WhenBothUserCentricInboxAndInAppIsOn() throws Exception  {
+        ExperimentalTestUtils.resetExperimentalFeatures();
+        MobileEngage.completionHandler = null;
+        MobileEngage.setup(fullConfig);
 
         MobileEngageCoreCompletionHandler coreCompletionHandler = MobileEngage.completionHandler;
         assertNotNull(coreCompletionHandler);
@@ -177,7 +199,7 @@ public class MobileEngageTest {
     @Test
     public void testSetup_initializesCoreCompletionHandler_withInAppMessageResponseHandler() {
         MobileEngage.completionHandler = null;
-        MobileEngage.setup(baseConfig);
+        MobileEngage.setup(inAppConfig);
 
         MobileEngageCoreCompletionHandler coreCompletionHandler = MobileEngage.completionHandler;
         assertNotNull(coreCompletionHandler);
@@ -199,7 +221,7 @@ public class MobileEngageTest {
     @Test
     public void testSetup_initializesCoreCompletionHandler_withInAppCleanUpResponseHandler() {
         MobileEngage.completionHandler = null;
-        MobileEngage.setup(baseConfig);
+        MobileEngage.setup(inAppConfig);
 
         MobileEngageCoreCompletionHandler coreCompletionHandler = MobileEngage.completionHandler;
         assertNotNull(coreCompletionHandler);
@@ -220,12 +242,12 @@ public class MobileEngageTest {
 
     @Test
     public void testSetup_initializesRequestManager_withRequestModelProxy() throws Exception {
-        MobileEngage.setup(baseConfig);
+        MobileEngage.setup(inAppConfig);
 
         Field repositoryField = RequestManager.class.getDeclaredField("requestRepository");
         repositoryField.setAccessible(true);
         Object repository = repositoryField.get(MobileEngage.instance.manager);
-        assertEquals(repository.getClass(), RequestRepositoryProxy.class);
+        assertEquals(RequestRepositoryProxy.class, repository.getClass());
     }
 
     @Test
@@ -236,7 +258,7 @@ public class MobileEngageTest {
         Field repositoryField = RequestManager.class.getDeclaredField("requestRepository");
         repositoryField.setAccessible(true);
         Object repository = repositoryField.get(MobileEngage.instance.manager);
-        assertEquals(repository.getClass(), RequestModelRepository.class);
+        assertEquals(RequestModelRepository.class, repository.getClass());
     }
 
     @Test
@@ -280,7 +302,7 @@ public class MobileEngageTest {
 
     @Test
     public void testSetup_registers_activityLifecycleWatchdog() throws Exception {
-        MobileEngageConfig config = createConfigWithSpyApplication();
+        MobileEngageConfig config = createConfigWithFlippers();
         Application spyApplication = config.getApplication();
 
         MobileEngage.setup(config);
@@ -292,7 +314,7 @@ public class MobileEngageTest {
     public void testSetup_registers_activityLifecycleWatchdog_withInAppStartAction() throws Exception {
         ArgumentCaptor<ActivityLifecycleWatchdog> captor = ArgumentCaptor.forClass(ActivityLifecycleWatchdog.class);
 
-        MobileEngageConfig config = createConfigWithSpyApplication();
+        MobileEngageConfig config = createConfigWithFlippers(MobileEngageFeature.IN_APP_MESSAGING);
         Application spyApplication = config.getApplication();
 
         MobileEngage.setup(config);
@@ -307,7 +329,7 @@ public class MobileEngageTest {
     public void testSetup_registers_activityLifecycleWatchdog_withDeepLinkAction() throws Exception {
         ArgumentCaptor<ActivityLifecycleWatchdog> captor = ArgumentCaptor.forClass(ActivityLifecycleWatchdog.class);
 
-        MobileEngageConfig config = createConfigWithSpyApplication();
+        MobileEngageConfig config = createConfigWithFlippers();
         Application spyApplication = config.getApplication();
 
         MobileEngage.setup(config);
@@ -316,12 +338,6 @@ public class MobileEngageTest {
         ActivityLifecycleAction[] actions = CollectionTestUtils.getElementByType(captor.getAllValues(), ActivityLifecycleWatchdog.class).getActivityCreatedActions();
 
         assertEquals(1, CollectionTestUtils.numberOfElementsIn(actions, DeepLinkAction.class));
-    }
-
-    @Test
-    public void testSetup_registers_activityLifecycleWatchdog_withDeepLinkAction_withFlippersOff() throws Exception {
-        ExperimentalTestUtils.resetExperimentalFeatures();
-        testSetup_registers_activityLifecycleWatchdog_withDeepLinkAction();
     }
 
     @Test
@@ -562,20 +578,18 @@ public class MobileEngageTest {
         verify(inboxInternal).resetBadgeCount(null);
     }
 
-    private MobileEngageConfig createConfigWithSpyApplication() {
+    private MobileEngageConfig createConfigWithFlippers(FlipperFeature... experimentalFeatures) {
         return new MobileEngageConfig.Builder()
                 .application(spy(application))
                 .credentials(appID, appSecret)
                 .disableDefaultChannel()
-                .build();
-    }
-
-    private MobileEngageConfig createConfigWithFlippers(FlipperFeature... experimentalFeatures) {
-        return new MobileEngageConfig.Builder()
-                .application(application)
-                .credentials(appID, appSecret)
-                .disableDefaultChannel()
                 .enableExperimentalFeatures(experimentalFeatures)
+                .setDefaultInAppMessageHandler(new InAppMessageHandler() {
+                    @Override
+                    public void handleApplicationEvent(String eventName, JSONObject payload) {
+
+                    }
+                })
                 .build();
     }
 }

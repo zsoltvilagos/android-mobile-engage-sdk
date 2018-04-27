@@ -267,11 +267,14 @@ public class MobileEngage {
 
     private static void registerResponseHandlers() {
         List<AbstractResponseHandler> responseHandlers = new ArrayList<>();
-
-        if (MobileEngageExperimental.isFeatureEnabled(MobileEngageFeature.IN_APP_MESSAGING)) {
+        if (MobileEngageExperimental.isFeatureEnabled(MobileEngageFeature.IN_APP_MESSAGING) ||
+                MobileEngageExperimental.isFeatureEnabled(MobileEngageFeature.USER_CENTRIC_INBOX)) {
             responseHandlers.add(new MeIdResponseHandler(
                     meIdStorage,
                     meIdSignatureStorage));
+        }
+
+        if (MobileEngageExperimental.isFeatureEnabled(MobileEngageFeature.IN_APP_MESSAGING)) {
             responseHandlers.add(new InAppMessageResponseHandler(
                     coreSdkHandler,
                     new IamWebViewProvider(),
