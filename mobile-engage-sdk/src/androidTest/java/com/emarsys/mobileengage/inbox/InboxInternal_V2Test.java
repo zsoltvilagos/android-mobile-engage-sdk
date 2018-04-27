@@ -11,18 +11,21 @@ import com.emarsys.core.request.model.RequestMethod;
 import com.emarsys.core.request.model.RequestModel;
 import com.emarsys.core.response.ResponseModel;
 import com.emarsys.core.timestamp.TimestampProvider;
+import com.emarsys.core.util.TimestampUtils;
 import com.emarsys.mobileengage.MobileEngageException;
 import com.emarsys.mobileengage.RequestContext;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.fake.FakeInboxResultListener;
 import com.emarsys.mobileengage.fake.FakeResetBadgeCountResultListener;
 import com.emarsys.mobileengage.fake.FakeRestClient;
+import com.emarsys.mobileengage.fake.FakeStatusListener;
 import com.emarsys.mobileengage.inbox.model.Notification;
 import com.emarsys.mobileengage.inbox.model.NotificationCache;
 import com.emarsys.mobileengage.inbox.model.NotificationInboxStatus;
 import com.emarsys.mobileengage.storage.AppLoginStorage;
 import com.emarsys.mobileengage.storage.MeIdSignatureStorage;
 import com.emarsys.mobileengage.storage.MeIdStorage;
+import com.emarsys.mobileengage.testUtil.RequestModelTestUtils;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 import com.emarsys.mobileengage.util.RequestHeaderUtils;
 
@@ -40,11 +43,14 @@ import org.mockito.ArgumentCaptor;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
+import static junit.framework.Assert.assertNull;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -52,19 +58,27 @@ import static org.mockito.Mockito.when;
 
 public class InboxInternal_V2Test {
 
+    public static final long TIMESTAMP = 900;
     public static final String APPLICATION_ID = "id";
     public static final String ME_ID = "12345";
+    public static final String ME_ID_SIGNATURE = "1111signature";
+    private static String ENDPOINT_BASE_V3 = "https://mobile-events.eservice.emarsys.net/v3/devices/";
+    public static final String MESSAGE_ID = "id";
+    public static final String SID = "sid";
 
     private InboxInternal inbox;
     private RequestManager manager;
     private RestClient restClient;
     private MeIdStorage meIdStorage;
+    private MeIdSignatureStorage meIdSignatureStorage;
     private MobileEngageConfig config;
     private InboxResultListener<NotificationInboxStatus> resultListener;
     private ResetBadgeCountResultListener resetListenerMock;
     private CountDownLatch latch;
     private NotificationCache cache;
     private RequestContext requestContext;
+    private Notification notification;
+    private FakeStatusListener statusListener;
 
     @Rule
     public TestRule timeout = TimeoutUtils.getTimeoutRule();
@@ -76,24 +90,35 @@ public class InboxInternal_V2Test {
 
         Application application = (Application) InstrumentationRegistry.getTargetContext().getApplicationContext();
 
+        latch = new CountDownLatch(1);
+
+        statusListener = new FakeStatusListener(latch, FakeStatusListener.Mode.MAIN_THREAD);
+
         config = new MobileEngageConfig.Builder()
                 .application(application)
                 .credentials(APPLICATION_ID, "applicationPassword")
                 .disableDefaultChannel()
+                .statusListener(statusListener)
                 .build();
 
         manager = mock(RequestManager.class);
         restClient = mock(RestClient.class);
+
         meIdStorage = mock(MeIdStorage.class);
         when(meIdStorage.get()).thenReturn(ME_ID);
 
+        meIdSignatureStorage = mock(MeIdSignatureStorage.class);
+        when(meIdSignatureStorage.get()).thenReturn(ME_ID_SIGNATURE);
+
+        TimestampProvider timestampProvider = mock(TimestampProvider.class);
+        when(timestampProvider.provideTimestamp()).thenReturn(TIMESTAMP);
         requestContext = new RequestContext(
                 config.getApplicationCode(),
                 mock(DeviceInfo.class),
                 mock(AppLoginStorage.class),
                 meIdStorage,
-                mock(MeIdSignatureStorage.class),
-                mock(TimestampProvider.class));
+                meIdSignatureStorage,
+                timestampProvider);
 
         inbox = new InboxInternal_V2(config, manager, restClient, requestContext);
 
@@ -101,7 +126,15 @@ public class InboxInternal_V2Test {
         resetListenerMock = mock(ResetBadgeCountResultListener.class);
         cache = new NotificationCache();
 
-        latch = new CountDownLatch(1);
+        notification = new Notification(
+                MESSAGE_ID,
+                SID,
+                "title",
+                null,
+                new HashMap<String, String>(),
+                new JSONObject(),
+                2000,
+                400);
     }
 
     @After
@@ -459,6 +492,118 @@ public class InboxInternal_V2Test {
 
         Assert.assertEquals(NotificationInboxException.class, listener.errorCause.getClass());
         Assert.assertEquals(1, listener.errorCount);
+    }
+
+    @Test
+    public void testTrackMessageOpen_requestManagerCalled_withCorrectRequestModel() {
+        Map<String, String> eventAttributes = new HashMap<>();
+        eventAttributes.put("message_id", MESSAGE_ID);
+        eventAttributes.put("sid", SID);
+
+        Map<String, Object> event = new HashMap<>();
+        event.put("type", "internal");
+        event.put("name", "inbox:open");
+        event.put("timestamp", TimestampUtils.formatTimestampWithUTC(TIMESTAMP));
+        event.put("attributes", eventAttributes);
+
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("clicks", new ArrayList<>());
+        payload.put("viewed_messages", new ArrayList<>());
+        payload.put("events", Collections.singletonList(event));
+
+        RequestModel expected = new RequestModel.Builder()
+                .url(ENDPOINT_BASE_V3 + ME_ID + "/events")
+                .payload(payload)
+                .headers(RequestHeaderUtils.createBaseHeaders_V3(
+                        requestContext.getApplicationCode(),
+                        requestContext.getMeIdStorage(),
+                        requestContext.getMeIdSignatureStorage()))
+                .build();
+
+        ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
+
+        inbox.trackMessageOpen(notification);
+
+        verify(manager).submit(captor.capture());
+
+        RequestModelTestUtils.assertEqualsRequestModels(expected, captor.getValue());
+    }
+
+    @Test
+    public void testTrackMessageOpen_returnsRequestModelId() {
+        ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
+
+        String result = inbox.trackMessageOpen(notification);
+
+        verify(manager).submit(captor.capture());
+
+        assertEquals(captor.getValue().getId(), result);
+    }
+
+    @Test
+    public void testTrackMessageOpen_withMissing_id() throws InterruptedException {
+        Notification notification = new Notification(
+                null,
+                "sid",
+                "title",
+                "body",
+                new HashMap<String, String>(),
+                new JSONObject(),
+                1000,
+                1000);
+
+        inbox.trackMessageOpen(notification);
+
+        latch.await();
+
+        assertNull(statusListener.successLog);
+        assertEquals(1, statusListener.onErrorCount);
+        assertEquals(IllegalArgumentException.class, statusListener.errorCause.getClass());
+        assertEquals("Id is missing!", statusListener.errorCause.getMessage());
+    }
+
+    @Test
+    public void testTrackMessageOpen_withMissing_sid() throws InterruptedException {
+        Notification notification = new Notification(
+                "id",
+                null,
+                "title",
+                "body",
+                new HashMap<String, String>(),
+                new JSONObject(),
+                1000,
+                1000);
+
+        inbox.trackMessageOpen(notification);
+
+        latch.await();
+
+        assertNull(statusListener.successLog);
+        assertEquals(1, statusListener.onErrorCount);
+        assertEquals(IllegalArgumentException.class, statusListener.errorCause.getClass());
+        assertEquals("Sid is missing!", statusListener.errorCause.getMessage());
+    }
+
+    @Test
+    public void testTrackMessageOpen_withMissing_id_sid() throws InterruptedException {
+        Notification notification = new Notification(
+                null,
+                null,
+                "title",
+                "body",
+                new HashMap<String, String>(),
+                new JSONObject(),
+                1000,
+                1000);
+
+        inbox.trackMessageOpen(notification);
+
+        latch.await();
+
+        assertNull(statusListener.successLog);
+        assertEquals(1, statusListener.onErrorCount);
+        assertEquals(IllegalArgumentException.class, statusListener.errorCause.getClass());
+        assertEquals("Id, Sid is missing!", statusListener.errorCause.getMessage());
     }
 
     private RequestModel createRequestModel(String path, RequestMethod method) {

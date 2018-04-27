@@ -2,6 +2,7 @@ package com.emarsys.mobileengage.inbox;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.text.TextUtils;
 
 import com.emarsys.core.CoreCompletionHandler;
 import com.emarsys.core.request.RequestManager;
@@ -12,6 +13,7 @@ import com.emarsys.core.response.ResponseModel;
 import com.emarsys.core.util.Assert;
 import com.emarsys.core.util.log.EMSLogger;
 import com.emarsys.mobileengage.MobileEngageException;
+import com.emarsys.mobileengage.MobileEngageStatusListener;
 import com.emarsys.mobileengage.RequestContext;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.endpoint.Endpoint;
@@ -20,10 +22,14 @@ import com.emarsys.mobileengage.inbox.model.NotificationCache;
 import com.emarsys.mobileengage.inbox.model.NotificationInboxStatus;
 import com.emarsys.mobileengage.storage.MeIdStorage;
 import com.emarsys.mobileengage.util.RequestHeaderUtils;
+import com.emarsys.mobileengage.util.RequestModelUtils;
 import com.emarsys.mobileengage.util.log.MobileEngageTopic;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import static com.emarsys.mobileengage.endpoint.Endpoint.INBOX_RESET_BADGE_COUNT_V2;
 
@@ -152,7 +158,52 @@ public class InboxInternal_V2 implements InboxInternal {
 
     @Override
     public String trackMessageOpen(Notification message) {
-        return null;
+        final Exception exception = validateNotification(message);
+        String requestId;
+
+        if (exception == null) {
+            Map<String, String> attributes = new HashMap<>();
+            attributes.put("message_id", message.getId());
+            attributes.put("sid", message.getSid());
+            RequestModel requestModel = RequestModelUtils.createInternalCustomEvent(
+                    "inbox:open",
+                    attributes,
+                    requestContext.getApplicationCode(),
+                    requestContext.getMeIdStorage(),
+                    requestContext.getMeIdSignatureStorage(),
+                    requestContext.getTimestampProvider());
+            manager.submit(requestModel);
+            requestId = requestModel.getId();
+        } else {
+            final String uuid = UUID.randomUUID().toString();
+            final MobileEngageStatusListener statusListener = config.getStatusListener();
+            if (statusListener != null) {
+                mainHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        statusListener.onError(uuid, exception);
+                    }
+                });
+            }
+            requestId = uuid;
+        }
+        return requestId;
+    }
+
+    private Exception validateNotification(Notification notification) {
+        Exception exception = null;
+        List<String> missingFields = new ArrayList<>();
+
+        if (notification.getId() == null) {
+            missingFields.add("Id");
+        }
+        if (notification.getSid() == null) {
+            missingFields.add("Sid");
+        }
+        if (!missingFields.isEmpty()) {
+            exception = new IllegalArgumentException(TextUtils.join(", ", missingFields) + " is missing!");
+        }
+        return exception;
     }
 
     private Map<String, String> createBaseHeaders(MobileEngageConfig config) {

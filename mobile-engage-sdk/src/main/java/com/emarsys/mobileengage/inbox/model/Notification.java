@@ -27,12 +27,10 @@ public class Notification {
         this.receivedAt = receivedAt;
     }
 
-    @NonNull
     public String getId() {
         return id;
     }
 
-    @NonNull
     public String getSid() {
         return sid;
     }

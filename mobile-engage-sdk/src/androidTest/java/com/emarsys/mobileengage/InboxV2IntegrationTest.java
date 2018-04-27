@@ -9,6 +9,7 @@ import com.emarsys.mobileengage.fake.FakeInboxResultListener;
 import com.emarsys.mobileengage.fake.FakeResetBadgeCountResultListener;
 import com.emarsys.mobileengage.fake.FakeStatusListener;
 import com.emarsys.mobileengage.iam.InAppMessageHandler;
+import com.emarsys.mobileengage.inbox.model.Notification;
 import com.emarsys.mobileengage.testUtil.ConnectionTestUtils;
 import com.emarsys.mobileengage.testUtil.DatabaseTestUtils;
 import com.emarsys.mobileengage.testUtil.SharedPrefsUtils;
@@ -20,11 +21,13 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
 public class InboxV2IntegrationTest {
@@ -96,6 +99,29 @@ public class InboxV2IntegrationTest {
         assertNull(resetListener.errorCause);
         assertEquals(1, resetListener.successCount);
         assertEquals(0, resetListener.errorCount);
+    }
+
+    @Test
+    public void testTrackMessageOpen() throws InterruptedException {
+        doAppLogin();
+
+        MobileEngage.Inbox.fetchNotifications(inboxListener);
+        inboxLatch.await();
+
+        List<Notification> notifications = inboxListener.resultStatus.getNotifications();
+
+        assertTrue(notifications.size() > 0);
+
+        latch = new CountDownLatch(1);
+        listener = new FakeStatusListener(latch, FakeStatusListener.Mode.MAIN_THREAD);
+        MobileEngage.setStatusListener(listener);
+
+        MobileEngage.Inbox.trackMessageOpen(notifications.get(0));
+        latch.await();
+
+        assertNull(listener.errorCause);
+        assertEquals(1, listener.onStatusLogCount);
+        assertEquals(0, listener.onErrorCount);
     }
 
     private void doAppLogin() throws InterruptedException {
