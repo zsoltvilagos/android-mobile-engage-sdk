@@ -241,8 +241,18 @@ public class MobileEngageTest {
     }
 
     @Test
-    public void testSetup_initializesRequestManager_withRequestModelProxy() throws Exception {
+    public void testSetup_initializesRequestManager_withRequestModelProxy_whenInAppFlipperIsOn() throws Exception {
         MobileEngage.setup(inAppConfig);
+
+        Field repositoryField = RequestManager.class.getDeclaredField("requestRepository");
+        repositoryField.setAccessible(true);
+        Object repository = repositoryField.get(MobileEngage.instance.manager);
+        assertEquals(RequestRepositoryProxy.class, repository.getClass());
+    }
+
+    @Test
+    public void testSetup_initializesRequestManager_withRequestModelProxy_whenUserCentricInboxFlipperIsOn() throws Exception {
+        MobileEngage.setup(userCentricConfig);
 
         Field repositoryField = RequestManager.class.getDeclaredField("requestRepository");
         repositoryField.setAccessible(true);

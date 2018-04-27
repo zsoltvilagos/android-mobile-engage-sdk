@@ -58,7 +58,7 @@ public class InboxV2IntegrationTest {
                 .credentials("14C19-A121F", "PaNkfOD90AVpYimMBuZopCpm8OWCrREu")
                 .statusListener(listener)
                 .disableDefaultChannel()
-                .enableExperimentalFeatures(MobileEngageFeature.IN_APP_MESSAGING, MobileEngageFeature.USER_CENTRIC_INBOX)
+                .enableExperimentalFeatures(MobileEngageFeature.USER_CENTRIC_INBOX)
                 .setDefaultInAppMessageHandler(mock(InAppMessageHandler.class))
                 .build();
         MobileEngage.setup(config);

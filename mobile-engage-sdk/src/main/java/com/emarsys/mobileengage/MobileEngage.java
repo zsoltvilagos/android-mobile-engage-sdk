@@ -317,7 +317,8 @@ public class MobileEngage {
 
     private static Repository<RequestModel, SqlSpecification> createRequestModelRepository(Context application) {
         RequestModelRepository requestModelRepository = new RequestModelRepository(application);
-        if (MobileEngageExperimental.isFeatureEnabled(MobileEngageFeature.IN_APP_MESSAGING)) {
+        if (MobileEngageExperimental.isFeatureEnabled(MobileEngageFeature.IN_APP_MESSAGING) ||
+                MobileEngageExperimental.isFeatureEnabled(MobileEngageFeature.USER_CENTRIC_INBOX)) {
             return new RequestRepositoryProxy(
                     deviceInfo,
                     requestModelRepository,
