@@ -42,6 +42,11 @@ public class InboxInternal_V2 implements InboxInternal {
     private RequestContext requestContext;
     private MeIdStorage meIdStorage;
     private RequestManager manager;
+    private NotificationInboxStatus lastNotificationInboxStatus;
+    private long responseTime;
+    private long purgeTime;
+    private boolean requestInProgress;
+    private List<InboxResultListener> queuedResultListeners;
 
     public InboxInternal_V2(MobileEngageConfig config,
                             RequestManager requestManager,
@@ -60,6 +65,11 @@ public class InboxInternal_V2 implements InboxInternal {
         this.manager = requestManager;
         this.requestContext = requestContext;
         this.meIdStorage = requestContext.getMeIdStorage();
+        this.queuedResultListeners = new ArrayList<>();
+    }
+
+    public RequestContext getRequestContext() {
+        return requestContext;
     }
 
     @Override
@@ -67,45 +77,74 @@ public class InboxInternal_V2 implements InboxInternal {
         Assert.notNull(resultListener, "ResultListener should not be null!");
         EMSLogger.log(MobileEngageTopic.INBOX, "Arguments: resultListener %s", resultListener);
 
-        String meId = meIdStorage.get();
-
-        if (meId == null) {
-            mainHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    resultListener.onError(new NotificationInboxException("Missing MeId, appLogin must be called before calling fetchNotifications!"));
-                }
-            });
+        if (requestInProgress) {
+            queuedResultListeners.add(resultListener);
         } else {
-            RequestModel model = new RequestModel.Builder()
-                    .url(String.format(Endpoint.INBOX_FETCH_V2, meId))
-                    .headers(createBaseHeaders(config))
-                    .method(RequestMethod.GET)
-                    .build();
+            requestInProgress = true;
 
-            client.execute(model, new CoreCompletionHandler() {
-                @Override
-                public void onSuccess(String id, ResponseModel responseModel) {
-                    EMSLogger.log(MobileEngageTopic.INBOX, "Arguments: id %s, responseModel %s", id, responseModel);
-                    NotificationInboxStatus status = InboxParseUtils.parseNotificationInboxStatus(responseModel.getBody());
-                    NotificationInboxStatus resultStatus = new NotificationInboxStatus(cache.merge(status.getNotifications()), status.getBadgeCount());
-                    resultListener.onSuccess(resultStatus);
-                }
+            if (lastNotificationInboxStatus != null && !oneMinutePassedSince(responseTime)) {
+                resultListener.onSuccess(lastNotificationInboxStatus);
+                return;
+            }
 
-                @Override
-                public void onError(String id, ResponseModel responseModel) {
-                    EMSLogger.log(MobileEngageTopic.INBOX, "Arguments: id %s, responseModel %s", id, responseModel);
-                    resultListener.onError(new MobileEngageException(responseModel));
-                }
+            final String meId = meIdStorage.get();
 
-                @Override
-                public void onError(String id, Exception cause) {
-                    EMSLogger.log(MobileEngageTopic.INBOX, "Arguments: id %s, cause %s", id, cause);
-                    resultListener.onError(cause);
-                }
-            });
+            if (meId == null) {
+                mainHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        resultListener.onError(new NotificationInboxException("Missing MeId, appLogin must be called before calling fetchNotifications!"));
+                    }
+                });
+            } else {
+                RequestModel model = new RequestModel.Builder()
+                        .url(String.format(Endpoint.INBOX_FETCH_V2, meId))
+                        .headers(createBaseHeaders(config))
+                        .method(RequestMethod.GET)
+                        .build();
+
+                client.execute(model, new CoreCompletionHandler() {
+                    @Override
+                    public void onSuccess(String id, ResponseModel responseModel) {
+                        EMSLogger.log(MobileEngageTopic.INBOX, "Arguments: id %s, responseModel %s", id, responseModel);
+                        NotificationInboxStatus status = InboxParseUtils.parseNotificationInboxStatus(responseModel.getBody());
+                        NotificationInboxStatus resultStatus = new NotificationInboxStatus(cache.merge(status.getNotifications()), status.getBadgeCount());
+
+                        lastNotificationInboxStatus = status;
+                        responseTime = requestContext.getTimestampProvider().provideTimestamp();
+                        requestInProgress = false;
+
+                        resultListener.onSuccess(resultStatus);
+
+                        for (InboxResultListener<NotificationInboxStatus> queuedResultListener : queuedResultListeners) {
+                            queuedResultListener.onSuccess(resultStatus);
+                        }
+                        queuedResultListeners.clear();
+                    }
+
+                    @Override
+                    public void onError(String id, ResponseModel responseModel) {
+                        EMSLogger.log(MobileEngageTopic.INBOX, "Arguments: id %s, responseModel %s", id, responseModel);
+
+                        this.onError(id, new MobileEngageException(responseModel));
+                    }
+
+                    @Override
+                    public void onError(String id, Exception cause) {
+                        EMSLogger.log(MobileEngageTopic.INBOX, "Arguments: id %s, cause %s", id, cause);
+
+                        requestInProgress = false;
+
+                        resultListener.onError(cause);
+
+                        for (InboxResultListener<NotificationInboxStatus> queuedResultListener : queuedResultListeners) {
+                            queuedResultListener.onError(cause);
+                        }
+                        queuedResultListeners.clear();
+                    }
+                });
+            }
         }
-
     }
 
     @Override
@@ -123,6 +162,9 @@ public class InboxInternal_V2 implements InboxInternal {
                 @Override
                 public void onSuccess(String id, ResponseModel responseModel) {
                     EMSLogger.log(MobileEngageTopic.INBOX, "Arguments: id %s, responseModel %s", id, responseModel);
+                    if (lastNotificationInboxStatus != null) {
+                        lastNotificationInboxStatus = new NotificationInboxStatus(lastNotificationInboxStatus.getNotifications(), 0);
+                    }
                     if (listener != null) {
                         listener.onSuccess();
                     }
@@ -190,6 +232,18 @@ public class InboxInternal_V2 implements InboxInternal {
         return requestId;
     }
 
+    @Override
+    public void purgeNotificationCache() {
+        if (oneMinutePassedSince(purgeTime)) {
+            lastNotificationInboxStatus = null;
+            purgeTime = requestContext.getTimestampProvider().provideTimestamp();
+        }
+    }
+
+    private boolean oneMinutePassedSince(long since) {
+        return requestContext.getTimestampProvider().provideTimestamp() - since > 60 * 1000;
+    }
+
     private Exception validateNotification(Notification notification) {
         Exception exception = null;
         List<String> missingFields = new ArrayList<>();
@@ -214,9 +268,5 @@ public class InboxInternal_V2 implements InboxInternal {
         result.putAll(RequestHeaderUtils.createBaseHeaders_V2(config));
 
         return result;
-    }
-
-    public RequestContext getRequestContext() {
-        return requestContext;
     }
 }

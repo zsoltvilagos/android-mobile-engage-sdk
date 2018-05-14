@@ -108,6 +108,10 @@ public class MobileEngage {
             return inboxInstance.trackMessageOpen(message);
         }
 
+        public static void purgeNotificationCache() {
+            inboxInstance.purgeNotificationCache();
+        }
+
     }
 
     public static class InApp {

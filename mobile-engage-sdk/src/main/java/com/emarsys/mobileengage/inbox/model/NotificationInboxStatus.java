@@ -45,4 +45,12 @@ public class NotificationInboxStatus {
         result = 31 * result + badgeCount;
         return result;
     }
+
+    @Override
+    public String toString() {
+        return "NotificationInboxStatus{" +
+                "notifications=" + notifications +
+                ", badgeCount=" + badgeCount +
+                '}';
+    }
 }

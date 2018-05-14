@@ -10,29 +10,40 @@ import com.emarsys.core.request.model.RequestModel;
 import com.emarsys.core.response.ResponseModel;
 import com.emarsys.core.timestamp.TimestampProvider;
 
-import static org.mockito.Mockito.mock;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
+import static org.mockito.Mockito.mock;
 
 public class FakeRestClient extends RestClient {
 
-    private ResponseModel returnValue;
     private Mode mode;
-    private Exception exception;
+    private List<ResponseModel> responses;
+    private List<Exception> exceptions;
 
     public enum Mode {SUCCESS, ERROR_RESPONSE_MODEL, ERROR_EXCEPTION}
 
-    @SuppressWarnings("unchecked")
-    public FakeRestClient(Exception exception) {
-        super(mock(Repository.class), mock(TimestampProvider.class));
-        this.exception = exception;
-        this.mode = Mode.ERROR_EXCEPTION;
+    public FakeRestClient(ResponseModel returnValue, Mode mode) {
+        this(Collections.singletonList(returnValue), mode);
     }
 
     @SuppressWarnings("unchecked")
-    public FakeRestClient(ResponseModel returnValue, Mode mode) {
+    public FakeRestClient(List<ResponseModel> responses, Mode mode) {
         super(mock(Repository.class), mock(TimestampProvider.class));
-        this.returnValue = returnValue;
+        this.responses = new ArrayList<>(responses);
         this.mode = mode;
+    }
+
+    public FakeRestClient(Exception exception) {
+        this(Collections.singletonList(exception));
+    }
+
+    @SuppressWarnings("unchecked")
+    public FakeRestClient(List<Exception> exceptions) {
+        super(mock(Repository.class), mock(TimestampProvider.class));
+        this.exceptions = new ArrayList<>(exceptions);
+        this.mode = Mode.ERROR_EXCEPTION;
     }
 
     @Override
@@ -41,14 +52,21 @@ public class FakeRestClient extends RestClient {
             @Override
             public void run() {
                 if (mode == Mode.SUCCESS) {
-                    completionHandler.onSuccess(model.getId(), returnValue);
+                    completionHandler.onSuccess(model.getId(), getCurrentItem(responses));
                 } else if (mode == Mode.ERROR_RESPONSE_MODEL) {
-                    completionHandler.onError(model.getId(), returnValue);
+                    completionHandler.onError(model.getId(), getCurrentItem(responses));
                 } else if (mode == Mode.ERROR_EXCEPTION) {
-                    completionHandler.onError(model.getId(), exception);
+                    completionHandler.onError(model.getId(), getCurrentItem(exceptions));
                 }
             }
         }, 100);
+    }
 
+    private <T> T getCurrentItem(List<T> list) {
+        T result = list.get(0);
+        if (list.size() > 1) {
+            list.remove(0);
+        }
+        return result;
     }
 }

@@ -58,7 +58,7 @@ import static org.mockito.Mockito.when;
 
 public class InboxInternal_V2Test {
 
-    public static final long TIMESTAMP = 900;
+    public static final long TIMESTAMP = 100_000;
     public static final String APPLICATION_ID = "id";
     public static final String ME_ID = "12345";
     public static final String ME_ID_SIGNATURE = "1111signature";
@@ -79,9 +79,55 @@ public class InboxInternal_V2Test {
     private RequestContext requestContext;
     private Notification notification;
     private FakeStatusListener statusListener;
+    private TimestampProvider timestampProvider;
 
     @Rule
     public TestRule timeout = TimeoutUtils.getTimeoutRule();
+    public static final String NOTIFICATION_STRING_1 = "{" +
+            "\"id\":\"id1\", " +
+            "\"sid\":\"sid1\", " +
+            "\"title\":\"title1\", " +
+            "\"custom_data\": {" +
+            "\"data1\":\"dataValue1\"," +
+            "\"data2\":\"dataValue2\"" +
+            "}," +
+            "\"root_params\": {" +
+            "\"param1\":\"paramValue1\"," +
+            "\"param2\":\"paramValue2\"" +
+            "}," +
+            "\"expiration_time\": 300, " +
+            "\"received_at\":10000000" +
+            "}";
+    public static final String NOTIFICATION_STRING_2 = "{" +
+            "\"id\":\"id2\", " +
+            "\"sid\":\"sid2\", " +
+            "\"title\":\"title2\", " +
+            "\"custom_data\": {" +
+            "\"data3\":\"dataValue3\"," +
+            "\"data4\":\"dataValue4\"" +
+            "}," +
+            "\"root_params\": {" +
+            "\"param3\":\"paramValue3\"," +
+            "\"param4\":\"paramValue4\"" +
+            "}," +
+            "\"expiration_time\": 200, " +
+            "\"received_at\":30000000" +
+            "}";
+    public static final String NOTIFICATION_STRING_3 = "{" +
+            "\"id\":\"id3\", " +
+            "\"sid\":\"sid3\", " +
+            "\"title\":\"title3\", " +
+            "\"custom_data\": {" +
+            "\"data5\":\"dataValue5\"," +
+            "\"data6\":\"dataValue6\"" +
+            "}," +
+            "\"root_params\": {" +
+            "\"param5\":\"paramValue5\"," +
+            "\"param6\":\"paramValue6\"" +
+            "}," +
+            "\"expiration_time\": 100, " +
+            "\"received_at\":25000000" +
+            "}";
 
     @Before
     @SuppressWarnings("unchecked")
@@ -110,7 +156,7 @@ public class InboxInternal_V2Test {
         meIdSignatureStorage = mock(MeIdSignatureStorage.class);
         when(meIdSignatureStorage.get()).thenReturn(ME_ID_SIGNATURE);
 
-        TimestampProvider timestampProvider = mock(TimestampProvider.class);
+        timestampProvider = mock(TimestampProvider.class);
         when(timestampProvider.provideTimestamp()).thenReturn(TIMESTAMP);
         requestContext = new RequestContext(
                 config.getApplicationCode(),
@@ -345,6 +391,153 @@ public class InboxInternal_V2Test {
     }
 
     @Test
+    public void testFetchNotification_listener_success_shouldReturnLastNotificationStatus_whenCalledTwiceInAMinute_SynchronousCalling() throws InterruptedException, JSONException {
+        List<ResponseModel> responses = new ArrayList<>();
+        responses.add(createNotificationStatusResponse(Collections.singletonList(NOTIFICATION_STRING_1)));
+        responses.add(createNotificationStatusResponse(Collections.singletonList(NOTIFICATION_STRING_2)));
+
+        inbox = new InboxInternal_V2(
+                config,
+                manager,
+                new FakeRestClient(responses, FakeRestClient.Mode.SUCCESS),
+                requestContext);
+
+        CountDownLatch latch1 = new CountDownLatch(1);
+        FakeInboxResultListener listener1 = new FakeInboxResultListener(latch1);
+        inbox.fetchNotifications(listener1);
+        latch1.await();
+
+        CountDownLatch latch2 = new CountDownLatch(1);
+        FakeInboxResultListener listener2 = new FakeInboxResultListener(latch2);
+        inbox.fetchNotifications(listener2);
+        latch2.await();
+
+        NotificationInboxStatus expected = InboxParseUtils.parseNotificationInboxStatus(responses.get(0).getBody());
+        Assert.assertEquals(expected, listener1.resultStatus);
+        Assert.assertEquals(expected, listener2.resultStatus);
+    }
+
+    @Test
+    public void testFetchNotification_listener_success_shouldReturnLastNotificationStatus_whenCalledTwiceInAMinute_asynchronousCalling() throws InterruptedException, JSONException {
+        List<ResponseModel> responses = new ArrayList<>();
+        responses.add(createNotificationStatusResponse(Collections.singletonList(NOTIFICATION_STRING_1)));
+        responses.add(createNotificationStatusResponse(Collections.singletonList(NOTIFICATION_STRING_2)));
+
+        inbox = new InboxInternal_V2(
+                config,
+                manager,
+                new FakeRestClient(responses, FakeRestClient.Mode.SUCCESS),
+                requestContext);
+
+        CountDownLatch latch1 = new CountDownLatch(1);
+        FakeInboxResultListener listener1 = new FakeInboxResultListener(latch1);
+        inbox.fetchNotifications(listener1);
+
+        CountDownLatch latch2 = new CountDownLatch(1);
+        FakeInboxResultListener listener2 = new FakeInboxResultListener(latch2);
+        inbox.fetchNotifications(listener2);
+
+        latch1.await();
+        latch2.await();
+
+        NotificationInboxStatus expected = InboxParseUtils.parseNotificationInboxStatus(responses.get(0).getBody());
+        Assert.assertEquals(expected, listener1.resultStatus);
+        Assert.assertEquals(expected, listener2.resultStatus);
+    }
+
+    @Test
+    public void testFetchNotification_listener_errorWithResponseModel_callsBufferedListener_whenCalledTwiceInAMinute_asynchronousCalling() throws InterruptedException {
+        List<ResponseModel> responses = new ArrayList<>();
+        ResponseModel response1 = createNotificationStatusResponse(Collections.singletonList(NOTIFICATION_STRING_1));
+        ResponseModel response2 = createNotificationStatusResponse(Collections.singletonList(NOTIFICATION_STRING_2));
+        responses.add(response1);
+        responses.add(response2);
+
+        inbox = new InboxInternal_V2(
+                config,
+                manager,
+                new FakeRestClient(responses, FakeRestClient.Mode.ERROR_RESPONSE_MODEL),
+                requestContext);
+
+        CountDownLatch latch1 = new CountDownLatch(1);
+        FakeInboxResultListener listener1 = new FakeInboxResultListener(latch1);
+        inbox.fetchNotifications(listener1);
+
+
+        CountDownLatch latch2 = new CountDownLatch(1);
+        FakeInboxResultListener listener2 = new FakeInboxResultListener(latch2);
+        inbox.fetchNotifications(listener2);
+
+        latch1.await();
+        latch2.await();
+
+        MobileEngageException expected = new MobileEngageException(response1);
+        Assert.assertEquals(expected, listener1.errorCause);
+        Assert.assertEquals(expected, listener2.errorCause);
+    }
+
+    @Test
+    public void testFetchNotification_listener_errorWithException_callsBufferedListener_whenCalledTwiceInAMinute_asynchronousCalling() throws InterruptedException {
+        List<Exception> exceptions = new ArrayList<>();
+        Exception exception1 = new MobileEngageException(createNotificationStatusResponse(Collections.singletonList(NOTIFICATION_STRING_1)));
+        Exception exception2 = new MobileEngageException(createNotificationStatusResponse(Collections.singletonList(NOTIFICATION_STRING_1)));
+        exceptions.add(exception1);
+        exceptions.add(exception2);
+
+        inbox = new InboxInternal_V2(
+                config,
+                manager,
+                new FakeRestClient(exceptions),
+                requestContext);
+
+        CountDownLatch latch1 = new CountDownLatch(1);
+        FakeInboxResultListener listener1 = new FakeInboxResultListener(latch1);
+        inbox.fetchNotifications(listener1);
+
+
+        CountDownLatch latch2 = new CountDownLatch(1);
+        FakeInboxResultListener listener2 = new FakeInboxResultListener(latch2);
+        inbox.fetchNotifications(listener2);
+
+        latch1.await();
+        latch2.await();
+
+        Assert.assertEquals(exception1, listener1.errorCause);
+        Assert.assertEquals(exception1, listener2.errorCause);
+    }
+
+    @Test
+    public void testFetchNotification_shouldNotReturnLastNotificationStatus_whenCallTwiceAfterAMinute() throws InterruptedException, JSONException {
+        List<ResponseModel> responses = new ArrayList<>();
+        ResponseModel notificationStatusResponse1 = createNotificationStatusResponse(Collections.singletonList(NOTIFICATION_STRING_1));
+        ResponseModel notificationStatusResponse2 = createNotificationStatusResponse(Collections.singletonList(NOTIFICATION_STRING_2));
+        responses.add(notificationStatusResponse1);
+        responses.add(notificationStatusResponse2);
+
+        when(timestampProvider.provideTimestamp()).thenReturn(System.currentTimeMillis(), System.currentTimeMillis() + (1000 * 60 + 1));
+
+        inbox = new InboxInternal_V2(
+                config,
+                manager,
+                new FakeRestClient(responses, FakeRestClient.Mode.SUCCESS),
+                requestContext);
+
+        CountDownLatch latch1 = new CountDownLatch(1);
+        FakeInboxResultListener listener1 = new FakeInboxResultListener(latch1);
+        inbox.fetchNotifications(listener1);
+        latch1.await();
+
+        CountDownLatch latch2 = new CountDownLatch(1);
+        FakeInboxResultListener listener2 = new FakeInboxResultListener(latch2);
+        inbox.fetchNotifications(listener2);
+        latch2.await();
+
+        Assert.assertEquals(InboxParseUtils.parseNotificationInboxStatus(notificationStatusResponse1.getBody()), listener1.resultStatus);
+
+        Assert.assertEquals(InboxParseUtils.parseNotificationInboxStatus(notificationStatusResponse2.getBody()), listener2.resultStatus);
+    }
+
+    @Test
     public void testResetBadgeCount_shouldMakeRequest_viaRestClient() {
         RequestModel expected = createRequestModel(
                 "https://me-inbox.eservice.emarsys.net/api/v1/notifications/" + ME_ID + "/count",
@@ -495,6 +688,37 @@ public class InboxInternal_V2Test {
     }
 
     @Test
+    public void testResetBadgeCount_listener_shouldResetBadgeCount_onCachedInboxStatus() throws InterruptedException {
+        List<ResponseModel> responses = new ArrayList<>();
+        ResponseModel notificationStatusResponse1 = createNotificationStatusResponse(Collections.singletonList(NOTIFICATION_STRING_1));
+        responses.add(notificationStatusResponse1);
+        responses.add(createNotificationStatusResponse(Collections.singletonList(NOTIFICATION_STRING_2)));
+
+        inbox = new InboxInternal_V2(
+                config,
+                manager,
+                new FakeRestClient(responses, FakeRestClient.Mode.SUCCESS),
+                requestContext);
+
+        CountDownLatch latch1 = new CountDownLatch(1);
+        FakeInboxResultListener listener1 = new FakeInboxResultListener(latch1);
+        inbox.fetchNotifications(listener1);
+        latch1.await();
+
+        CountDownLatch latch2 = new CountDownLatch(1);
+        FakeResetBadgeCountResultListener listener2 = new FakeResetBadgeCountResultListener(latch2);
+        inbox.resetBadgeCount(listener2);
+        latch2.await();
+
+        CountDownLatch latch3 = new CountDownLatch(1);
+        FakeInboxResultListener listener3 = new FakeInboxResultListener(latch3);
+        inbox.fetchNotifications(listener3);
+        latch3.await();
+
+        Assert.assertEquals(0, listener3.resultStatus.getBadgeCount());
+    }
+
+    @Test
     public void testTrackMessageOpen_requestManagerCalled_withCorrectRequestModel() {
         Map<String, String> eventAttributes = new HashMap<>();
         eventAttributes.put("message_id", MESSAGE_ID);
@@ -606,6 +830,117 @@ public class InboxInternal_V2Test {
         assertEquals("Id, Sid is missing!", statusListener.errorCause.getMessage());
     }
 
+    @Test
+    public void testPurgeNotificationCache_resetsCache_ifCalled() throws InterruptedException {
+        List<ResponseModel> responses = new ArrayList<>();
+        ResponseModel notificationStatusResponse1 = createNotificationStatusResponse(Collections.singletonList(NOTIFICATION_STRING_1));
+        ResponseModel notificationStatusResponse2 = createNotificationStatusResponse(Collections.singletonList(NOTIFICATION_STRING_2));
+        responses.add(notificationStatusResponse1);
+        responses.add(notificationStatusResponse2);
+
+        inbox = new InboxInternal_V2(
+                config,
+                manager,
+                new FakeRestClient(responses, FakeRestClient.Mode.SUCCESS),
+                requestContext);
+
+        CountDownLatch latch1 = new CountDownLatch(1);
+        FakeInboxResultListener listener1 = new FakeInboxResultListener(latch1);
+        inbox.fetchNotifications(listener1);
+        latch1.await();
+
+        inbox.purgeNotificationCache();
+
+        CountDownLatch latch2 = new CountDownLatch(1);
+        FakeInboxResultListener listener2 = new FakeInboxResultListener(latch2);
+        inbox.fetchNotifications(listener2);
+        latch2.await();
+
+        NotificationInboxStatus expected = InboxParseUtils.parseNotificationInboxStatus(notificationStatusResponse2.getBody());
+        Assert.assertEquals(expected, listener2.resultStatus);
+    }
+
+    @Test
+    public void testPurgeNotificationCache_doesNotResetCache_ifCalled_twiceInAMinute() throws InterruptedException {
+        List<ResponseModel> responses = new ArrayList<>();
+        ResponseModel notificationStatusResponse1 = createNotificationStatusResponse(Collections.singletonList(NOTIFICATION_STRING_1));
+        ResponseModel notificationStatusResponse2 = createNotificationStatusResponse(Collections.singletonList(NOTIFICATION_STRING_2));
+        ResponseModel notificationStatusResponse3 = createNotificationStatusResponse(Collections.singletonList(NOTIFICATION_STRING_3));
+        responses.add(notificationStatusResponse1);
+        responses.add(notificationStatusResponse2);
+        responses.add(notificationStatusResponse3);
+
+        inbox = new InboxInternal_V2(
+                config,
+                manager,
+                new FakeRestClient(responses, FakeRestClient.Mode.SUCCESS),
+                requestContext);
+
+        CountDownLatch latch1 = new CountDownLatch(1);
+        FakeInboxResultListener listener1 = new FakeInboxResultListener(latch1);
+        inbox.fetchNotifications(listener1);
+        latch1.await();
+
+        inbox.purgeNotificationCache();
+
+        CountDownLatch latch2 = new CountDownLatch(1);
+        FakeInboxResultListener listener2 = new FakeInboxResultListener(latch2);
+        inbox.fetchNotifications(listener2);
+        latch2.await();
+
+        inbox.purgeNotificationCache();
+
+        CountDownLatch latch3 = new CountDownLatch(1);
+        FakeInboxResultListener listener3 = new FakeInboxResultListener(latch3);
+        inbox.fetchNotifications(listener3);
+        latch3.await();
+
+        NotificationInboxStatus expected = InboxParseUtils.parseNotificationInboxStatus(notificationStatusResponse2.getBody());
+        Assert.assertEquals(expected, listener3.resultStatus);
+    }
+
+    @Test
+    public void testPurgeNotificationCache_resetsCache_ifCalledAgainAfterMinute() throws InterruptedException {
+        List<ResponseModel> responses = new ArrayList<>();
+        ResponseModel notificationStatusResponse1 = createNotificationStatusResponse(Collections.singletonList(NOTIFICATION_STRING_1));
+        ResponseModel notificationStatusResponse2 = createNotificationStatusResponse(Collections.singletonList(NOTIFICATION_STRING_2));
+        ResponseModel notificationStatusResponse3 = createNotificationStatusResponse(Collections.singletonList(NOTIFICATION_STRING_3));
+        responses.add(notificationStatusResponse1);
+        responses.add(notificationStatusResponse2);
+        responses.add(notificationStatusResponse3);
+
+        when(timestampProvider.provideTimestamp()).thenReturn(
+                100_000L, 100_001L, 100_002L, 100_003L, 200_000L, 200_001L, 200_002L);
+
+        inbox = new InboxInternal_V2(
+                config,
+                manager,
+                new FakeRestClient(responses, FakeRestClient.Mode.SUCCESS),
+                requestContext);
+
+        CountDownLatch latch1 = new CountDownLatch(1);
+        FakeInboxResultListener listener1 = new FakeInboxResultListener(latch1);
+        inbox.fetchNotifications(listener1);
+        latch1.await();
+
+        inbox.purgeNotificationCache();
+
+        CountDownLatch latch2 = new CountDownLatch(1);
+        FakeInboxResultListener listener2 = new FakeInboxResultListener(latch2);
+        inbox.fetchNotifications(listener2);
+        latch2.await();
+
+        inbox.purgeNotificationCache();
+
+        CountDownLatch latch3 = new CountDownLatch(1);
+        FakeInboxResultListener listener3 = new FakeInboxResultListener(latch3);
+        inbox.fetchNotifications(listener3);
+        latch3.await();
+
+        NotificationInboxStatus expected = InboxParseUtils.parseNotificationInboxStatus(notificationStatusResponse3.getBody());
+        Assert.assertEquals(expected, listener3.resultStatus);
+    }
+
     private RequestModel createRequestModel(String path, RequestMethod method) {
         Map<String, String> headers = new HashMap<>();
         headers.put("x-ems-me-application-code", config.getApplicationCode());
@@ -620,56 +955,26 @@ public class InboxInternal_V2Test {
     }
 
     private ResponseModel createSuccessResponse() {
-        String notificationString1 = "{" +
-                "\"id\":\"id1\", " +
-                "\"sid\":\"sid1\", " +
-                "\"title\":\"title1\", " +
-                "\"custom_data\": {" +
-                "\"data1\":\"dataValue1\"," +
-                "\"data2\":\"dataValue2\"" +
-                "}," +
-                "\"root_params\": {" +
-                "\"param1\":\"paramValue1\"," +
-                "\"param2\":\"paramValue2\"" +
-                "}," +
-                "\"expiration_time\": 300, " +
-                "\"received_at\":10000000" +
-                "}";
 
-        String notificationString2 = "{" +
-                "\"id\":\"id2\", " +
-                "\"sid\":\"sid2\", " +
-                "\"title\":\"title2\", " +
-                "\"custom_data\": {" +
-                "\"data3\":\"dataValue3\"," +
-                "\"data4\":\"dataValue4\"" +
-                "}," +
-                "\"root_params\": {" +
-                "\"param3\":\"paramValue3\"," +
-                "\"param4\":\"paramValue4\"" +
-                "}," +
-                "\"expiration_time\": 200, " +
-                "\"received_at\":30000000" +
-                "}";
+        List<String> notificationStrings = new ArrayList<>();
+        notificationStrings.add(NOTIFICATION_STRING_1);
+        notificationStrings.add(NOTIFICATION_STRING_2);
+        notificationStrings.add(NOTIFICATION_STRING_3);
 
-        String notificationString3 = "{" +
-                "\"id\":\"id3\", " +
-                "\"sid\":\"sid3\", " +
-                "\"title\":\"title3\", " +
-                "\"custom_data\": {" +
-                "\"data5\":\"dataValue5\"," +
-                "\"data6\":\"dataValue6\"" +
-                "}," +
-                "\"root_params\": {" +
-                "\"param5\":\"paramValue5\"," +
-                "\"param6\":\"paramValue6\"" +
-                "}," +
-                "\"expiration_time\": 100, " +
-                "\"received_at\":25000000" +
-                "}";
+        return createNotificationStatusResponse(notificationStrings);
+    }
 
-        String json = "{\"badge_count\": 300, \"notifications\": [" + notificationString1 + "," + notificationString2 + "," + notificationString3 + "]}";
-
+    private ResponseModel createNotificationStatusResponse(List<String> notifications) {
+        if (notifications == null || notifications.size() == 0) {
+            return null;
+        }
+        StringBuilder stringBuilder = new StringBuilder(notifications.get(0));
+        if (notifications.size() > 1) {
+            for (int i = 1; i <= notifications.size() - 1; i++) {
+                stringBuilder.append(",").append(notifications.get(i));
+            }
+        }
+        String json = "{\"badge_count\": 300, \"notifications\": [" + stringBuilder.toString() + "]}";
         return new ResponseModel.Builder()
                 .statusCode(200)
                 .message("OK")

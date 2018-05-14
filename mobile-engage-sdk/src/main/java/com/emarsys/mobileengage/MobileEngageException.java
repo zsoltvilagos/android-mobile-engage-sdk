@@ -31,6 +31,27 @@ public class MobileEngageException extends Exception {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        MobileEngageException that = (MobileEngageException) o;
+
+        if (statusCode != that.statusCode) return false;
+        if (statusMessage != null ? !statusMessage.equals(that.statusMessage) : that.statusMessage != null)
+            return false;
+        return body != null ? body.equals(that.body) : that.body == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = statusCode;
+        result = 31 * result + (statusMessage != null ? statusMessage.hashCode() : 0);
+        result = 31 * result + (body != null ? body.hashCode() : 0);
+        return result;
+    }
+
+    @Override
     public String toString() {
         return "MobileEngageException{" +
                 "statusCode=" + statusCode +

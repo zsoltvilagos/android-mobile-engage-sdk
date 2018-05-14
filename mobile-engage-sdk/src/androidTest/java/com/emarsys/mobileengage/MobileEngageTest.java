@@ -602,4 +602,10 @@ public class MobileEngageTest {
                 })
                 .build();
     }
+
+    @Test
+    public void testPurgeNotificationCache_callsInternal() {
+        MobileEngage.Inbox.purgeNotificationCache();
+        verify(inboxInternal).purgeNotificationCache();
+    }
 }

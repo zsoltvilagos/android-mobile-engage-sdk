@@ -46,6 +46,7 @@ public class InboxV2IntegrationTest {
     @SuppressWarnings("unchecked")
     public void setup() {
         DatabaseTestUtils.deleteCoreDatabase();
+        DatabaseTestUtils.deleteMobileEngageDatabase();
         SharedPrefsUtils.deleteMobileEngageSharedPrefs();
 
         Application context = (Application) InstrumentationRegistry.getTargetContext().getApplicationContext();

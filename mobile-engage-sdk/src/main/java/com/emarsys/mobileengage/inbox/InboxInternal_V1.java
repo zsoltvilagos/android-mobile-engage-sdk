@@ -142,6 +142,11 @@ public class InboxInternal_V1 implements InboxInternal {
         return model.getId();
     }
 
+    @Override
+    public void purgeNotificationCache() {
+
+    }
+
     private void handleResetRequest(final ResetBadgeCountResultListener listener) {
         RequestModel model = new RequestModel.Builder()
                 .url(INBOX_RESET_BADGE_COUNT_V1)
