@@ -19,6 +19,8 @@ import com.emarsys.mobileengage.inbox.model.Notification;
 import com.emarsys.mobileengage.inbox.model.NotificationCache;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -288,6 +290,32 @@ public class MessagingServiceUtilsTest {
         android.app.Notification result = MessagingServiceUtils.createNotification(context, input, disabledOreoConfig, metaDataReader);
 
         assertNull(result.getChannelId());
+    }
+
+    @Test
+    public void testCreateNotification_withActions() throws JSONException {
+        JSONObject actions = new JSONObject().put("uniqueActionId", new JSONObject()
+                .put("title", "Action button title")
+                .put("type", "MEAppEvent")
+                .put("name", "Name of the event")
+                .put("payload", new JSONObject()
+                        .put("payloadKey", "payloadValue"))
+        );
+
+        Map<String, String> input = new HashMap<>();
+        input.put("title", TITLE);
+        input.put("body", BODY);
+        input.put("actions", actions.toString());
+
+        android.app.Notification result = MessagingServiceUtils.createNotification(context, input, disabledOreoConfig, metaDataReader);
+        assertNotNull(result.actions);
+        assertEquals(1, result.actions.length);
+        android.app.Notification.Action action = result.actions[0];
+        assertEquals("Action button title", action.title);
+        assertEquals("MEAppEvent", action.getExtras().get("actionType"));
+        assertEquals("uniqueActionId", action.getExtras().get("actionUniqueId"));
+        assertEquals("Name of the event", action.getExtras().get("actionEventName"));
+        assertEquals("{\"payloadKey\":\"payloadValue\"}", action.getExtras().get("actionPayload"));
     }
 
     @Test

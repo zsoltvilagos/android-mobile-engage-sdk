@@ -11,6 +11,7 @@ import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationCompat.Action;
 import android.support.v4.content.ContextCompat;
 
 import com.emarsys.core.resource.MetaDataReader;
@@ -25,6 +26,9 @@ import com.emarsys.mobileengage.inbox.model.NotificationCache;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 public class MessagingServiceUtils {
@@ -52,6 +56,7 @@ public class MessagingServiceUtils {
         String title = getTitle(remoteMessageData, context);
         String body = remoteMessageData.get("body");
         String channelId = getChannelId(remoteMessageData, oreoConfig);
+        List<Action> actions = createActions(context, remoteMessageData);
 
         if (OreoConfig.DEFAULT_CHANNEL_ID.equals(channelId)) {
             createDefaultChannel(context, oreoConfig);
@@ -66,6 +71,16 @@ public class MessagingServiceUtils {
                 .setAutoCancel(true)
                 .setContentIntent(resultPendingIntent);
 
+        if (actions != null && actions.size() > 0) {
+            int usableActionCount = actions.size();
+            if (usableActionCount > 3) {
+                usableActionCount = 3;
+            }
+            for (int i = 0; i < usableActionCount; i++) {
+                builder.addAction(actions.get(i));
+            }
+        }
+
         if (colorResourceId != 0) {
             builder.setColor(ContextCompat.getColor(context, colorResourceId));
         }
@@ -73,6 +88,69 @@ public class MessagingServiceUtils {
         styleNotification(builder, title, body, image);
 
         return builder.build();
+    }
+
+    private static List<Action> createActions(Context context, Map<String, String> remoteMessageData) {
+        List<Action> result = new ArrayList<>();
+        String actionsString = remoteMessageData.get("actions");
+        if (actionsString != null) {
+            try {
+                JSONObject actions = new JSONObject(actionsString);
+                Iterator<String> iterator = actions.keys();
+                while (iterator.hasNext()) {
+                    Action action = createAction(
+                            iterator.next(),
+                            actions,
+                            context,
+                            remoteMessageData);
+                    if (action != null) {
+                        result.add(action);
+                    }
+                }
+            } catch (JSONException ignored) {
+            }
+        }
+        return result;
+    }
+
+    private static Action createAction(
+            String uniqueId,
+            JSONObject actions,
+            Context context,
+            Map<String, String> remoteMessageData) {
+        Action result = null;
+
+        try {
+            JSONObject action = actions.getJSONObject(uniqueId);
+            String actionType = action.getString("type");
+
+            Action notificationAction = new Action.Builder(
+                    0,
+                    action.getString("title"),
+                    createPendingIntent(context, remoteMessageData)).build();
+
+            notificationAction.getExtras().putString("actionUniqueId", uniqueId);
+            notificationAction.getExtras().putString("actionType", actionType);
+
+            if ("MEAppEvent".equals(actionType)) {
+                insertMeAppEventParameters(notificationAction, action);
+            }
+
+            result = notificationAction;
+        } catch (JSONException ignored) {
+        }
+
+        return result;
+    }
+
+    private static void insertMeAppEventParameters(Action notificationAction, JSONObject action) throws JSONException {
+        String actionEventName = action.getString("name");
+        JSONObject actionEventPayload = action.optJSONObject("payload");
+
+        notificationAction.getExtras().putString("actionEventName", actionEventName);
+        if (actionEventPayload != null) {
+            notificationAction.getExtras().putString("actionPayload", actionEventPayload.toString());
+        }
     }
 
     private static PendingIntent createPendingIntent(Context context, Map<String, String> remoteMessageData) {
