@@ -22,7 +22,7 @@ import com.emarsys.mobileengage.experimental.FlipperFeature;
 import com.emarsys.mobileengage.experimental.MobileEngageFeature;
 import com.emarsys.mobileengage.fake.FakeRequestManager;
 import com.emarsys.mobileengage.fake.FakeStatusListener;
-import com.emarsys.mobileengage.iam.InAppMessageHandler;
+import com.emarsys.mobileengage.iam.EventHandler;
 import com.emarsys.mobileengage.iam.InAppStartAction;
 import com.emarsys.mobileengage.iam.model.requestRepositoryProxy.RequestRepositoryProxy;
 import com.emarsys.mobileengage.inbox.InboxInternal;
@@ -594,9 +594,9 @@ public class MobileEngageTest {
                 .credentials(appID, appSecret)
                 .disableDefaultChannel()
                 .enableExperimentalFeatures(experimentalFeatures)
-                .setDefaultInAppMessageHandler(new InAppMessageHandler() {
+                .setDefaultInAppEventHandler(new EventHandler() {
                     @Override
-                    public void handleApplicationEvent(String eventName, JSONObject payload) {
+                    public void handleEvent(String eventName, JSONObject payload) {
 
                     }
                 })

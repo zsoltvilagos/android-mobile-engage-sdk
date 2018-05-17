@@ -14,7 +14,7 @@ import com.emarsys.core.database.repository.Repository;
 import com.emarsys.core.database.repository.SqlSpecification;
 import com.emarsys.mobileengage.MobileEngageInternal;
 import com.emarsys.mobileengage.fake.FakeActivity;
-import com.emarsys.mobileengage.iam.InAppMessageHandler;
+import com.emarsys.mobileengage.iam.EventHandler;
 import com.emarsys.mobileengage.iam.dialog.IamDialog;
 import com.emarsys.mobileengage.iam.model.buttonclicked.ButtonClicked;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
@@ -61,7 +61,7 @@ public class IamJsBridgeTest {
     private static final String CAMPAIGN_ID = "555666777";
 
     private IamJsBridge jsBridge;
-    private InAppMessageHandler inAppMessageHandler;
+    private EventHandler inAppEventHandler;
     private InAppMessageHandlerProvider inAppMessageHandlerProvider;
     private WebView webView;
     private Repository<ButtonClicked, SqlSpecification> buttonClickedRepository;
@@ -77,9 +77,9 @@ public class IamJsBridgeTest {
     @Before
     @SuppressWarnings("unchecked")
     public void setUp() throws Exception {
-        inAppMessageHandler = mock(InAppMessageHandler.class);
+        inAppEventHandler = mock(EventHandler.class);
         inAppMessageHandlerProvider = mock(InAppMessageHandlerProvider.class);
-        when(inAppMessageHandlerProvider.provideHandler()).thenReturn(inAppMessageHandler);
+        when(inAppMessageHandlerProvider.provideHandler()).thenReturn(inAppEventHandler);
 
         buttonClickedRepository = mock(Repository.class);
         coreSdkHandler = new CoreSdkHandlerProvider().provideHandler();
@@ -186,7 +186,7 @@ public class IamJsBridgeTest {
 
         ArgumentCaptor<String> nameCaptor = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<JSONObject> payloadCaptor = ArgumentCaptor.forClass(JSONObject.class);
-        verify(inAppMessageHandler, Mockito.timeout(1000)).handleApplicationEvent(nameCaptor.capture(), payloadCaptor.capture());
+        verify(inAppEventHandler, Mockito.timeout(1000)).handleEvent(nameCaptor.capture(), payloadCaptor.capture());
 
         assertEquals(payload.toString(), payloadCaptor.getValue().toString());
         assertEquals("eventName", nameCaptor.getValue());
@@ -294,8 +294,8 @@ public class IamJsBridgeTest {
         JSONObject json = new JSONObject().put("name", "eventName").put("id", "123456789");
         ThreadSpy threadSpy = new ThreadSpy();
 
-        InAppMessageHandler messageHandler = mock(InAppMessageHandler.class);
-        doAnswer(threadSpy).when(messageHandler).handleApplicationEvent("eventName", null);
+        EventHandler messageHandler = mock(EventHandler.class);
+        doAnswer(threadSpy).when(messageHandler).handleEvent("eventName", null);
 
         InAppMessageHandlerProvider messageHandlerProvider = mock(InAppMessageHandlerProvider.class);
         when(messageHandlerProvider.provideHandler()).thenReturn(messageHandler);
