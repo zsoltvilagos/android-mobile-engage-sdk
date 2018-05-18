@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.O;
 import static junit.framework.Assert.assertEquals;
@@ -293,6 +294,7 @@ public class MessagingServiceUtilsTest {
     }
 
     @Test
+    @SdkSuppress(minSdkVersion = KITKAT)
     public void testCreateNotification_withActions() throws JSONException {
         JSONObject actions = new JSONObject().put("uniqueActionId", new JSONObject()
                 .put("title", "Action button title")
