@@ -1,12 +1,12 @@
 package com.emarsys.mobileengage.iam.jsbridge;
 
 import com.emarsys.mobileengage.MobileEngage;
-import com.emarsys.mobileengage.iam.InAppMessageHandler;
+import com.emarsys.mobileengage.iam.EventHandler;
 
 public class InAppMessageHandlerProvider {
 
-    public InAppMessageHandler provideHandler() {
-        return MobileEngage.getConfig().getDefaultInAppMessageHandler();
+    public EventHandler provideHandler() {
+        return MobileEngage.getConfig().getDefaultInAppEventHandler();
     }
 
 }

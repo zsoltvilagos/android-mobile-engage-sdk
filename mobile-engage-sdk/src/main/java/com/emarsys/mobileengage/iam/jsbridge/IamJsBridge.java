@@ -19,7 +19,7 @@ import com.emarsys.core.util.Assert;
 import com.emarsys.core.util.JsonUtils;
 import com.emarsys.core.util.log.EMSLogger;
 import com.emarsys.mobileengage.MobileEngageInternal;
-import com.emarsys.mobileengage.iam.InAppMessageHandler;
+import com.emarsys.mobileengage.iam.EventHandler;
 import com.emarsys.mobileengage.iam.dialog.IamDialog;
 import com.emarsys.mobileengage.iam.model.buttonclicked.ButtonClicked;
 import com.emarsys.mobileengage.util.log.MobileEngageTopic;
@@ -82,13 +82,13 @@ public class IamJsBridge {
 
     @JavascriptInterface
     public void triggerAppEvent(final String jsonString) {
-        final InAppMessageHandler inAppMessageHandler = messageHandlerProvider.provideHandler();
-        if (inAppMessageHandler != null) {
+        final EventHandler inAppEventHandler = messageHandlerProvider.provideHandler();
+        if (inAppEventHandler != null) {
             handleJsBridgeEvent(jsonString, "name", uiHandler, new JsBridgeEventAction() {
                 @Override
                 public JSONObject execute(String property, JSONObject json) throws Exception {
                     final JSONObject payload = json.optJSONObject("payload");
-                    inAppMessageHandler.handleApplicationEvent(property, payload);
+                    inAppEventHandler.handleEvent(property, payload);
                     return null;
                 }
             });

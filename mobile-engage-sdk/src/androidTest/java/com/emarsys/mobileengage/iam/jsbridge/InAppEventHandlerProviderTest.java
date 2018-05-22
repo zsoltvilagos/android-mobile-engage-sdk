@@ -7,7 +7,7 @@ import android.support.test.filters.SdkSuppress;
 import com.emarsys.mobileengage.MobileEngage;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.experimental.MobileEngageFeature;
-import com.emarsys.mobileengage.iam.InAppMessageHandler;
+import com.emarsys.mobileengage.iam.EventHandler;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
 import org.junit.After;
@@ -23,9 +23,9 @@ import static junit.framework.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 
 @SdkSuppress(minSdkVersion = KITKAT)
-public class InAppMessageHandlerProviderTest {
+public class InAppEventHandlerProviderTest {
 
-    InAppMessageHandler inAppMessageHandler;
+    EventHandler inAppEventHandler;
     InAppMessageHandlerProvider provider;
 
     @Rule
@@ -34,14 +34,14 @@ public class InAppMessageHandlerProviderTest {
     @Before
     public void setUp() throws NoSuchFieldException, IllegalAccessException {
         Application application = (Application) InstrumentationRegistry.getTargetContext().getApplicationContext();
-        inAppMessageHandler = mock(InAppMessageHandler.class);
+        inAppEventHandler = mock(EventHandler.class);
 
         MobileEngageConfig config = new MobileEngageConfig.Builder()
                 .application(application)
                 .credentials("14C19-A121F", "PaNkfOD90AVpYimMBuZopCpm8OWCrREu")
                 .disableDefaultChannel()
                 .enableExperimentalFeatures(MobileEngageFeature.IN_APP_MESSAGING)
-                .setDefaultInAppMessageHandler(inAppMessageHandler)
+                .setDefaultInAppEventHandler(inAppEventHandler)
                 .build();
 
         Field configField = MobileEngage.class.getDeclaredField("config");
@@ -61,7 +61,7 @@ public class InAppMessageHandlerProviderTest {
 
     @Test
     public void testProvideHandler() {
-        assertEquals(inAppMessageHandler, provider.provideHandler());
+        assertEquals(inAppEventHandler, provider.provideHandler());
     }
 
 }

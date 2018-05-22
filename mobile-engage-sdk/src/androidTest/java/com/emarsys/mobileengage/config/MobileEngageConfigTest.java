@@ -6,7 +6,7 @@ import android.support.test.InstrumentationRegistry;
 import com.emarsys.mobileengage.MobileEngageStatusListener;
 import com.emarsys.mobileengage.experimental.FlipperFeature;
 import com.emarsys.mobileengage.experimental.MobileEngageFeature;
-import com.emarsys.mobileengage.iam.InAppMessageHandler;
+import com.emarsys.mobileengage.iam.EventHandler;
 import com.emarsys.mobileengage.testUtil.ApplicationTestUtils;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
@@ -29,7 +29,8 @@ public class MobileEngageConfigTest {
     private Application applicationDebug;
     private Application applicationRelease;
     private OreoConfig mockOreoConfig;
-    private InAppMessageHandler defaultInAppMessageHandler;
+    private EventHandler defaultInAppEventHandler;
+    private EventHandler defaultNotificationEventHandler;
     private FlipperFeature[] features;
 
     @Rule
@@ -46,7 +47,8 @@ public class MobileEngageConfigTest {
         applicationRelease = ApplicationTestUtils.applicationRelease();
         statusListenerMock = mock(MobileEngageStatusListener.class);
         mockOreoConfig = mock(OreoConfig.class);
-        defaultInAppMessageHandler = mock(InAppMessageHandler.class);
+        defaultInAppEventHandler = mock(EventHandler.class);
+        defaultNotificationEventHandler = mock(EventHandler.class);
         features = new FlipperFeature[]{
                 mock(FlipperFeature.class),
                 mock(FlipperFeature.class)
@@ -64,6 +66,7 @@ public class MobileEngageConfigTest {
                 false,
                 mockOreoConfig,
                 null,
+                null,
                 features);
     }
 
@@ -77,6 +80,7 @@ public class MobileEngageConfigTest {
                 true,
                 false,
                 mockOreoConfig,
+                null,
                 null,
                 features);
     }
@@ -92,6 +96,7 @@ public class MobileEngageConfigTest {
                 false,
                 mockOreoConfig,
                 null,
+                null,
                 features);
     }
 
@@ -104,6 +109,7 @@ public class MobileEngageConfigTest {
                 statusListenerMock,
                 true,
                 false,
+                null,
                 null,
                 null,
                 features);
@@ -120,6 +126,7 @@ public class MobileEngageConfigTest {
                 false,
                 mockOreoConfig,
                 null,
+                null,
                 null);
     }
 
@@ -132,6 +139,7 @@ public class MobileEngageConfigTest {
                 true,
                 false,
                 new OreoConfig(true, null, "description"),
+                null,
                 null,
                 features);
     }
@@ -147,6 +155,7 @@ public class MobileEngageConfigTest {
                 false,
                 new OreoConfig(true, "name", null),
                 null,
+                null,
                 features);
     }
 
@@ -160,6 +169,7 @@ public class MobileEngageConfigTest {
                 true,
                 false,
                 new OreoConfig(false),
+                null,
                 null,
                 new FlipperFeature[]{});
 
@@ -204,7 +214,8 @@ public class MobileEngageConfigTest {
                 true,
                 true,
                 new OreoConfig(true, "defaultChannelName", "defaultChannelDescription"),
-                defaultInAppMessageHandler,
+                defaultInAppEventHandler,
+                defaultNotificationEventHandler,
                 features
         );
 
@@ -215,7 +226,8 @@ public class MobileEngageConfigTest {
                 .enableIdlingResource(true)
                 .enableDefaultChannel("defaultChannelName", "defaultChannelDescription")
                 .enableExperimentalFeatures(features)
-                .setDefaultInAppMessageHandler(defaultInAppMessageHandler)
+                .setDefaultInAppEventHandler(defaultInAppEventHandler)
+                .setNotificationEventHandler(defaultNotificationEventHandler)
                 .build();
 
         assertEquals(expected, result);
@@ -236,7 +248,8 @@ public class MobileEngageConfigTest {
                 true,
                 true,
                 new OreoConfig(false),
-                defaultInAppMessageHandler,
+                defaultInAppEventHandler,
+                defaultNotificationEventHandler,
                 features);
 
         MobileEngageConfig result = new MobileEngageConfig.Builder()

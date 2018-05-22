@@ -10,7 +10,7 @@ import android.support.test.InstrumentationRegistry;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.experimental.MobileEngageFeature;
 import com.emarsys.mobileengage.fake.FakeStatusListener;
-import com.emarsys.mobileengage.iam.InAppMessageHandler;
+import com.emarsys.mobileengage.iam.EventHandler;
 import com.emarsys.mobileengage.inbox.model.Notification;
 import com.emarsys.mobileengage.storage.AppLoginStorage;
 import com.emarsys.mobileengage.storage.MeIdStorage;
@@ -71,7 +71,7 @@ public class MobileEngageIntegrationTest {
                 .statusListener(listener)
                 .disableDefaultChannel()
                 .enableExperimentalFeatures(MobileEngageFeature.IN_APP_MESSAGING)
-                .setDefaultInAppMessageHandler(mock(InAppMessageHandler.class))
+                .setDefaultInAppEventHandler(mock(EventHandler.class))
                 .build();
         MobileEngage.setup(config);
     }

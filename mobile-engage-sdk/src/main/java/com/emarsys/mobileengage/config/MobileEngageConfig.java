@@ -8,7 +8,7 @@ import com.emarsys.core.util.Assert;
 import com.emarsys.mobileengage.MobileEngageStatusListener;
 import com.emarsys.mobileengage.experimental.FlipperFeature;
 import com.emarsys.mobileengage.experimental.MobileEngageFeature;
-import com.emarsys.mobileengage.iam.InAppMessageHandler;
+import com.emarsys.mobileengage.iam.EventHandler;
 
 import java.util.Arrays;
 
@@ -21,7 +21,8 @@ public class MobileEngageConfig {
     private final boolean isDebugMode;
     private final boolean idlingResourceEnabled;
     private final OreoConfig oreoConfig;
-    private final InAppMessageHandler defaultInAppMessageHandler;
+    private final EventHandler defaultInAppEventHandler;
+    private final EventHandler notificationEventHandler;
     private final FlipperFeature[] flipperFeatures;
 
     MobileEngageConfig(Application application,
@@ -31,7 +32,8 @@ public class MobileEngageConfig {
                        boolean isDebugMode,
                        boolean idlingResourceEnabled,
                        OreoConfig oreoConfig,
-                       InAppMessageHandler defaultInAppMessageHandler,
+                       EventHandler defaultInAppEventHandler,
+                       EventHandler notificationEventHandler,
                        FlipperFeature[] enabledFeatures) {
         Assert.notNull(application, "Application must not be null");
         Assert.notNull(applicationCode, "ApplicationCode must not be null");
@@ -41,7 +43,7 @@ public class MobileEngageConfig {
         Assert.notNull(enabledFeatures, "EnabledFeatures must not be null");
 
         if(Arrays.asList(enabledFeatures).contains(MobileEngageFeature.IN_APP_MESSAGING)) {
-            Assert.notNull(defaultInAppMessageHandler, "DefaultInAppMessageHandler must not be null");
+            Assert.notNull(defaultInAppEventHandler, "DefaultInAppMessageHandler must not be null");
         }
 
         this.application = application;
@@ -51,7 +53,8 @@ public class MobileEngageConfig {
         this.isDebugMode = isDebugMode;
         this.idlingResourceEnabled = idlingResourceEnabled;
         this.oreoConfig = oreoConfig;
-        this.defaultInAppMessageHandler = defaultInAppMessageHandler;
+        this.defaultInAppEventHandler = defaultInAppEventHandler;
+        this.notificationEventHandler = notificationEventHandler;
         this.flipperFeatures = enabledFeatures;
     }
 
@@ -83,8 +86,12 @@ public class MobileEngageConfig {
         return oreoConfig;
     }
 
-    public InAppMessageHandler getDefaultInAppMessageHandler() {
-        return defaultInAppMessageHandler;
+    public EventHandler getDefaultInAppEventHandler() {
+        return defaultInAppEventHandler;
+    }
+
+    public EventHandler getNotificationEventHandler() {
+        return notificationEventHandler;
     }
 
     public FlipperFeature[] getExperimentalFeatures() {
@@ -117,7 +124,9 @@ public class MobileEngageConfig {
             return false;
         if (oreoConfig != null ? !oreoConfig.equals(that.oreoConfig) : that.oreoConfig != null)
             return false;
-        if (defaultInAppMessageHandler != null ? !defaultInAppMessageHandler.equals(that.defaultInAppMessageHandler) : that.defaultInAppMessageHandler != null)
+        if (defaultInAppEventHandler != null ? !defaultInAppEventHandler.equals(that.defaultInAppEventHandler) : that.defaultInAppEventHandler != null)
+            return false;
+        if (notificationEventHandler != null ? !notificationEventHandler.equals(that.notificationEventHandler) : that.notificationEventHandler != null)
             return false;
 
         return flipperFeatures != null ? Arrays.equals(flipperFeatures, that.flipperFeatures) : that.flipperFeatures == null;
@@ -157,7 +166,8 @@ public class MobileEngageConfig {
         private MobileEngageStatusListener statusListener;
         private boolean idlingResourceEnabled;
         private OreoConfig oreoConfig;
-        private InAppMessageHandler defaultInAppMessageHandler;
+        private EventHandler defaultInAppEventHandler;
+        private EventHandler notificationEventHandler;
         private FlipperFeature[] experimentalFeatures;
 
         public Builder from(MobileEngageConfig baseConfig) {
@@ -168,7 +178,8 @@ public class MobileEngageConfig {
             statusListener = baseConfig.getStatusListener();
             idlingResourceEnabled = baseConfig.isIdlingResourceEnabled();
             oreoConfig = baseConfig.getOreoConfig();
-            defaultInAppMessageHandler = baseConfig.getDefaultInAppMessageHandler();
+            defaultInAppEventHandler = baseConfig.getDefaultInAppEventHandler();
+            notificationEventHandler = baseConfig.getNotificationEventHandler();
             experimentalFeatures = baseConfig.getExperimentalFeatures();
             return this;
         }
@@ -223,14 +234,21 @@ public class MobileEngageConfig {
                     isDebuggable,
                     idlingResourceEnabled,
                     oreoConfig,
-                    defaultInAppMessageHandler,
+                    defaultInAppEventHandler,
+                    notificationEventHandler,
                     experimentalFeatures
             );
         }
 
-        public Builder setDefaultInAppMessageHandler(InAppMessageHandler inAppMessageHandler) {
-            this.defaultInAppMessageHandler = inAppMessageHandler;
+        public Builder setDefaultInAppEventHandler(EventHandler inAppEventHandler) {
+            this.defaultInAppEventHandler = inAppEventHandler;
             return this;
         }
+
+        public Builder setNotificationEventHandler(EventHandler notificationEventHandler) {
+            this.notificationEventHandler = notificationEventHandler;
+            return this;
+        }
+
     }
 }
