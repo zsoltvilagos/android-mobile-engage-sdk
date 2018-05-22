@@ -8,7 +8,7 @@ import com.emarsys.core.util.Assert;
 import com.emarsys.mobileengage.MobileEngageStatusListener;
 import com.emarsys.mobileengage.experimental.FlipperFeature;
 import com.emarsys.mobileengage.experimental.MobileEngageFeature;
-import com.emarsys.mobileengage.iam.EventHandler;
+import com.emarsys.mobileengage.EventHandler;
 
 import java.util.Arrays;
 

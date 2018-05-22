@@ -6,7 +6,7 @@ import android.support.test.InstrumentationRegistry;
 import com.emarsys.mobileengage.MobileEngageStatusListener;
 import com.emarsys.mobileengage.experimental.FlipperFeature;
 import com.emarsys.mobileengage.experimental.MobileEngageFeature;
-import com.emarsys.mobileengage.iam.EventHandler;
+import com.emarsys.mobileengage.EventHandler;
 import com.emarsys.mobileengage.testUtil.ApplicationTestUtils;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 

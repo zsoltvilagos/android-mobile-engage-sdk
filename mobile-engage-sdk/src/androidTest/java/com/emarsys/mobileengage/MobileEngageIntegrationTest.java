@@ -10,7 +10,6 @@ import android.support.test.InstrumentationRegistry;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.experimental.MobileEngageFeature;
 import com.emarsys.mobileengage.fake.FakeStatusListener;
-import com.emarsys.mobileengage.iam.EventHandler;
 import com.emarsys.mobileengage.inbox.model.Notification;
 import com.emarsys.mobileengage.storage.AppLoginStorage;
 import com.emarsys.mobileengage.storage.MeIdStorage;

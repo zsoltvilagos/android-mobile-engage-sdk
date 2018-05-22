@@ -22,7 +22,6 @@ import com.emarsys.mobileengage.experimental.FlipperFeature;
 import com.emarsys.mobileengage.experimental.MobileEngageFeature;
 import com.emarsys.mobileengage.fake.FakeRequestManager;
 import com.emarsys.mobileengage.fake.FakeStatusListener;
-import com.emarsys.mobileengage.iam.EventHandler;
 import com.emarsys.mobileengage.iam.InAppStartAction;
 import com.emarsys.mobileengage.iam.model.requestRepositoryProxy.RequestRepositoryProxy;
 import com.emarsys.mobileengage.inbox.InboxInternal;

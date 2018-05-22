@@ -14,7 +14,7 @@ import com.emarsys.core.database.repository.Repository;
 import com.emarsys.core.database.repository.SqlSpecification;
 import com.emarsys.mobileengage.MobileEngageInternal;
 import com.emarsys.mobileengage.fake.FakeActivity;
-import com.emarsys.mobileengage.iam.EventHandler;
+import com.emarsys.mobileengage.EventHandler;
 import com.emarsys.mobileengage.iam.dialog.IamDialog;
 import com.emarsys.mobileengage.iam.model.buttonclicked.ButtonClicked;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;

@@ -8,7 +8,6 @@ import com.emarsys.mobileengage.experimental.MobileEngageFeature;
 import com.emarsys.mobileengage.fake.FakeInboxResultListener;
 import com.emarsys.mobileengage.fake.FakeResetBadgeCountResultListener;
 import com.emarsys.mobileengage.fake.FakeStatusListener;
-import com.emarsys.mobileengage.iam.EventHandler;
 import com.emarsys.mobileengage.inbox.model.Notification;
 import com.emarsys.mobileengage.testUtil.ConnectionTestUtils;
 import com.emarsys.mobileengage.testUtil.DatabaseTestUtils;

@@ -1,4 +1,4 @@
-package com.emarsys.mobileengage.iam;
+package com.emarsys.mobileengage;
 
 import org.json.JSONObject;
 
