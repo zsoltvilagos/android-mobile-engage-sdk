@@ -19,6 +19,8 @@ import com.emarsys.mobileengage.inbox.model.Notification;
 import com.emarsys.mobileengage.inbox.model.NotificationCache;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -31,6 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.O;
 import static junit.framework.Assert.assertEquals;
@@ -107,9 +110,16 @@ public class MessagingServiceUtilsTest {
         remoteMessageData.put("key1", "value1");
         remoteMessageData.put("key2", "value2");
 
-        Intent resultIntent = MessagingServiceUtils.createIntent(remoteMessageData, context);
+        Intent resultIntent = MessagingServiceUtils.createIntent(remoteMessageData, context, "action");
+        assertEquals("action", resultIntent.getAction());
         assertEquals("value1", resultIntent.getBundleExtra("payload").getString("key1"));
         assertEquals("value2", resultIntent.getBundleExtra("payload").getString("key2"));
+    }
+
+    @Test
+    public void createIntent_withoutAction() {
+        Intent resultIntent = MessagingServiceUtils.createIntent(new HashMap<String, String>(), context, null);
+        assertEquals(null, resultIntent.getAction());
     }
 
     @Test
@@ -291,6 +301,135 @@ public class MessagingServiceUtilsTest {
     }
 
     @Test
+    @SdkSuppress(minSdkVersion = KITKAT)
+    public void testCreateNotification_action_idValueNotJson() throws JSONException {
+        JSONObject actions = new JSONObject()
+                .put("uniqueActionId", 987);
+
+        Map<String, String> input = new HashMap<>();
+        input.put("title", TITLE);
+        input.put("body", BODY);
+        input.put("actions", actions.toString());
+
+        android.app.Notification result = MessagingServiceUtils.createNotification(context, input, disabledOreoConfig, metaDataReader);
+        assertNull(result.actions);
+    }
+
+    @Test
+    @SdkSuppress(minSdkVersion = KITKAT)
+    public void testCreateNotification_action_missingTitle() throws JSONException {
+        JSONObject actions = new JSONObject()
+                .put("uniqueActionId", new JSONObject()
+                        .put("type", "MEAppEvent")
+                );
+
+        Map<String, String> input = new HashMap<>();
+        input.put("title", TITLE);
+        input.put("body", BODY);
+        input.put("actions", actions.toString());
+
+        android.app.Notification result = MessagingServiceUtils.createNotification(context, input, disabledOreoConfig, metaDataReader);
+        assertNull(result.actions);
+    }
+
+    @Test
+    @SdkSuppress(minSdkVersion = KITKAT)
+    public void testCreateNotification_action_missingType() throws JSONException {
+        JSONObject actions = new JSONObject().put("uniqueActionId", new JSONObject()
+                .put("title", "Action button title")
+        );
+
+        Map<String, String> input = new HashMap<>();
+        input.put("title", TITLE);
+        input.put("body", BODY);
+        input.put("actions", actions.toString());
+
+        android.app.Notification result = MessagingServiceUtils.createNotification(context, input, disabledOreoConfig, metaDataReader);
+        assertNull(result.actions);
+    }
+
+    @Test
+    @SdkSuppress(minSdkVersion = KITKAT)
+    public void testCreateNotification_action_withoutActions() throws JSONException {
+        Map<String, String> input = new HashMap<>();
+        input.put("title", TITLE);
+        input.put("body", BODY);
+
+        android.app.Notification result = MessagingServiceUtils.createNotification(context, input, disabledOreoConfig, metaDataReader);
+        assertNull(result.actions);
+    }
+
+    @Test
+    @SdkSuppress(minSdkVersion = KITKAT)
+    public void testCreateNotification_action_appEvent_withSingleAction() throws JSONException {
+        JSONObject actions = new JSONObject().put("uniqueActionId", new JSONObject()
+                .put("title", "Action button title")
+                .put("type", "MEAppEvent")
+                .put("name", "Name of the event")
+                .put("payload", new JSONObject()
+                        .put("payloadKey", "payloadValue"))
+        );
+
+        Map<String, String> input = new HashMap<>();
+        input.put("title", TITLE);
+        input.put("body", BODY);
+        input.put("actions", actions.toString());
+
+        android.app.Notification result = MessagingServiceUtils.createNotification(context, input, disabledOreoConfig, metaDataReader);
+        assertNotNull(result.actions);
+        assertEquals(1, result.actions.length);
+        assertEquals("Action button title", result.actions[0].title);
+    }
+
+    @Test
+    @SdkSuppress(minSdkVersion = KITKAT)
+    public void testCreateNotification_action_appEvent_withMultipleActions() throws JSONException {
+        JSONObject actions = new JSONObject()
+                .put("uniqueActionId1", new JSONObject()
+                        .put("title", "title1")
+                        .put("type", "MEAppEvent")
+                        .put("name", "event1")
+                )
+                .put("uniqueActionId2", new JSONObject()
+                        .put("title", "title2")
+                        .put("type", "MEAppEvent")
+                        .put("name", "event2")
+                        .put("payload", new JSONObject()
+                                .put("payloadKey", "payloadValue"))
+                );
+
+        Map<String, String> input = new HashMap<>();
+        input.put("title", TITLE);
+        input.put("body", BODY);
+        input.put("actions", actions.toString());
+
+        android.app.Notification result = MessagingServiceUtils.createNotification(context, input, disabledOreoConfig, metaDataReader);
+        assertNotNull(result.actions);
+        assertEquals(2, result.actions.length);
+
+        assertEquals("title1", result.actions[0].title);
+
+        assertEquals("title2", result.actions[1].title);
+    }
+
+    @Test
+    @SdkSuppress(minSdkVersion = KITKAT)
+    public void testCreateNotification_action_appEvent_missingEventName() throws JSONException {
+        JSONObject actions = new JSONObject().put("uniqueActionId", new JSONObject()
+                .put("title", "Action button title")
+                .put("type", "MEAppEvent")
+        );
+
+        Map<String, String> input = new HashMap<>();
+        input.put("title", TITLE);
+        input.put("body", BODY);
+        input.put("actions", actions.toString());
+
+        android.app.Notification result = MessagingServiceUtils.createNotification(context, input, disabledOreoConfig, metaDataReader);
+        assertEquals(null, result.actions);
+    }
+
+    @Test
     @SdkSuppress(minSdkVersion = O)
     public void testCreateChannel() {
         NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -377,7 +516,6 @@ public class MessagingServiceUtilsTest {
         assertEquals(expected, MessagingServiceUtils.getTitle(input, context));
     }
 
-
     @Test
     public void testGetTitle_defaultTitleShouldNotOverrideTitle() {
         Map<String, String> input = new HashMap<>();
@@ -434,4 +572,5 @@ public class MessagingServiceUtilsTest {
         int stringId = applicationInfo.labelRes;
         return stringId == 0 ? applicationInfo.nonLocalizedLabel.toString() : context.getString(stringId);
     }
+
 }
