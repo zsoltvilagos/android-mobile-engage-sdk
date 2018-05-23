@@ -3,14 +3,21 @@ package com.emarsys.mobileengage.notification.command;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 
+import com.emarsys.mobileengage.testUtil.TimeoutUtils;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 
 import static org.junit.Assert.*;
 
 public class NotificationCommandFactoryTest {
+
+    @Rule
+    public TestRule timeout = TimeoutUtils.getTimeoutRule();
 
     private NotificationCommandFactory factory;
 

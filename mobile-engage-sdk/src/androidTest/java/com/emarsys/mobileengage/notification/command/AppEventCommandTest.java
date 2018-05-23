@@ -7,16 +7,22 @@ import android.support.test.InstrumentationRegistry;
 import com.emarsys.mobileengage.EventHandler;
 import com.emarsys.mobileengage.MobileEngage;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
+import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 public class AppEventCommandTest {
+
+    @Rule
+    public TestRule timeout = TimeoutUtils.getTimeoutRule();
 
     private MobileEngageConfig config;
     private Context applicationContext = InstrumentationRegistry.getTargetContext().getApplicationContext();

@@ -3,14 +3,20 @@ package com.emarsys.mobileengage.service;
 import android.content.Intent;
 
 import com.emarsys.mobileengage.notification.command.NotificationCommandFactory;
+import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class TrackMessageOpenServiceImplementationTest {
+
+    @Rule
+    public TestRule timeout = TimeoutUtils.getTimeoutRule();
 
     @Test
     public void testStartCommand_runNotificationCommand() {
