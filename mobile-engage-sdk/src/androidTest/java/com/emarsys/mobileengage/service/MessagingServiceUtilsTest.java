@@ -105,24 +105,6 @@ public class MessagingServiceUtilsTest {
     }
 
     @Test
-    public void createIntent() {
-        Map<String, String> remoteMessageData = new HashMap<>();
-        remoteMessageData.put("key1", "value1");
-        remoteMessageData.put("key2", "value2");
-
-        Intent resultIntent = MessagingServiceUtils.createIntent(remoteMessageData, context, "action");
-        assertEquals("action", resultIntent.getAction());
-        assertEquals("value1", resultIntent.getBundleExtra("payload").getString("key1"));
-        assertEquals("value2", resultIntent.getBundleExtra("payload").getString("key2"));
-    }
-
-    @Test
-    public void createIntent_withoutAction() {
-        Intent resultIntent = MessagingServiceUtils.createIntent(new HashMap<String, String>(), context, null);
-        assertEquals(null, resultIntent.getAction());
-    }
-
-    @Test
     public void createNotification_shouldNotBeNull() {
         assertNotNull(MessagingServiceUtils.createNotification(context, new HashMap<String, String>(), disabledOreoConfig, metaDataReader));
     }
