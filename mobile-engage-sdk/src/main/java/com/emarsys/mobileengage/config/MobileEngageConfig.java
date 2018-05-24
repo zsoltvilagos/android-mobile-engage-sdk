@@ -5,10 +5,10 @@ import android.content.pm.ApplicationInfo;
 import android.support.annotation.NonNull;
 
 import com.emarsys.core.util.Assert;
+import com.emarsys.mobileengage.EventHandler;
 import com.emarsys.mobileengage.MobileEngageStatusListener;
 import com.emarsys.mobileengage.experimental.FlipperFeature;
 import com.emarsys.mobileengage.experimental.MobileEngageFeature;
-import com.emarsys.mobileengage.EventHandler;
 
 import java.util.Arrays;
 
@@ -221,6 +221,16 @@ public class MobileEngageConfig {
             return this;
         }
 
+        public Builder setDefaultInAppEventHandler(EventHandler inAppEventHandler) {
+            this.defaultInAppEventHandler = inAppEventHandler;
+            return this;
+        }
+
+        public Builder setNotificationEventHandler(EventHandler notificationEventHandler) {
+            this.notificationEventHandler = notificationEventHandler;
+            return this;
+        }
+
         public MobileEngageConfig build() {
             boolean isDebuggable = (0 != (application.getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE));
 
@@ -239,16 +249,5 @@ public class MobileEngageConfig {
                     experimentalFeatures
             );
         }
-
-        public Builder setDefaultInAppEventHandler(EventHandler inAppEventHandler) {
-            this.defaultInAppEventHandler = inAppEventHandler;
-            return this;
-        }
-
-        public Builder setNotificationEventHandler(EventHandler notificationEventHandler) {
-            this.notificationEventHandler = notificationEventHandler;
-            return this;
-        }
-
     }
 }
