@@ -58,7 +58,7 @@ public class MessagingServiceUtils {
             createDefaultChannel(context, oreoConfig);
         }
 
-        PendingIntent resultPendingIntent = IntentUtils.createPendingIntent(context, remoteMessageData);
+        PendingIntent resultPendingIntent = IntentUtils.createTrackMessageOpenServicePendingIntent(context, remoteMessageData);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, channelId)
                 .setContentTitle(title)
@@ -67,9 +67,7 @@ public class MessagingServiceUtils {
                 .setAutoCancel(true)
                 .setContentIntent(resultPendingIntent);
 
-        int usableActionCount = actions.size() > 3 ? 3 : actions.size();
-
-        for (int i = 0; i < usableActionCount; i++) {
+        for (int i = 0; i < actions.size(); i++) {
             builder.addAction(actions.get(i));
         }
 
