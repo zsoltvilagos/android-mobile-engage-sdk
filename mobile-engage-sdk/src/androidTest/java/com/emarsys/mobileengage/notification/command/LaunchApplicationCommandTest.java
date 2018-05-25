@@ -6,9 +6,13 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.test.InstrumentationRegistry;
 
+import com.emarsys.mobileengage.testUtil.TimeoutUtils;
+
 import junit.framework.Assert;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.mockito.ArgumentCaptor;
 
 import static org.mockito.ArgumentMatchers.anyString;
@@ -22,6 +26,9 @@ public class LaunchApplicationCommandTest {
         mock(Activity.class);
         mock(PackageManager.class);
     }
+
+    @Rule
+    public TestRule timeout = TimeoutUtils.getTimeoutRule();
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_intentMustNotBeNull() {
