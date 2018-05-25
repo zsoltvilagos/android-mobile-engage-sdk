@@ -1,9 +1,11 @@
 package com.emarsys.mobileengage.service;
 
 import android.content.Context;
+import android.content.Intent;
 import android.support.v4.app.NotificationCompat;
 
 import com.emarsys.core.validate.JsonObjectValidator;
+import com.emarsys.mobileengage.notification.command.NotificationCommandFactory;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -14,6 +16,11 @@ import java.util.List;
 import java.util.Map;
 
 public class NotificationActionUtils {
+
+    public static void handleAction(Intent intent, NotificationCommandFactory commandFactory) {
+        Runnable command = commandFactory.createNotificationCommand(intent);
+        command.run();
+    }
 
     public static List<NotificationCompat.Action> createActions(Context context, Map<String, String> remoteMessageData) {
         List<NotificationCompat.Action> result = new ArrayList<>();
@@ -54,7 +61,7 @@ public class NotificationActionUtils {
                 result = new NotificationCompat.Action.Builder(
                         0,
                         action.getString("title"),
-                        IntentUtils.createPendingIntent(context, remoteMessageData, uniqueId)).build();
+                        IntentUtils.createTrackMessageOpenServicePendingIntent(context, remoteMessageData, uniqueId)).build();
             }
 
         } catch (JSONException ignored) {
