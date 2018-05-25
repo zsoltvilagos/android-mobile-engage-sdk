@@ -1,7 +1,8 @@
 package com.emarsys.mobileengage.notification.command;
 
 import android.content.Intent;
-import android.support.annotation.NonNull;
+import android.os.Bundle;
+import android.support.test.InstrumentationRegistry;
 
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
@@ -12,7 +13,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class NotificationCommandFactoryTest {
 
@@ -23,7 +25,33 @@ public class NotificationCommandFactoryTest {
 
     @Before
     public void setUp() {
-        factory = new NotificationCommandFactory();
+        factory = new NotificationCommandFactory(InstrumentationRegistry.getTargetContext().getApplicationContext());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructor_contextShouldNotBeNull() {
+        new NotificationCommandFactory(null);
+    }
+
+    @Test
+    public void testCreateNotificationCommand_shouldCreateAppLaunchCommand_whenIntentIsEmpty() {
+        Runnable command = factory.createNotificationCommand(new Intent());
+
+        assertEquals(LaunchApplicationCommand.class, command.getClass());
+    }
+
+    @Test
+    public void testCreateNotificationCommand_shouldCreateAppLaunchCommand_whenTypeIsNotSupported() throws JSONException {
+        Runnable command = factory.createNotificationCommand(createUnknownCommandIntent());
+
+        assertEquals(LaunchApplicationCommand.class, command.getClass());
+    }
+
+    @Test
+    public void testCreateNotificationCommand_shouldCreateAppLaunchCommand_whenActionsKeyIsMissing() throws JSONException {
+        Runnable command = factory.createNotificationCommand(createIntent("actionId", new JSONObject()));
+
+        assertEquals(LaunchApplicationCommand.class, command.getClass());
     }
 
     @Test
@@ -32,7 +60,7 @@ public class NotificationCommandFactoryTest {
         Runnable command = factory.createNotificationCommand(intent);
 
         assertNotNull(command);
-        assertEquals(command.getClass(), AppEventCommand.class);
+        assertEquals(AppEventCommand.class, command.getClass());
     }
 
     @Test
@@ -40,7 +68,7 @@ public class NotificationCommandFactoryTest {
         Intent intent = createAppEventIntent();
         AppEventCommand command = (AppEventCommand) factory.createNotificationCommand(intent);
 
-        assertEquals(command.getName(), "nameOfTheEvent");
+        assertEquals("nameOfTheEvent", command.getName());
     }
 
     @Test
@@ -49,24 +77,41 @@ public class NotificationCommandFactoryTest {
         AppEventCommand command = (AppEventCommand) factory.createNotificationCommand(intent);
 
         JSONObject payload = command.getPayload();
-        assertEquals(payload.getString("payloadKey"),"payloadValue");
+        assertEquals("payloadValue", payload.getString("payloadKey"));
     }
 
-    @NonNull
+    private Intent createUnknownCommandIntent() throws JSONException {
+        String unknownType = "NOT_SUPPORTED";
+        JSONObject json = new JSONObject()
+                .put("uniqueActionId", new JSONObject()
+                        .put("name", "nameOfTheEvent")
+                        .put("type", unknownType));
+        return createIntent("uniqueActionId", json);
+    }
+
     private Intent createAppEventIntent() throws JSONException {
         String actionId = "uniqueActionId";
         String name = "nameOfTheEvent";
         JSONObject payload = new JSONObject()
                 .put("payloadKey", "payloadValue");
         JSONObject json = new JSONObject()
-                .put("actions", new JSONObject()
-                        .put(actionId, new JSONObject()
-                                .put("name", name)
-                                .put("payload", payload)
-                                .put("type", "MEAppEvent")));
+                .put(actionId, new JSONObject()
+                        .put("name", name)
+                        .put("payload", payload)
+                        .put("type", "MEAppEvent"));
+        return createIntent(actionId, json);
+    }
+
+    private Intent createIntent(String actionId, JSONObject payload) {
         Intent intent = new Intent();
-        intent.setAction(actionId);
-        intent.putExtra("payload", json.toString());
+        if (actionId != null) {
+            intent.setAction(actionId);
+        }
+        if (payload != null) {
+            Bundle bundle = new Bundle();
+            bundle.putString("actions", payload.toString());
+            intent.putExtra("payload", bundle);
+        }
         return intent;
     }
 }
