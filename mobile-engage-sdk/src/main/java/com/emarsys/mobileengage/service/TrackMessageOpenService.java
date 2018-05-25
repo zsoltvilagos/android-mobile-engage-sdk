@@ -17,21 +17,13 @@ public class TrackMessageOpenService extends Service {
 
         EMSLogger.log(MobileEngageTopic.PUSH, "Notification was clicked");
 
-        NotificationActionHandler.handleAction(intent, new NotificationCommandFactory());
+        NotificationActionUtils.handleAction(intent, new NotificationCommandFactory(this));
 
-        startActivity(createIntent(intent));
         if (intent != null) {
             MobileEngage.trackMessageOpen(intent);
         }
         stopSelf(startId);
         return START_NOT_STICKY;
-    }
-
-    private Intent createIntent(Intent remoteIntent) {
-        String packageName = getPackageName();
-        Intent intent = getPackageManager().getLaunchIntentForPackage(packageName);
-        intent.putExtras(remoteIntent.getExtras());
-        return intent;
     }
 
     @Override

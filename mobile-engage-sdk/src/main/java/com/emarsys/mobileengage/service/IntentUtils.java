@@ -5,11 +5,28 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 
+import com.emarsys.core.util.Assert;
+
 import java.util.Map;
 
 public class IntentUtils {
 
-    public static Intent createIntent(Map<String, String> remoteMessageData, Context context, String action) {
+    public static Intent createLaunchIntent(Intent remoteIntent, Context context) {
+        Assert.notNull(remoteIntent, "RemoteIntent must not be null!");
+        Assert.notNull(context, "Context must not be null!");
+        Intent intent = context.getPackageManager().getLaunchIntentForPackage(context.getPackageName());
+
+        Bundle remoteExtras = remoteIntent.getExtras();
+        if (remoteExtras != null) {
+            intent.putExtras(remoteIntent.getExtras());
+        }
+        return intent;
+    }
+
+    public static Intent createTrackMessageOpenServiceIntent(Context context, Map<String, String> remoteMessageData, String action) {
+        Assert.notNull(remoteMessageData, "RemoteMessageData must not be null!");
+        Assert.notNull(context, "Context must not be null!");
+
         Intent intent = new Intent(context, TrackMessageOpenService.class);
 
         if (action != null) {
@@ -25,12 +42,15 @@ public class IntentUtils {
         return intent;
     }
 
-    public static PendingIntent createPendingIntent(Context context, Map<String, String> remoteMessageData) {
-        return createPendingIntent(context, remoteMessageData, null);
+    public static PendingIntent createTrackMessageOpenServicePendingIntent(Context context, Map<String, String> remoteMessageData) {
+        return createTrackMessageOpenServicePendingIntent(context, remoteMessageData, null);
     }
 
-    public static PendingIntent createPendingIntent(Context context, Map<String, String> remoteMessageData, String action) {
-        Intent intent = createIntent(remoteMessageData, context, action);
+    public static PendingIntent createTrackMessageOpenServicePendingIntent(Context context, Map<String, String> remoteMessageData, String action) {
+        Assert.notNull(remoteMessageData, "RemoteMessageData must not be null!");
+        Assert.notNull(context, "Context must not be null!");
+
+        Intent intent = createTrackMessageOpenServiceIntent(context, remoteMessageData, action);
         return PendingIntent.getService(
                 context,
                 (int) (System.currentTimeMillis() % Integer.MAX_VALUE),
