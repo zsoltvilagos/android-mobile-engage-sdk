@@ -9,6 +9,7 @@ import android.support.v4.app.NotificationCompat;
 import com.emarsys.mobileengage.notification.command.NotificationCommandFactory;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Before;
@@ -112,8 +113,9 @@ public class NotificationActionUtilsTest {
     @SdkSuppress(minSdkVersion = KITKAT)
     public void testCreateActions_appEvent_withSingleAction() throws JSONException {
         JSONObject payload = new JSONObject()
-                .put("actions", new JSONObject()
-                        .put("uniqueActionId", new JSONObject()
+                .put("actions", new JSONArray()
+                        .put(new JSONObject()
+                                .put("id", "uniqueActionId")
                                 .put("title", "Action button title")
                                 .put("type", "MEAppEvent")
                                 .put("name", "Name of the event")
@@ -133,13 +135,15 @@ public class NotificationActionUtilsTest {
     @SdkSuppress(minSdkVersion = KITKAT)
     public void testCreateActions_appEvent_withMultipleActions() throws JSONException {
         JSONObject payload = new JSONObject()
-                .put("actions", new JSONObject()
-                        .put("uniqueActionId1", new JSONObject()
+                .put("actions", new JSONArray()
+                        .put(new JSONObject()
+                                .put("id", "uniqueActionId1")
                                 .put("title", "title1")
                                 .put("type", "MEAppEvent")
                                 .put("name", "event1")
                         )
-                        .put("uniqueActionId2", new JSONObject()
+                        .put(new JSONObject()
+                                .put("id", "uniqueActionId2")
                                 .put("title", "title2")
                                 .put("type", "MEAppEvent")
                                 .put("name", "event2")

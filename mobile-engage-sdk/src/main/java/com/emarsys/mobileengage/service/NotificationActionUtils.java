@@ -7,11 +7,11 @@ import android.support.v4.app.NotificationCompat;
 import com.emarsys.core.validate.JsonObjectValidator;
 import com.emarsys.mobileengage.notification.command.NotificationCommandFactory;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -27,12 +27,10 @@ public class NotificationActionUtils {
         String emsPayload = remoteMessageData.get("ems");
         if (emsPayload != null) {
             try {
-                JSONObject actions = new JSONObject(emsPayload).getJSONObject("actions");
-                Iterator<String> iterator = actions.keys();
-                while (iterator.hasNext()) {
+                JSONArray actions = new JSONObject(emsPayload).getJSONArray("actions");
+                for (int i = 0; i < actions.length(); ++i) {
                     NotificationCompat.Action action = createAction(
-                            iterator.next(),
-                            actions,
+                            actions.getJSONObject(i),
                             context,
                             remoteMessageData);
                     if (action != null) {
@@ -46,14 +44,13 @@ public class NotificationActionUtils {
     }
 
     private static NotificationCompat.Action createAction(
-            String uniqueId,
-            JSONObject actions,
+            JSONObject action,
             Context context,
             Map<String, String> remoteMessageData) {
         NotificationCompat.Action result = null;
 
         try {
-            JSONObject action = actions.getJSONObject(uniqueId);
+            String actionId = action.getString("id");
 
             List<String> validationErrors = validate(action);
 
@@ -61,7 +58,7 @@ public class NotificationActionUtils {
                 result = new NotificationCompat.Action.Builder(
                         0,
                         action.getString("title"),
-                        IntentUtils.createTrackMessageOpenServicePendingIntent(context, remoteMessageData, uniqueId)).build();
+                        IntentUtils.createTrackMessageOpenServicePendingIntent(context, remoteMessageData, actionId)).build();
             }
 
         } catch (JSONException ignored) {

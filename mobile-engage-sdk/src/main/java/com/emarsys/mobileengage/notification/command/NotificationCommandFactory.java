@@ -6,6 +6,7 @@ import android.os.Bundle;
 
 import com.emarsys.core.util.Assert;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -28,8 +29,8 @@ public class NotificationCommandFactory {
 
             if (actionId != null && emsPayload != null) {
                 try {
-                    JSONObject actions = new JSONObject(emsPayload).getJSONObject("actions");
-                    JSONObject action = actions.getJSONObject(actionId);
+                    JSONArray actions = new JSONObject(emsPayload).getJSONArray("actions");
+                    JSONObject action = findActionWithId(actions, actionId);
                     String type = action.getString("type");
                     if ("MEAppEvent".equals(type)) {
                         String name = action.getString("name");
@@ -46,6 +47,16 @@ public class NotificationCommandFactory {
         }
 
         return result;
+    }
+
+    private JSONObject findActionWithId(JSONArray actions, String actionId) throws JSONException {
+        for (int i = 0; i < actions.length(); ++i) {
+            JSONObject action = actions.optJSONObject(i);
+            if (action != null && actionId.equals(action.optString("id"))) {
+                return action;
+            }
+        }
+        throw new JSONException("Cannot find action with id: " + actionId);
     }
 
 }

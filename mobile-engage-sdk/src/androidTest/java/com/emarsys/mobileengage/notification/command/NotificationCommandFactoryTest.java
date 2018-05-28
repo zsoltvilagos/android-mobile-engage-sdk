@@ -7,6 +7,7 @@ import android.support.test.InstrumentationRegistry;
 import com.emarsys.mobileengage.service.IntentUtils;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Before;
@@ -86,11 +87,11 @@ public class NotificationCommandFactoryTest {
 
     @Test
     public void testCreateNotificationCommand_appEvent_worksWithIntentUtils() {
-        String emsPayload = "{'actions':{" +
-                "'actionId':{" +
-                "'type': 'MEAppEvent', 'title':'action title', 'name':'eventName'" +
+        String emsPayload = "{'actions':[" +
+                "{" +
+                "'id':'actionId', 'type': 'MEAppEvent', 'title':'action title', 'name':'eventName'" +
                 "}" +
-                "}}";
+                "]}";
         Map<String, String> remoteMessageData = new HashMap<>();
         remoteMessageData.put("ems", emsPayload);
 
@@ -107,8 +108,9 @@ public class NotificationCommandFactoryTest {
     private Intent createUnknownCommandIntent() throws JSONException {
         String unknownType = "NOT_SUPPORTED";
         JSONObject json = new JSONObject()
-                .put("actions", new JSONObject()
-                        .put("uniqueActionId", new JSONObject()
+                .put("actions", new JSONArray()
+                        .put(new JSONObject()
+                                .put("id", "uniqueActionId")
                                 .put("name", "nameOfTheEvent")
                                 .put("type", unknownType)));
         return createIntent("uniqueActionId", json);
@@ -120,8 +122,9 @@ public class NotificationCommandFactoryTest {
         JSONObject payload = new JSONObject()
                 .put("payloadKey", "payloadValue");
         JSONObject json = new JSONObject()
-                .put("actions", new JSONObject()
-                        .put(actionId, new JSONObject()
+                .put("actions", new JSONArray()
+                        .put(new JSONObject()
+                                .put("id", actionId)
                                 .put("name", name)
                                 .put("payload", payload)
                                 .put("type", "MEAppEvent")));
