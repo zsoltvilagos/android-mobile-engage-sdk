@@ -111,16 +111,18 @@ public class NotificationActionUtilsTest {
     @Test
     @SdkSuppress(minSdkVersion = KITKAT)
     public void testCreateActions_appEvent_withSingleAction() throws JSONException {
-        JSONObject actions = new JSONObject().put("uniqueActionId", new JSONObject()
-                .put("title", "Action button title")
-                .put("type", "MEAppEvent")
-                .put("name", "Name of the event")
-                .put("payload", new JSONObject()
-                        .put("payloadKey", "payloadValue"))
-        );
+        JSONObject payload = new JSONObject()
+                .put("actions", new JSONObject()
+                        .put("uniqueActionId", new JSONObject()
+                                .put("title", "Action button title")
+                                .put("type", "MEAppEvent")
+                                .put("name", "Name of the event")
+                                .put("payload", new JSONObject()
+                                        .put("payloadKey", "payloadValue")))
+                );
 
         Map<String, String> input = new HashMap<>();
-        input.put("actions", actions.toString());
+        input.put("ems", payload.toString());
 
         List<NotificationCompat.Action> result = NotificationActionUtils.createActions(context, input);
         assertEquals(1, result.size());
@@ -130,22 +132,23 @@ public class NotificationActionUtilsTest {
     @Test
     @SdkSuppress(minSdkVersion = KITKAT)
     public void testCreateActions_appEvent_withMultipleActions() throws JSONException {
-        JSONObject actions = new JSONObject()
-                .put("uniqueActionId1", new JSONObject()
-                        .put("title", "title1")
-                        .put("type", "MEAppEvent")
-                        .put("name", "event1")
-                )
-                .put("uniqueActionId2", new JSONObject()
-                        .put("title", "title2")
-                        .put("type", "MEAppEvent")
-                        .put("name", "event2")
-                        .put("payload", new JSONObject()
-                                .put("payloadKey", "payloadValue"))
-                );
+        JSONObject payload = new JSONObject()
+                .put("actions", new JSONObject()
+                        .put("uniqueActionId1", new JSONObject()
+                                .put("title", "title1")
+                                .put("type", "MEAppEvent")
+                                .put("name", "event1")
+                        )
+                        .put("uniqueActionId2", new JSONObject()
+                                .put("title", "title2")
+                                .put("type", "MEAppEvent")
+                                .put("name", "event2")
+                                .put("payload", new JSONObject()
+                                        .put("payloadKey", "payloadValue"))
+                        ));
 
         Map<String, String> input = new HashMap<>();
-        input.put("actions", actions.toString());
+        input.put("ems", payload.toString());
 
         List<NotificationCompat.Action> result = NotificationActionUtils.createActions(context, input);
         assertEquals(2, result.size());

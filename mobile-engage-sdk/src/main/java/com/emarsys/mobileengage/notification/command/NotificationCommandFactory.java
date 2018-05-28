@@ -24,11 +24,11 @@ public class NotificationCommandFactory {
         Bundle bundle = intent.getBundleExtra("payload");
 
         if (bundle != null) {
-            String actionsString = bundle.getString("actions");
+            String emsPayload = bundle.getString("ems");
 
-            if (actionId != null && actionsString != null) {
+            if (actionId != null && emsPayload != null) {
                 try {
-                    JSONObject actions = new JSONObject(actionsString);
+                    JSONObject actions = new JSONObject(emsPayload).getJSONObject("actions");
                     JSONObject action = actions.getJSONObject(actionId);
                     String type = action.getString("type");
                     if ("MEAppEvent".equals(type)) {

@@ -284,24 +284,25 @@ public class MessagingServiceUtilsTest {
     @Test
     @SdkSuppress(minSdkVersion = KITKAT)
     public void testCreateNotification_setsActionsIfAvailable() throws JSONException {
-        JSONObject actions = new JSONObject()
-                .put("uniqueActionId1", new JSONObject()
-                        .put("title", "title1")
-                        .put("type", "MEAppEvent")
-                        .put("name", "event1")
-                )
-                .put("uniqueActionId2", new JSONObject()
-                        .put("title", "title2")
-                        .put("type", "MEAppEvent")
-                        .put("name", "event2")
-                        .put("payload", new JSONObject()
-                                .put("payloadKey", "payloadValue"))
-                );
+        JSONObject ems = new JSONObject()
+                .put("actions", new JSONObject()
+                        .put("uniqueActionId1", new JSONObject()
+                                .put("title", "title1")
+                                .put("type", "MEAppEvent")
+                                .put("name", "event1")
+                        )
+                        .put("uniqueActionId2", new JSONObject()
+                                .put("title", "title2")
+                                .put("type", "MEAppEvent")
+                                .put("name", "event2")
+                                .put("payload", new JSONObject()
+                                        .put("payloadKey", "payloadValue"))
+                        ));
 
         Map<String, String> input = new HashMap<>();
         input.put("title", TITLE);
         input.put("body", BODY);
-        input.put("actions", actions.toString());
+        input.put("ems", ems.toString());
 
         android.app.Notification result = MessagingServiceUtils.createNotification(context, input, disabledOreoConfig, metaDataReader);
 

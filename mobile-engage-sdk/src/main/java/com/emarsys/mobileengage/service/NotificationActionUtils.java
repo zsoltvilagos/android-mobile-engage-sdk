@@ -24,10 +24,10 @@ public class NotificationActionUtils {
 
     public static List<NotificationCompat.Action> createActions(Context context, Map<String, String> remoteMessageData) {
         List<NotificationCompat.Action> result = new ArrayList<>();
-        String actionsString = remoteMessageData.get("actions");
-        if (actionsString != null) {
+        String emsPayload = remoteMessageData.get("ems");
+        if (emsPayload != null) {
             try {
-                JSONObject actions = new JSONObject(actionsString);
+                JSONObject actions = new JSONObject(emsPayload).getJSONObject("actions");
                 Iterator<String> iterator = actions.keys();
                 while (iterator.hasNext()) {
                     NotificationCompat.Action action = createAction(
