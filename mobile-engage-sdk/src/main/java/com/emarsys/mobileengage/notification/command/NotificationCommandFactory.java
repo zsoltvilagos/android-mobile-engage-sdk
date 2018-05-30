@@ -11,6 +11,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
 public class NotificationCommandFactory {
 
     Context context;
@@ -45,6 +49,15 @@ public class NotificationCommandFactory {
                             result = new OpenExternalUrlCommand(externalCommandIntent, context);
                         }
                     }
+                    if ("MECustomEvent".equals(type)) {
+                        String name = action.getString("name");
+                        JSONObject payload = action.optJSONObject("payload");
+                        Map<String, String> eventAttribute = null;
+                        if (payload != null) {
+                            eventAttribute = jsonToFlatMap(payload);
+                        }
+                        result = new CustomEventCommand(name, eventAttribute);
+                    }
                 } catch (JSONException ignored) {
                 }
             }
@@ -65,6 +78,19 @@ public class NotificationCommandFactory {
             }
         }
         throw new JSONException("Cannot find action with id: " + actionId);
+    }
+
+    private Map<String, String> jsonToFlatMap(JSONObject json) {
+        Map<String, String> result = new HashMap<>();
+        Iterator<String> iterator = json.keys();
+        while (iterator.hasNext()) {
+            String key = iterator.next();
+            try {
+                result.put(key, json.getString(key));
+            } catch (JSONException ignore) {
+            }
+        }
+        return result;
     }
 
 }

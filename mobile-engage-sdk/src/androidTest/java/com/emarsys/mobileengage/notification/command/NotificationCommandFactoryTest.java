@@ -134,6 +134,59 @@ public class NotificationCommandFactoryTest {
         assertEquals(LaunchApplicationCommand.class, command.getClass());
     }
 
+    @Test
+    public void testCreateNotificationCommand_shouldCreateCustomEventCommand() throws JSONException {
+        Intent intent = createCustomEventIntent("eventName");
+        Runnable command = factory.createNotificationCommand(intent);
+
+        assertNotNull(command);
+        assertEquals(CustomEventCommand.class, command.getClass());
+    }
+
+    @Test
+    public void testCreateNotificationCommand_shouldCreateCustomEventCommand_withCorrectEventName() throws JSONException {
+        String eventName = "eventName";
+
+        Intent intent = createCustomEventIntent(eventName);
+
+        CustomEventCommand command = (CustomEventCommand) factory.createNotificationCommand(intent);
+
+        assertEquals(eventName, command.getEventName());
+    }
+
+    @Test
+    public void testCreateNotificationCommand_shouldCreateCustomEventCommand_withCorrectEventAttributes() throws JSONException {
+        String eventName = "eventName";
+
+        JSONObject payload = new JSONObject()
+                .put("key1", true)
+                .put("key2", 3.14)
+                .put("key3", new JSONObject().put("key5", "value1"))
+                .put("key4", "value2");
+
+        Map<String, String> attributes = new HashMap<>();
+        attributes.put("key1", "true");
+        attributes.put("key2", "3.14");
+        attributes.put("key3", "{\"key5\":\"value1\"}");
+        attributes.put("key4", "value2");
+
+        Intent intent = createCustomEventIntent(eventName, payload);
+
+        CustomEventCommand command = (CustomEventCommand) factory.createNotificationCommand(intent);
+
+        assertEquals(attributes, command.getEventAttributes());
+    }
+
+    @Test
+    public void testCreateNotificationCommand_shouldCreateCustomEventCommand_withoutEventAttributes() throws JSONException {
+        String eventName = "eventName";
+
+        Intent intent = createCustomEventIntent(eventName);
+
+        CustomEventCommand command = (CustomEventCommand) factory.createNotificationCommand(intent);
+
+        assertEquals(null, command.getEventAttributes());
+    }
 
     private Intent createUnknownCommandIntent() throws JSONException {
         String unknownType = "NOT_SUPPORTED";
@@ -169,6 +222,27 @@ public class NotificationCommandFactoryTest {
                                 .put("id", actionId)
                                 .put("url", url)
                                 .put("type", "OpenExternalUrl")));
+        return createIntent(actionId, json);
+    }
+
+    private Intent createCustomEventIntent(String eventName) throws JSONException {
+        return createCustomEventIntent(eventName, null);
+    }
+
+    private Intent createCustomEventIntent(String eventName, JSONObject payload) throws JSONException {
+        String actionId = "uniqueActionId";
+
+        JSONObject action = new JSONObject()
+                .put("id", actionId)
+                .put("title", "Action button title")
+                .put("type", "MECustomEvent")
+                .put("name", eventName);
+        if (payload != null) {
+            action.put("payload", payload);
+        }
+
+        JSONObject json = new JSONObject().put("actions", new JSONArray().put(action));
+
         return createIntent(actionId, json);
     }
 

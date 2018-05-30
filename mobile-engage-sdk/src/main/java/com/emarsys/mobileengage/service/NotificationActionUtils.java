@@ -69,13 +69,17 @@ public class NotificationActionUtils {
 
     private static List<String> validate(JSONObject action) throws JSONException {
         String actionType = action.getString("type");
-        List<String> errors = new ArrayList<>();
+        JsonObjectValidator jsonObjectValidator = JsonObjectValidator.from(action);
         if ("MEAppEvent".equals(actionType)) {
-            errors = JsonObjectValidator.from(action)
-                    .hasField("name")
-                    .validate();
+            jsonObjectValidator.hasField("name");
         }
-        return errors;
+        if ("OpenExternalUrl".equals(actionType)) {
+            jsonObjectValidator.hasField("url");
+        }
+        if ("MECustomEvent".equals(actionType)) {
+            jsonObjectValidator.hasField("name");
+        }
+        return jsonObjectValidator.validate();
     }
 
 }

@@ -54,12 +54,15 @@ public class NotificationActionUtilsTest {
 
     @Test
     @SdkSuppress(minSdkVersion = KITKAT)
-    public void testCreateActions_idValueNotJson() throws JSONException {
-        JSONObject actions = new JSONObject()
-                .put("uniqueActionId", 987);
+    public void testCreateActions_missingId() throws JSONException {
+        JSONObject ems = new JSONObject().put("actions",
+                new JSONArray().put(new JSONObject()
+                        .put("title", "title")
+                        .put("type", "MEAppEvent")
+                ));
 
         Map<String, String> input = new HashMap<>();
-        input.put("actions", actions.toString());
+        input.put("ems", ems.toString());
 
         List<NotificationCompat.Action> result = NotificationActionUtils.createActions(context, input);
         assertTrue(result.isEmpty());
@@ -68,13 +71,14 @@ public class NotificationActionUtilsTest {
     @Test
     @SdkSuppress(minSdkVersion = KITKAT)
     public void testCreateActions_missingTitle() throws JSONException {
-        JSONObject actions = new JSONObject()
-                .put("uniqueActionId", new JSONObject()
+        JSONObject ems = new JSONObject().put("actions",
+                new JSONArray().put(new JSONObject()
+                        .put("id", "uniqueActionId")
                         .put("type", "MEAppEvent")
-                );
+                ));
 
         Map<String, String> input = new HashMap<>();
-        input.put("actions", actions.toString());
+        input.put("ems", ems.toString());
 
         List<NotificationCompat.Action> result = NotificationActionUtils.createActions(context, input);
         assertTrue(result.isEmpty());
@@ -83,12 +87,14 @@ public class NotificationActionUtilsTest {
     @Test
     @SdkSuppress(minSdkVersion = KITKAT)
     public void testCreateActions_missingType() throws JSONException {
-        JSONObject actions = new JSONObject().put("uniqueActionId", new JSONObject()
-                .put("title", "Action button title")
-        );
+        JSONObject ems = new JSONObject().put("actions",
+                new JSONArray().put(new JSONObject()
+                        .put("id", "uniqueActionId")
+                        .put("title", "Action button title")
+                ));
 
         Map<String, String> input = new HashMap<>();
-        input.put("actions", actions.toString());
+        input.put("ems", ems.toString());
 
         List<NotificationCompat.Action> result = NotificationActionUtils.createActions(context, input);
         assertTrue(result.isEmpty());
@@ -97,13 +103,15 @@ public class NotificationActionUtilsTest {
     @Test
     @SdkSuppress(minSdkVersion = KITKAT)
     public void testCreateActions_appEvent_missingEventName() throws JSONException {
-        JSONObject actions = new JSONObject().put("uniqueActionId", new JSONObject()
-                .put("title", "Action button title")
-                .put("type", "MEAppEvent")
-        );
+        JSONObject ems = new JSONObject().put("actions",
+                new JSONArray().put(new JSONObject()
+                        .put("id", "uniqueActionId")
+                        .put("title", "Action button title")
+                        .put("type", "MEAppEvent")
+                ));
 
         Map<String, String> input = new HashMap<>();
-        input.put("actions", actions.toString());
+        input.put("ems", ems.toString());
 
         List<NotificationCompat.Action> result = NotificationActionUtils.createActions(context, input);
         assertTrue(result.isEmpty());
@@ -160,5 +168,157 @@ public class NotificationActionUtilsTest {
         assertEquals("title1", result.get(0).title);
 
         assertEquals("title2", result.get(1).title);
+    }
+
+    @Test
+    @SdkSuppress(minSdkVersion = KITKAT)
+    public void testCreateActions_externalUrl_missingUrl() throws JSONException {
+        JSONObject ems = new JSONObject().put("actions",
+                new JSONArray().put(new JSONObject()
+                        .put("id", "uniqueActionId")
+                        .put("title", "Action button title")
+                        .put("type", "OpenExternalUrl")
+                ));
+
+        Map<String, String> input = new HashMap<>();
+        input.put("ems", ems.toString());
+
+        List<NotificationCompat.Action> result = NotificationActionUtils.createActions(context, input);
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    @SdkSuppress(minSdkVersion = KITKAT)
+    public void testCreateActions_externalUrl_withSingleAction() throws JSONException {
+        JSONObject payload = new JSONObject()
+                .put("actions", new JSONArray()
+                        .put(new JSONObject()
+                                .put("id", "uniqueActionId")
+                                .put("title", "Action button title")
+                                .put("type", "OpenExternalUrl")
+                                .put("url", "https://www.emarsys.com")
+                        )
+                );
+
+        Map<String, String> input = new HashMap<>();
+        input.put("ems", payload.toString());
+
+        List<NotificationCompat.Action> result = NotificationActionUtils.createActions(context, input);
+        assertEquals(1, result.size());
+        assertEquals("Action button title", result.get(0).title);
+    }
+
+    @Test
+    @SdkSuppress(minSdkVersion = KITKAT)
+    public void testCreateActions_externalUrl_withMultipleActions() throws JSONException {
+        JSONObject payload = new JSONObject()
+                .put("actions", new JSONArray()
+                        .put(new JSONObject()
+                                .put("id", "uniqueActionId")
+                                .put("title", "Action button title")
+                                .put("type", "OpenExternalUrl")
+                                .put("url", "https://www.emarsys.com")
+                        )
+                        .put(new JSONObject()
+                                .put("id", "uniqueActionId2")
+                                .put("title", "Second button title")
+                                .put("type", "OpenExternalUrl")
+                                .put("url", "https://www.emarsys/faq.com")
+                        )
+                );
+
+        Map<String, String> input = new HashMap<>();
+        input.put("ems", payload.toString());
+
+        List<NotificationCompat.Action> result = NotificationActionUtils.createActions(context, input);
+        assertEquals(2, result.size());
+        assertEquals("Action button title", result.get(0).title);
+        assertEquals("Second button title", result.get(1).title);
+    }
+
+    @Test
+    @SdkSuppress(minSdkVersion = KITKAT)
+    public void testCreateActions_customEvent_missingName() throws JSONException {
+        JSONObject ems = new JSONObject().put("actions",
+                new JSONArray().put(new JSONObject()
+                        .put("id", "uniqueActionId")
+                        .put("title", "Action button title")
+                        .put("type", "MECustomEvent")
+                ));
+
+        Map<String, String> input = new HashMap<>();
+        input.put("ems", ems.toString());
+
+        List<NotificationCompat.Action> result = NotificationActionUtils.createActions(context, input);
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    @SdkSuppress(minSdkVersion = KITKAT)
+    public void testCreateActions_customEvent_withSingleAction() throws JSONException {
+        JSONObject ems = new JSONObject().put("actions",
+                new JSONArray().put(new JSONObject()
+                        .put("id", "uniqueActionId")
+                        .put("title", "Action button title")
+                        .put("type", "MECustomEvent")
+                        .put("name", "eventName")
+                        .put("payload", new JSONObject()
+                                .put("key1", "value1")
+                                .put("key2", "value2"))
+                ));
+
+        Map<String, String> input = new HashMap<>();
+        input.put("ems", ems.toString());
+
+        List<NotificationCompat.Action> result = NotificationActionUtils.createActions(context, input);
+        assertEquals(1, result.size());
+        assertEquals("Action button title", result.get(0).title);
+    }
+
+    @Test
+    @SdkSuppress(minSdkVersion = KITKAT)
+    public void testCreateActions_customEvent_withSingleAction_withoutPayload() throws JSONException {
+        JSONObject ems = new JSONObject().put("actions",
+                new JSONArray().put(new JSONObject()
+                        .put("id", "uniqueActionId")
+                        .put("title", "Action button title")
+                        .put("type", "MECustomEvent")
+                        .put("name", "eventName")
+                ));
+
+        Map<String, String> input = new HashMap<>();
+        input.put("ems", ems.toString());
+
+        List<NotificationCompat.Action> result = NotificationActionUtils.createActions(context, input);
+        assertEquals(1, result.size());
+        assertEquals("Action button title", result.get(0).title);
+    }
+
+    @Test
+    @SdkSuppress(minSdkVersion = KITKAT)
+    public void testCreateActions_customEvent_withMultipleActions() throws JSONException {
+        JSONObject ems = new JSONObject().put("actions",
+                new JSONArray().put(new JSONObject()
+                        .put("id", "uniqueActionId")
+                        .put("title", "Action button title")
+                        .put("type", "MECustomEvent")
+                        .put("name", "eventName")
+                        .put("payload", new JSONObject()
+                                .put("key1", "value1")
+                                .put("key2", "value2")))
+                        .put(new JSONObject()
+                                .put("id", "uniqueActionId2")
+                                .put("title", "Another button title")
+                                .put("type", "MECustomEvent")
+                                .put("name", "eventName")
+                        ));
+
+        Map<String, String> input = new HashMap<>();
+        input.put("ems", ems.toString());
+
+        List<NotificationCompat.Action> result = NotificationActionUtils.createActions(context, input);
+        assertEquals(2, result.size());
+        assertEquals("Action button title", result.get(0).title);
+        assertEquals("Another button title", result.get(1).title);
     }
 }
