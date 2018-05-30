@@ -2,6 +2,7 @@ package com.emarsys.mobileengage.notification.command;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 
 import com.emarsys.core.util.Assert;
@@ -36,6 +37,13 @@ public class NotificationCommandFactory {
                         String name = action.getString("name");
                         JSONObject payload = action.optJSONObject("payload");
                         result = new AppEventCommand(name, payload);
+                    }
+                    if ("OpenExternalUrl".equals(type)) {
+                        Uri link = Uri.parse(action.getString("url"));
+                        Intent externalCommandIntent = new Intent(Intent.ACTION_VIEW, link);
+                        if (externalCommandIntent.resolveActivity(context.getPackageManager()) != null) {
+                            result = new OpenExternalUrlCommand(externalCommandIntent, context);
+                        }
                     }
                 } catch (JSONException ignored) {
                 }

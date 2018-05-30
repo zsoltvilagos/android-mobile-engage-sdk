@@ -1,6 +1,8 @@
 package com.emarsys.mobileengage.notification.command;
 
+import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.test.InstrumentationRegistry;
 
@@ -27,10 +29,12 @@ public class NotificationCommandFactoryTest {
     public TestRule timeout = TimeoutUtils.getTimeoutRule();
 
     private NotificationCommandFactory factory;
+    private Context context;
 
     @Before
     public void setUp() {
-        factory = new NotificationCommandFactory(InstrumentationRegistry.getTargetContext().getApplicationContext());
+        context = InstrumentationRegistry.getTargetContext().getApplicationContext();
+        factory = new NotificationCommandFactory(context);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -105,6 +109,32 @@ public class NotificationCommandFactoryTest {
         assertEquals("eventName", command.getName());
     }
 
+    @Test
+    public void testCreateNotificationCommand_shouldCreateOpenExternalLinkCommand() throws JSONException {
+        Intent intent = createOpenExternalLinkIntent("https://www.emarsys.com");
+        Runnable command = factory.createNotificationCommand(intent);
+
+        assertNotNull(command);
+        assertEquals(OpenExternalUrlCommand.class, command.getClass());
+    }
+
+    @Test
+    public void testCreateNotificationCommand_shouldCreateOpenExternalLinkCommand_withCorrectParameters() throws JSONException {
+        OpenExternalUrlCommand command = (OpenExternalUrlCommand) factory.createNotificationCommand(createOpenExternalLinkIntent("https://www.emarsys.com"));
+
+        assertEquals(context, command.getContext());
+        assertEquals(Uri.parse("https://www.emarsys.com"), command.getIntent().getData());
+        assertEquals(Intent.ACTION_VIEW, command.getIntent().getAction());
+    }
+
+    @Test
+    public void testCreateNotificationCommand_shouldCreateAppLaunchCommand_insteadOf_OpenExternalLinkCommand_whenCantResolveUrl() throws JSONException {
+        Runnable command = factory.createNotificationCommand(createOpenExternalLinkIntent("Not valid url!"));
+
+        assertEquals(LaunchApplicationCommand.class, command.getClass());
+    }
+
+
     private Intent createUnknownCommandIntent() throws JSONException {
         String unknownType = "NOT_SUPPORTED";
         JSONObject json = new JSONObject()
@@ -128,6 +158,17 @@ public class NotificationCommandFactoryTest {
                                 .put("name", name)
                                 .put("payload", payload)
                                 .put("type", "MEAppEvent")));
+        return createIntent(actionId, json);
+    }
+
+    private Intent createOpenExternalLinkIntent(String url) throws JSONException {
+        String actionId = "uniqueActionId";
+        JSONObject json = new JSONObject()
+                .put("actions", new JSONArray()
+                        .put(new JSONObject()
+                                .put("id", actionId)
+                                .put("url", url)
+                                .put("type", "OpenExternalUrl")));
         return createIntent(actionId, json);
     }
 
