@@ -33,26 +33,22 @@ public class InboxInternal_V1 implements InboxInternal {
 
     Handler handler;
     RestClient client;
-    MobileEngageConfig config;
     NotificationCache cache;
     RequestManager manager;
     DeviceInfo deviceInfo;
     RequestContext requestContext;
 
     public InboxInternal_V1(
-            MobileEngageConfig config,
             RequestManager requestManager,
             RestClient restClient,
             DeviceInfo deviceInfo,
             RequestContext requestContext) {
-        Assert.notNull(config, "Config must not be null!");
         Assert.notNull(requestManager, "RequestManager must not be null!");
         Assert.notNull(restClient, "RestClient must not be null!");
         Assert.notNull(deviceInfo, "DeviceInfo must not be null!");
         Assert.notNull(requestContext, "RequestContext must not be null!");
-        EMSLogger.log(MobileEngageTopic.INBOX, "Arguments: config %s, requestManager %s", config, requestManager);
+        EMSLogger.log(MobileEngageTopic.INBOX, "Arguments: config %s, requestManager %s", requestContext.getConfig(), requestManager);
 
-        this.config = config;
         this.client = restClient;
         this.handler = new Handler(Looper.getMainLooper());
         this.cache = new NotificationCache();
@@ -81,7 +77,7 @@ public class InboxInternal_V1 implements InboxInternal {
     private void handleFetchRequest(final InboxResultListener<NotificationInboxStatus> resultListener) {
         RequestModel model = new RequestModel.Builder()
                 .url(INBOX_FETCH_V1)
-                .headers(createBaseHeaders(config))
+                .headers(createBaseHeaders(requestContext.getConfig()))
                 .method(RequestMethod.GET)
                 .build();
 
@@ -129,13 +125,13 @@ public class InboxInternal_V1 implements InboxInternal {
     public String trackMessageOpen(Notification message) {
         EMSLogger.log(MobileEngageTopic.INBOX, "Argument: %s", message);
 
-        Map<String, Object> payload = RequestPayloadUtils.createBasePayload(config, requestContext.getAppLoginParameters(), deviceInfo);
+        Map<String, Object> payload = RequestPayloadUtils.createBasePayload(requestContext.getConfig(), requestContext.getAppLoginParameters(), deviceInfo);
         payload.put("source", "inbox");
         payload.put("sid", message.getSid());
         RequestModel model = new RequestModel.Builder()
                 .url(RequestUrlUtils.createEventUrl_V2("message_open"))
                 .payload(payload)
-                .headers(RequestHeaderUtils.createBaseHeaders_V2(config))
+                .headers(RequestHeaderUtils.createBaseHeaders_V2(requestContext.getConfig()))
                 .build();
 
         manager.submit(model);
@@ -150,7 +146,7 @@ public class InboxInternal_V1 implements InboxInternal {
     private void handleResetRequest(final ResetBadgeCountResultListener listener) {
         RequestModel model = new RequestModel.Builder()
                 .url(INBOX_RESET_BADGE_COUNT_V1)
-                .headers(createBaseHeaders(config))
+                .headers(createBaseHeaders(requestContext.getConfig()))
                 .method(RequestMethod.POST)
                 .build();
 

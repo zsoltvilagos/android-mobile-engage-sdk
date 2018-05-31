@@ -32,7 +32,6 @@ public class InboxInternalProviderTest {
     public void testProvide_returnsInternal_V1_withExperimentalFalse() {
         InboxInternal inboxInternal = provider.provideInboxInternal(
                 false,
-                mock(MobileEngageConfig.class),
                 mock(RequestManager.class),
                 mock(RestClient.class),
                 mock(DeviceInfo.class),
@@ -45,7 +44,6 @@ public class InboxInternalProviderTest {
     public void testProvide_returnsInternal_V2_withExperimentalTrue() {
         InboxInternal inboxInternal = provider.provideInboxInternal(
                 true,
-                mock(MobileEngageConfig.class),
                 mock(RequestManager.class),
                 mock(RestClient.class),
                 mock(DeviceInfo.class),

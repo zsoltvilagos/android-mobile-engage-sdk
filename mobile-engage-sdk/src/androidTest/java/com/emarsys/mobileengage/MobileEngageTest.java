@@ -428,7 +428,7 @@ public class MobileEngageTest {
                 mock(Handler.class),
                 completionHandler,
                 new RequestContext(
-                        baseConfig.getApplicationCode(),
+                        baseConfig,
                         mock(DeviceInfo.class),
                         new AppLoginStorage(application),
                         mock(MeIdStorage.class),

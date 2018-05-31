@@ -84,7 +84,7 @@ public class MobileEngageInternalIdlingResourceTest {
                 mock(Handler.class),
                 mock(MobileEngageCoreCompletionHandler.class),
                 new RequestContext(
-                        config.getApplicationCode(),
+                        config,
                         mock(DeviceInfo.class),
                         mock(AppLoginStorage.class),
                         meIdStorage,

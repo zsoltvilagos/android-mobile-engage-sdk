@@ -131,7 +131,7 @@ public class MobileEngageInternalStatusListenerTest {
         when(meIdSignatureStorage.get()).thenReturn("meIdSignature");
 
         requestContext = new RequestContext(
-                baseConfig.getApplicationCode(),
+                baseConfig,
                 mock(DeviceInfo.class),
                 new AppLoginStorage(context),
                 meIdStorage,

@@ -99,7 +99,7 @@ public class InboxInternal_V1Test {
         deviceInfo = new DeviceInfo(application);
 
         requestContext = new RequestContext(
-                config.getApplicationCode(),
+                config,
                 mock(DeviceInfo.class),
                 new AppLoginStorage(application),
                 mock(MeIdStorage.class),
@@ -107,7 +107,7 @@ public class InboxInternal_V1Test {
                 mock(TimestampProvider.class)
         );
 
-        inbox = new InboxInternal_V1(config, manager, restClient, deviceInfo, requestContext);
+        inbox = new InboxInternal_V1(manager, restClient, deviceInfo, requestContext);
 
         resultListenerMock = mock(InboxResultListener.class);
         resetListenerMock = mock(ResetBadgeCountResultListener.class);
@@ -123,28 +123,23 @@ public class InboxInternal_V1Test {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testConstructor_mobileEngageInternal_shouldNotBeNull() {
-        new InboxInternal_V1(null, manager, restClient, deviceInfo, requestContext);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
     public void testConstructor_requestManager_shouldNotBeNull() {
-        new InboxInternal_V1(config, null, restClient, deviceInfo, requestContext);
+        new InboxInternal_V1(null, restClient, deviceInfo, requestContext);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_restClient_shouldNotBeNull() {
-        new InboxInternal_V1(config, manager, null, deviceInfo, requestContext);
+        new InboxInternal_V1(manager, null, deviceInfo, requestContext);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_deviceInfo_shouldNotBeNull() {
-        new InboxInternal_V1(config, manager, restClient, null, requestContext);
+        new InboxInternal_V1(manager, restClient, null, requestContext);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_requestContext_shouldNotBeNull() {
-        new InboxInternal_V1(config, manager, restClient, deviceInfo, null);
+        new InboxInternal_V1(manager, restClient, deviceInfo, null);
     }
 
     @Test(expected = IllegalArgumentException.class)

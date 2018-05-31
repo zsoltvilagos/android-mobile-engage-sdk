@@ -37,7 +37,6 @@ public class InboxInternal_V2 implements InboxInternal {
 
     private Handler mainHandler;
     private RestClient client;
-    private MobileEngageConfig config;
     private NotificationCache cache;
     private RequestContext requestContext;
     private MeIdStorage meIdStorage;
@@ -48,17 +47,15 @@ public class InboxInternal_V2 implements InboxInternal {
     private boolean requestInProgress;
     private List<InboxResultListener> queuedResultListeners;
 
-    public InboxInternal_V2(MobileEngageConfig config,
-                            RequestManager requestManager,
-                            RestClient restClient,
-                            RequestContext requestContext) {
-        Assert.notNull(config, "Config must not be null!");
+    public InboxInternal_V2(
+            RequestManager requestManager,
+            RestClient restClient,
+            RequestContext requestContext) {
         Assert.notNull(requestManager, "RequestManager must not be null!");
         Assert.notNull(restClient, "RestClient must not be null!");
         Assert.notNull(requestContext, "RequestContext must not be null!");
-        EMSLogger.log(MobileEngageTopic.INBOX, "Arguments: config %s, requestManager %s", config, requestManager);
+        EMSLogger.log(MobileEngageTopic.INBOX, "Arguments: config %s, requestManager %s", requestContext.getConfig(), requestManager);
 
-        this.config = config;
         this.client = restClient;
         this.mainHandler = new Handler(Looper.getMainLooper());
         this.cache = new NotificationCache();
@@ -99,7 +96,7 @@ public class InboxInternal_V2 implements InboxInternal {
             } else {
                 RequestModel model = new RequestModel.Builder()
                         .url(String.format(Endpoint.INBOX_FETCH_V2, meId))
-                        .headers(createBaseHeaders(config))
+                        .headers(createBaseHeaders(requestContext.getConfig()))
                         .method(RequestMethod.GET)
                         .build();
 
@@ -154,7 +151,7 @@ public class InboxInternal_V2 implements InboxInternal {
         if (meId != null) {
             RequestModel model = new RequestModel.Builder()
                     .url(String.format(INBOX_RESET_BADGE_COUNT_V2, meId))
-                    .headers(createBaseHeaders(config))
+                    .headers(createBaseHeaders(requestContext.getConfig()))
                     .method(RequestMethod.DELETE)
                     .build();
 
@@ -218,7 +215,7 @@ public class InboxInternal_V2 implements InboxInternal {
             requestId = requestModel.getId();
         } else {
             final String uuid = UUID.randomUUID().toString();
-            final MobileEngageStatusListener statusListener = config.getStatusListener();
+            final MobileEngageStatusListener statusListener = requestContext.getConfig().getStatusListener();
             if (statusListener != null) {
                 mainHandler.post(new Runnable() {
                     @Override

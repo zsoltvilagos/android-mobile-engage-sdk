@@ -59,7 +59,7 @@ public class RequestModelUtilsTest {
         appLoginParameters = new AppLoginParameters(3, "test@test.com");
 
         requestContext = new RequestContext(
-                APPLICATION_CODE,
+                config,
                 deviceInfo,
                 mock(AppLoginStorage.class),
                 mock(MeIdStorage.class),
@@ -132,7 +132,7 @@ public class RequestModelUtilsTest {
                 .build();
 
         RequestContext requestContext = new RequestContext(
-                APPLICATION_CODE,
+                config,
                 deviceInfo,
                 mock(AppLoginStorage.class),
                 mock(MeIdStorage.class),

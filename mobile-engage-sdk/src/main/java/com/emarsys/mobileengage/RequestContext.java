@@ -4,6 +4,7 @@ import com.emarsys.core.DeviceInfo;
 import com.emarsys.core.timestamp.TimestampProvider;
 import com.emarsys.core.util.Assert;
 import com.emarsys.core.util.log.EMSLogger;
+import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
 import com.emarsys.mobileengage.storage.AppLoginStorage;
 import com.emarsys.mobileengage.storage.MeIdSignatureStorage;
@@ -11,7 +12,7 @@ import com.emarsys.mobileengage.storage.MeIdStorage;
 import com.emarsys.mobileengage.util.log.MobileEngageTopic;
 
 public class RequestContext {
-    private final String applicationCode;
+    private final MobileEngageConfig config;
     private final DeviceInfo deviceInfo;
     private final AppLoginStorage appLoginStorage;
     private final MeIdStorage meIdStorage;
@@ -20,19 +21,19 @@ public class RequestContext {
     private AppLoginParameters appLoginParameters;
 
     public RequestContext(
-            String applicationCode,
+            MobileEngageConfig config,
             DeviceInfo deviceInfo,
             AppLoginStorage appLoginStorage,
             MeIdStorage meIdStorage,
             MeIdSignatureStorage meIdSignatureStorage,
             TimestampProvider timestampProvider) {
-        Assert.notNull(applicationCode, "ApplicationCode must not be null!");
+        Assert.notNull(config, "Config must not be null!");
         Assert.notNull(deviceInfo, "DeviceInfo must not be null!");
         Assert.notNull(appLoginStorage, "AppLoginStorage must not be null!");
         Assert.notNull(meIdStorage, "MeIdStorage must not be null!");
         Assert.notNull(meIdSignatureStorage, "MeIdSignatureStorage must not be null!");
         Assert.notNull(timestampProvider, "TimestampProvider must not be null!");
-        this.applicationCode = applicationCode;
+        this.config = config;
         this.deviceInfo = deviceInfo;
         this.appLoginStorage = appLoginStorage;
         this.meIdStorage = meIdStorage;
@@ -41,7 +42,11 @@ public class RequestContext {
     }
 
     public String getApplicationCode() {
-        return applicationCode;
+        return config.getApplicationCode();
+    }
+
+    public MobileEngageConfig getConfig() {
+        return config;
     }
 
     public DeviceInfo getDeviceInfo() {

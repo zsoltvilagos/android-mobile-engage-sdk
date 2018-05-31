@@ -238,7 +238,7 @@ public class MobileEngage {
         requestManager.setDefaultHeaders(RequestHeaderUtils.createDefaultHeaders(config));
 
         requestContext = new RequestContext(
-                config.getApplicationCode(),
+                config,
                 deviceInfo,
                 appLoginStorage,
                 meIdStorage,
@@ -256,7 +256,6 @@ public class MobileEngage {
         );
         inboxInstance = new InboxInternalProvider().provideInboxInternal(
                 MobileEngageExperimental.isFeatureEnabled(MobileEngageFeature.USER_CENTRIC_INBOX),
-                config,
                 requestManager,
                 restClient,
                 deviceInfo,

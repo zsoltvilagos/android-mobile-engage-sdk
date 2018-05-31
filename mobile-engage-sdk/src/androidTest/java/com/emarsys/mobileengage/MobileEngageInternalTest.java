@@ -110,7 +110,7 @@ public class MobileEngageInternalTest {
         meIdSignatureStorage = new MeIdSignatureStorage(application);
 
         requestContext = new RequestContext(
-                baseConfig.getApplicationCode(),
+                baseConfig,
                 deviceInfo,
                 appLoginStorage,
                 meIdStorage,
