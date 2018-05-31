@@ -7,6 +7,7 @@ import com.emarsys.core.util.Assert;
 import com.emarsys.mobileengage.iam.model.buttonclicked.ButtonClicked;
 import com.emarsys.mobileengage.iam.model.displayediam.DisplayedIam;
 import com.emarsys.mobileengage.iam.model.specification.FilterByCampaignId;
+import com.emarsys.mobileengage.util.RequestUrlUtils;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -32,11 +33,15 @@ public class InAppCleanUpResponseHandler extends AbstractResponseHandler {
         boolean shouldHandle = false;
 
         JSONObject json = responseModel.getParsedBody();
-        if (json != null && json.has(OLD_MESSAGES)) {
+        if (json != null && json.has(OLD_MESSAGES) && isCustomEventResponseModel(responseModel)) {
             JSONArray array = json.optJSONArray(OLD_MESSAGES);
             shouldHandle = array.length() > 0;
         }
         return shouldHandle;
+    }
+
+    private boolean isCustomEventResponseModel(ResponseModel responseModel) {
+        return RequestUrlUtils.isCustomEvent_V3(responseModel.getRequestModel().getUrl().toString());
     }
 
     @Override
