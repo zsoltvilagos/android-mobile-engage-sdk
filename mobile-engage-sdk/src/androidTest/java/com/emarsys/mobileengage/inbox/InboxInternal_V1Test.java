@@ -100,14 +100,14 @@ public class InboxInternal_V1Test {
 
         requestContext = new RequestContext(
                 config,
-                mock(DeviceInfo.class),
+                deviceInfo,
                 new AppLoginStorage(application),
                 mock(MeIdStorage.class),
                 mock(MeIdSignatureStorage.class),
                 mock(TimestampProvider.class)
         );
 
-        inbox = new InboxInternal_V1(manager, restClient, deviceInfo, requestContext);
+        inbox = new InboxInternal_V1(manager, restClient, requestContext);
 
         resultListenerMock = mock(InboxResultListener.class);
         resetListenerMock = mock(ResetBadgeCountResultListener.class);
@@ -124,22 +124,17 @@ public class InboxInternal_V1Test {
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_requestManager_shouldNotBeNull() {
-        new InboxInternal_V1(null, restClient, deviceInfo, requestContext);
+        new InboxInternal_V1(null, restClient, requestContext);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_restClient_shouldNotBeNull() {
-        new InboxInternal_V1(manager, null, deviceInfo, requestContext);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testConstructor_deviceInfo_shouldNotBeNull() {
-        new InboxInternal_V1(manager, restClient, null, requestContext);
+        new InboxInternal_V1(manager, null, requestContext);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_requestContext_shouldNotBeNull() {
-        new InboxInternal_V1(manager, restClient, deviceInfo, null);
+        new InboxInternal_V1(manager, restClient, null);
     }
 
     @Test(expected = IllegalArgumentException.class)

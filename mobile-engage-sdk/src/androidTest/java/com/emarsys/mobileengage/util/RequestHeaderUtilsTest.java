@@ -4,9 +4,13 @@ import android.app.Application;
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
 
+import com.emarsys.core.DeviceInfo;
+import com.emarsys.core.timestamp.TimestampProvider;
 import com.emarsys.core.util.HeaderUtils;
 import com.emarsys.mobileengage.BuildConfig;
+import com.emarsys.mobileengage.RequestContext;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
+import com.emarsys.mobileengage.storage.AppLoginStorage;
 import com.emarsys.mobileengage.storage.MeIdSignatureStorage;
 import com.emarsys.mobileengage.storage.MeIdStorage;
 import com.emarsys.mobileengage.testUtil.ApplicationTestUtils;
@@ -21,8 +25,10 @@ import org.junit.rules.TestRule;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class RequestHeaderUtilsTest {
     private static final String APPLICATION_CODE = "applicationCode";
@@ -77,18 +83,8 @@ public class RequestHeaderUtilsTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testCreateBaseHeaders_V3_configShouldNotBeNull() {
-        RequestHeaderUtils.createBaseHeaders_V3(null, mock(MeIdStorage.class), mock(MeIdSignatureStorage.class));
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testCreateBaseHeaders_V3_meIdStorageShouldNotBeNull() {
-        RequestHeaderUtils.createBaseHeaders_V3("1234-ABCD", null, mock(MeIdSignatureStorage.class));
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testCreateBaseHeaders_V3_meIdSignatureStorageShouldNotBeNull() {
-        RequestHeaderUtils.createBaseHeaders_V3("1234-ABCD", mock(MeIdStorage.class), null);
+    public void testCreateBaseHeaders_V3_requestContextShouldNotBeNull() {
+        RequestHeaderUtils.createBaseHeaders_V3(null);
     }
 
     @Test
@@ -99,16 +95,17 @@ public class RequestHeaderUtilsTest {
         meIdStorage.set(meId);
         MeIdSignatureStorage meIdSignatureStorage = new MeIdSignatureStorage(context);
         meIdSignatureStorage.set(meIdSignature);
+        MobileEngageConfig config = mock(MobileEngageConfig.class);
+        when(config.getApplicationCode()).thenReturn(APPLICATION_CODE);
+
+        RequestContext requestContext = new RequestContext(config, mock(DeviceInfo.class), mock(AppLoginStorage.class), meIdStorage, meIdSignatureStorage, mock(TimestampProvider.class));
 
         Map<String, String> expected = new HashMap<>();
         expected.put("X-ME-ID", meId);
         expected.put("X-ME-ID-SIGNATURE", meIdSignature);
         expected.put("X-ME-APPLICATIONCODE", APPLICATION_CODE);
 
-        Map<String, String> result = RequestHeaderUtils.createBaseHeaders_V3(
-                APPLICATION_CODE,
-                meIdStorage,
-                meIdSignatureStorage);
+        Map<String, String> result = RequestHeaderUtils.createBaseHeaders_V3(requestContext);
 
         assertEquals(expected, result);
     }

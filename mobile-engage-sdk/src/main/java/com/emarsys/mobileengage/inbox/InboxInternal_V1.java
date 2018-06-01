@@ -35,17 +35,14 @@ public class InboxInternal_V1 implements InboxInternal {
     RestClient client;
     NotificationCache cache;
     RequestManager manager;
-    DeviceInfo deviceInfo;
     RequestContext requestContext;
 
     public InboxInternal_V1(
             RequestManager requestManager,
             RestClient restClient,
-            DeviceInfo deviceInfo,
             RequestContext requestContext) {
         Assert.notNull(requestManager, "RequestManager must not be null!");
         Assert.notNull(restClient, "RestClient must not be null!");
-        Assert.notNull(deviceInfo, "DeviceInfo must not be null!");
         Assert.notNull(requestContext, "RequestContext must not be null!");
         EMSLogger.log(MobileEngageTopic.INBOX, "Arguments: config %s, requestManager %s", requestContext.getConfig(), requestManager);
 
@@ -53,7 +50,6 @@ public class InboxInternal_V1 implements InboxInternal {
         this.handler = new Handler(Looper.getMainLooper());
         this.cache = new NotificationCache();
         this.manager = requestManager;
-        this.deviceInfo = deviceInfo;
         this.requestContext = requestContext;
     }
 
@@ -125,7 +121,7 @@ public class InboxInternal_V1 implements InboxInternal {
     public String trackMessageOpen(Notification message) {
         EMSLogger.log(MobileEngageTopic.INBOX, "Argument: %s", message);
 
-        Map<String, Object> payload = RequestPayloadUtils.createBasePayload(requestContext.getConfig(), requestContext.getAppLoginParameters(), deviceInfo);
+        Map<String, Object> payload = RequestPayloadUtils.createBasePayload(requestContext);
         payload.put("source", "inbox");
         payload.put("sid", message.getSid());
         RequestModel model = new RequestModel.Builder()

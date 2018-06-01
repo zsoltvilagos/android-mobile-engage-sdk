@@ -4,7 +4,6 @@ import com.emarsys.core.DeviceInfo;
 import com.emarsys.core.util.Assert;
 import com.emarsys.mobileengage.MobileEngageInternal;
 import com.emarsys.mobileengage.RequestContext;
-import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
 import com.emarsys.mobileengage.iam.model.IamConversionUtils;
 import com.emarsys.mobileengage.iam.model.buttonclicked.ButtonClicked;
@@ -18,21 +17,19 @@ import java.util.Map;
 public class RequestPayloadUtils {
 
     @SuppressWarnings("unchecked")
-    public static Map<String, Object> createBasePayload(MobileEngageConfig config, AppLoginParameters parameters, DeviceInfo deviceInfo) {
-        Assert.notNull(config, "Config must not be null!");
-        Assert.notNull(deviceInfo, "DeviceInfo must not be null!");
-        return createBasePayload(Collections.EMPTY_MAP, config, parameters, deviceInfo);
+    public static Map<String, Object> createBasePayload(RequestContext requestContext) {
+        return createBasePayload(Collections.EMPTY_MAP, requestContext);
     }
 
-    public static Map<String, Object> createBasePayload(Map<String, Object> additionalPayload, MobileEngageConfig config, AppLoginParameters parameters, DeviceInfo deviceInfo) {
+    public static Map<String, Object> createBasePayload(Map<String, Object> additionalPayload, RequestContext requestContext) {
         Assert.notNull(additionalPayload, "AdditionalPayload must not be null!");
-        Assert.notNull(config, "Config must not be null!");
-        Assert.notNull(deviceInfo, "DeviceInfo must not be null!");
+        Assert.notNull(requestContext, "RequestContext must not be null!");
 
         Map<String, Object> payload = new HashMap<>();
-        payload.put("application_id", config.getApplicationCode());
-        payload.put("hardware_id", deviceInfo.getHwid());
+        payload.put("application_id", requestContext.getApplicationCode());
+        payload.put("hardware_id", requestContext.getDeviceInfo().getHwid());
 
+        AppLoginParameters parameters = requestContext.getAppLoginParameters();
         if (parameters != null && parameters.hasCredentials()) {
             payload.put("contact_field_id", parameters.getContactFieldId());
             payload.put("contact_field_value", parameters.getContactFieldValue());
@@ -45,13 +42,10 @@ public class RequestPayloadUtils {
     }
 
     public static Map<String, Object> createAppLoginPayload(
-            MobileEngageConfig config,
-            AppLoginParameters appLoginParameters,
             RequestContext requestContext,
             String pushToken) {
-        Assert.notNull(config, "Config must not be null!");
         Assert.notNull(requestContext, "RequestContext must not be null!");
-        Map<String, Object> payload = RequestPayloadUtils.createBasePayload(config, appLoginParameters, requestContext.getDeviceInfo());
+        Map<String, Object> payload = RequestPayloadUtils.createBasePayload(requestContext);
 
         payload.put("platform", requestContext.getDeviceInfo().getPlatform());
         payload.put("language", requestContext.getDeviceInfo().getLanguage());

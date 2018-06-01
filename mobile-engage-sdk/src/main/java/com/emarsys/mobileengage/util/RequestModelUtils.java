@@ -2,14 +2,9 @@ package com.emarsys.mobileengage.util;
 
 import com.emarsys.core.request.model.RequestMethod;
 import com.emarsys.core.request.model.RequestModel;
-import com.emarsys.core.timestamp.TimestampProvider;
 import com.emarsys.core.util.Assert;
 import com.emarsys.core.util.TimestampUtils;
 import com.emarsys.mobileengage.RequestContext;
-import com.emarsys.mobileengage.config.MobileEngageConfig;
-import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
-import com.emarsys.mobileengage.storage.MeIdSignatureStorage;
-import com.emarsys.mobileengage.storage.MeIdStorage;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -26,50 +21,40 @@ public class RequestModelUtils {
         return RequestUrlUtils.isCustomEvent_V3(url);
     }
 
-    public static RequestModel createAppLogin_V2(MobileEngageConfig config,
-                                                 AppLoginParameters appLoginParameters,
-                                                 RequestContext requestContext,
+    public static RequestModel createAppLogin_V2(RequestContext requestContext,
                                                  String pushToken) {
-        Assert.notNull(config, "Config must not be null");
         Assert.notNull(requestContext, "RequestContext must not be null");
 
-        Map<String, Object> payload = RequestPayloadUtils.createAppLoginPayload(config, appLoginParameters, requestContext, pushToken);
+        Map<String, Object> payload = RequestPayloadUtils.createAppLoginPayload(requestContext, pushToken);
 
         return new RequestModel.Builder()
                 .url(ME_LOGIN_V2)
                 .payload(payload)
-                .headers(RequestHeaderUtils.createBaseHeaders_V2(config))
+                .headers(RequestHeaderUtils.createBaseHeaders_V2(requestContext.getConfig()))
                 .build();
     }
 
-    public static RequestModel createLastMobileActivity(MobileEngageConfig config, AppLoginParameters appLoginParameters, RequestContext requestContext) {
-        Assert.notNull(config, "Config must not be null");
+    public static RequestModel createLastMobileActivity(RequestContext requestContext) {
         Assert.notNull(requestContext, "RequestContext must not be null");
 
         return new RequestModel.Builder()
                 .url(ME_LAST_MOBILE_ACTIVITY_V2)
-                .payload(RequestPayloadUtils.createBasePayload(config, appLoginParameters, requestContext.getDeviceInfo()))
-                .headers(RequestHeaderUtils.createBaseHeaders_V2(config))
+                .payload(RequestPayloadUtils.createBasePayload(requestContext))
+                .headers(RequestHeaderUtils.createBaseHeaders_V2(requestContext.getConfig()))
                 .build();
     }
 
     public static RequestModel createInternalCustomEvent(
             String eventName,
             Map<String, String> attributes,
-            String applicationCode,
-            MeIdStorage meIdStorage,
-            MeIdSignatureStorage meIdSignatureStorage,
-            TimestampProvider timestampProvider) {
+            RequestContext requestContext) {
         Assert.notNull(eventName, "EventName must not be null!");
-        Assert.notNull(timestampProvider, "TimestampProvider must not be null!");
-        Assert.notNull(meIdStorage, "MeIdStorage must not be null!");
-        Assert.notNull(meIdSignatureStorage, "MeIdSignatureStorage must not be null!");
-        Assert.notNull(applicationCode, "ApplicationCode must not be null!");
+        Assert.notNull(requestContext, "RequestContext must not be null!");
 
         Map<String, Object> event = new HashMap<>();
         event.put("type", "internal");
         event.put("name", eventName);
-        event.put("timestamp", TimestampUtils.formatTimestampWithUTC(timestampProvider.provideTimestamp()));
+        event.put("timestamp", TimestampUtils.formatTimestampWithUTC(requestContext.getTimestampProvider().provideTimestamp()));
         if (attributes != null && !attributes.isEmpty()) {
             event.put("attributes", attributes);
         }
@@ -80,11 +65,11 @@ public class RequestModelUtils {
         payload.put("events", Collections.singletonList(event));
 
         return new RequestModel(
-                RequestUrlUtils.createEventUrl_V3(meIdStorage.get()),
+                RequestUrlUtils.createEventUrl_V3(requestContext.getMeIdStorage().get()),
                 RequestMethod.POST,
                 payload,
-                RequestHeaderUtils.createBaseHeaders_V3(applicationCode, meIdStorage, meIdSignatureStorage),
-                timestampProvider.provideTimestamp(),
+                RequestHeaderUtils.createBaseHeaders_V3(requestContext),
+                requestContext.getTimestampProvider().provideTimestamp(),
                 Long.MAX_VALUE,
                 RequestModel.nextId());
     }

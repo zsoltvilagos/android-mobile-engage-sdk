@@ -39,9 +39,6 @@ public class RequestModelUtilsTest {
     private static final String APPLICATION_PASSWORD = "applicationPassword";
     public static final String VALID_CUSTOM_EVENT_V3 = "https://mobile-events.eservice.emarsys.net/v3/devices/12345/events";
 
-    private DeviceInfo deviceInfo;
-    private MobileEngageConfig config;
-    private AppLoginParameters appLoginParameters;
     private RequestContext requestContext;
 
     @Rule
@@ -50,21 +47,21 @@ public class RequestModelUtilsTest {
     @Before
     public void setup() {
         SharedPrefsUtils.deleteMobileEngageSharedPrefs();
-        config = new MobileEngageConfig.Builder()
+        MobileEngageConfig config = new MobileEngageConfig.Builder()
                 .application((Application) InstrumentationRegistry.getTargetContext().getApplicationContext())
                 .credentials(APPLICATION_CODE, APPLICATION_PASSWORD)
                 .disableDefaultChannel()
                 .build();
-        deviceInfo = new DeviceInfo(InstrumentationRegistry.getContext());
-        appLoginParameters = new AppLoginParameters(3, "test@test.com");
 
         requestContext = new RequestContext(
                 config,
-                deviceInfo,
+                new DeviceInfo(InstrumentationRegistry.getContext()),
                 mock(AppLoginStorage.class),
                 mock(MeIdStorage.class),
                 mock(MeIdSignatureStorage.class),
                 mock(TimestampProvider.class));
+
+        requestContext.setAppLoginParameters(new AppLoginParameters(3, "test@test.com"));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -91,55 +88,39 @@ public class RequestModelUtilsTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testCreateAppLogin_V2_config_mustNotBeNull() {
-        RequestModelUtils.createAppLogin_V2(null, appLoginParameters, requestContext, "pushtoken");
-    }
-
-    @Test(expected = IllegalArgumentException.class)
     public void testCreateAppLogin_V2_requestContext_mustNotBeNull() {
-        RequestModelUtils.createAppLogin_V2(config, appLoginParameters, null, "pushtoken");
+        RequestModelUtils.createAppLogin_V2(null, "pushtoken");
     }
 
     @Test
     public void testCreateAppLogin_V2() {
         RequestModel expected = new RequestModel.Builder()
                 .url("https://push.eservice.emarsys.net/api/mobileengage/v2/users/login")
-                .payload(RequestPayloadUtils.createAppLoginPayload(config, appLoginParameters, requestContext, null))
-                .headers(RequestHeaderUtils.createBaseHeaders_V2(config))
+                .payload(RequestPayloadUtils.createAppLoginPayload(requestContext, null))
+                .headers(RequestHeaderUtils.createBaseHeaders_V2(requestContext.getConfig()))
                 .build();
 
-        RequestModel result = RequestModelUtils.createAppLogin_V2(config, appLoginParameters, requestContext, null);
+        RequestModel result = RequestModelUtils.createAppLogin_V2(requestContext, null);
 
         RequestModelTestUtils.assertEqualsRequestModels(expected, result);
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testCreateLastMobileActivity_config_mustNotBeNull() {
-        RequestModelUtils.createLastMobileActivity(null, appLoginParameters, mock(RequestContext.class));
+    public void testCreateLastMobileActivity_requestContext_mustNotBeNull() {
+        RequestModelUtils.createLastMobileActivity(null);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testCreateLastMobileActivity_deviceInfo_mustNotBeNull() {
-        RequestModelUtils.createLastMobileActivity(config, appLoginParameters, null);
-    }
+
 
     @Test
     public void testCreateLastMobileActivity() {
         RequestModel expected = new RequestModel.Builder()
                 .url("https://push.eservice.emarsys.net/api/mobileengage/v2/events/ems_lastMobileActivity")
-                .payload(RequestPayloadUtils.createBasePayload(config, appLoginParameters, deviceInfo))
-                .headers(RequestHeaderUtils.createBaseHeaders_V2(config))
+                .payload(RequestPayloadUtils.createBasePayload(requestContext))
+                .headers(RequestHeaderUtils.createBaseHeaders_V2(requestContext.getConfig()))
                 .build();
 
-        RequestContext requestContext = new RequestContext(
-                config,
-                deviceInfo,
-                mock(AppLoginStorage.class),
-                mock(MeIdStorage.class),
-                mock(MeIdSignatureStorage.class),
-                mock(TimestampProvider.class));
-
-        RequestModel result = RequestModelUtils.createLastMobileActivity(config, appLoginParameters, requestContext);
+        RequestModel result = RequestModelUtils.createLastMobileActivity(requestContext);
 
         RequestModelTestUtils.assertEqualsRequestModels(expected, result);
     }
@@ -149,57 +130,15 @@ public class RequestModelUtilsTest {
         RequestModelUtils.createInternalCustomEvent(
                 null,
                 new HashMap<String, String>(),
-                APPLICATION_CODE,
-                mock(MeIdStorage.class),
-                mock(MeIdSignatureStorage.class),
-                mock(TimestampProvider.class)
+                requestContext
         );
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testCreateInternalCustomEvent_applicationCodeShouldNotBeNull() {
+    public void testCreateInternalCustomEvent_requestContextShouldNotBeNull() {
         RequestModelUtils.createInternalCustomEvent(
                 "eventname",
                 new HashMap<String, String>(),
-                null,
-                mock(MeIdStorage.class),
-                mock(MeIdSignatureStorage.class),
-                mock(TimestampProvider.class)
-        );
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testCreateInternalCustomEvent_meIdStorageShouldNotBeNull() {
-        RequestModelUtils.createInternalCustomEvent(
-                "eventname",
-                new HashMap<String, String>(),
-                APPLICATION_CODE,
-                null,
-                mock(MeIdSignatureStorage.class),
-                mock(TimestampProvider.class)
-        );
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testCreateInternalCustomEvent_meIdSignatureStorageShouldNotBeNull() {
-        RequestModelUtils.createInternalCustomEvent(
-                "eventname",
-                new HashMap<String, String>(),
-                APPLICATION_CODE,
-                mock(MeIdStorage.class),
-                null,
-                mock(TimestampProvider.class)
-        );
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testCreateInternalCustomEvent_timestampProviderShouldNotBeNull() {
-        RequestModelUtils.createInternalCustomEvent(
-                "eventname",
-                new HashMap<String, String>(),
-                APPLICATION_CODE,
-                mock(MeIdStorage.class),
-                mock(MeIdSignatureStorage.class),
                 null
         );
     }
@@ -207,15 +146,12 @@ public class RequestModelUtilsTest {
     @Test
     public void testCreateInternalCustomEvent_withoutAttributes() {
         long timestamp = 90_000;
-        TimestampProvider timestampProvider = mock(TimestampProvider.class);
-        when(timestampProvider.provideTimestamp()).thenReturn(timestamp);
+        when(requestContext.getTimestampProvider().provideTimestamp()).thenReturn(timestamp);
         String eventName = "name";
         String meId = "12345";
         String meIdSignature = "12345";
-        MeIdStorage meIdStorage = mock(MeIdStorage.class);
-        when(meIdStorage.get()).thenReturn(meId);
-        MeIdSignatureStorage meIdSignatureStorage = mock(MeIdSignatureStorage.class);
-        when(meIdSignatureStorage.get()).thenReturn(meIdSignature);
+        when(requestContext.getMeIdStorage().get()).thenReturn(meId);
+        when(requestContext.getMeIdSignatureStorage().get()).thenReturn(meIdSignature);
 
         Map<String, Object> event = new HashMap<>();
         event.put("type", "internal");
@@ -230,16 +166,13 @@ public class RequestModelUtilsTest {
         RequestModel actual = RequestModelUtils.createInternalCustomEvent(
                 eventName,
                 null,
-                APPLICATION_CODE,
-                meIdStorage,
-                meIdSignatureStorage,
-                timestampProvider);
+                requestContext);
 
         RequestModel expected = new RequestModel(
                 RequestUrlUtils.createEventUrl_V3(meId),
                 RequestMethod.POST,
                 payload,
-                RequestHeaderUtils.createBaseHeaders_V3(APPLICATION_CODE, meIdStorage, meIdSignatureStorage),
+                RequestHeaderUtils.createBaseHeaders_V3(requestContext),
                 timestamp,
                 Long.MAX_VALUE,
                 actual.getId());
@@ -250,15 +183,12 @@ public class RequestModelUtilsTest {
     @Test
     public void testCreateInternalCustomEvent_withAttributes() {
         long timestamp = 90_000;
-        TimestampProvider timestampProvider = mock(TimestampProvider.class);
-        when(timestampProvider.provideTimestamp()).thenReturn(timestamp);
+        when(requestContext.getTimestampProvider().provideTimestamp()).thenReturn(timestamp);
         String eventName = "name";
         String meId = "12345";
         String meIdSignature = "12345";
-        MeIdStorage meIdStorage = mock(MeIdStorage.class);
-        when(meIdStorage.get()).thenReturn(meId);
-        MeIdSignatureStorage meIdSignatureStorage = mock(MeIdSignatureStorage.class);
-        when(meIdSignatureStorage.get()).thenReturn(meIdSignature);
+        when(requestContext.getMeIdStorage().get()).thenReturn(meId);
+        when(requestContext.getMeIdSignatureStorage().get()).thenReturn(meIdSignature);
 
         Map<String, String> attributes = new HashMap<>();
         attributes.put("key1", "value1");
@@ -279,16 +209,13 @@ public class RequestModelUtilsTest {
         RequestModel actual = RequestModelUtils.createInternalCustomEvent(
                 eventName,
                 attributes,
-                APPLICATION_CODE,
-                meIdStorage,
-                meIdSignatureStorage,
-                timestampProvider);
+                requestContext);
 
         RequestModel expected = new RequestModel(
                 RequestUrlUtils.createEventUrl_V3(meId),
                 RequestMethod.POST,
                 payload,
-                RequestHeaderUtils.createBaseHeaders_V3(APPLICATION_CODE, meIdStorage, meIdSignatureStorage),
+                RequestHeaderUtils.createBaseHeaders_V3(requestContext),
                 timestamp,
                 Long.MAX_VALUE,
                 actual.getId());

@@ -714,10 +714,7 @@ public class InboxInternal_V2Test {
         RequestModel expected = new RequestModel.Builder()
                 .url(ENDPOINT_BASE_V3 + ME_ID + "/events")
                 .payload(payload)
-                .headers(RequestHeaderUtils.createBaseHeaders_V3(
-                        requestContext.getApplicationCode(),
-                        requestContext.getMeIdStorage(),
-                        requestContext.getMeIdSignatureStorage()))
+                .headers(RequestHeaderUtils.createBaseHeaders_V3(requestContext))
                 .build();
 
         ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);

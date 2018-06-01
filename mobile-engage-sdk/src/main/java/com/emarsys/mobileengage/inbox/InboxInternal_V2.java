@@ -20,7 +20,6 @@ import com.emarsys.mobileengage.endpoint.Endpoint;
 import com.emarsys.mobileengage.inbox.model.Notification;
 import com.emarsys.mobileengage.inbox.model.NotificationCache;
 import com.emarsys.mobileengage.inbox.model.NotificationInboxStatus;
-import com.emarsys.mobileengage.storage.MeIdStorage;
 import com.emarsys.mobileengage.util.RequestHeaderUtils;
 import com.emarsys.mobileengage.util.RequestModelUtils;
 import com.emarsys.mobileengage.util.log.MobileEngageTopic;
@@ -39,7 +38,6 @@ public class InboxInternal_V2 implements InboxInternal {
     private RestClient client;
     private NotificationCache cache;
     private RequestContext requestContext;
-    private MeIdStorage meIdStorage;
     private RequestManager manager;
     private NotificationInboxStatus lastNotificationInboxStatus;
     private long responseTime;
@@ -61,7 +59,6 @@ public class InboxInternal_V2 implements InboxInternal {
         this.cache = new NotificationCache();
         this.manager = requestManager;
         this.requestContext = requestContext;
-        this.meIdStorage = requestContext.getMeIdStorage();
         this.queuedResultListeners = new ArrayList<>();
     }
 
@@ -84,7 +81,7 @@ public class InboxInternal_V2 implements InboxInternal {
                 return;
             }
 
-            final String meId = meIdStorage.get();
+            final String meId = requestContext.getMeIdStorage().get();
 
             if (meId == null) {
                 mainHandler.post(new Runnable() {
@@ -147,7 +144,7 @@ public class InboxInternal_V2 implements InboxInternal {
     @Override
     public void resetBadgeCount(final ResetBadgeCountResultListener listener) {
         EMSLogger.log(MobileEngageTopic.INBOX, "Arguments: resultListener %s", listener);
-        String meId = meIdStorage.get();
+        String meId = requestContext.getMeIdStorage().get();
         if (meId != null) {
             RequestModel model = new RequestModel.Builder()
                     .url(String.format(INBOX_RESET_BADGE_COUNT_V2, meId))
@@ -207,10 +204,7 @@ public class InboxInternal_V2 implements InboxInternal {
             RequestModel requestModel = RequestModelUtils.createInternalCustomEvent(
                     "inbox:open",
                     attributes,
-                    requestContext.getApplicationCode(),
-                    requestContext.getMeIdStorage(),
-                    requestContext.getMeIdSignatureStorage(),
-                    requestContext.getTimestampProvider());
+                    requestContext);
             manager.submit(requestModel);
             requestId = requestModel.getId();
         } else {

@@ -258,7 +258,6 @@ public class MobileEngage {
                 MobileEngageExperimental.isFeatureEnabled(MobileEngageFeature.USER_CENTRIC_INBOX),
                 requestManager,
                 restClient,
-                deviceInfo,
                 requestContext
         );
         deepLinkInstance = new DeepLinkInternal(requestManager);

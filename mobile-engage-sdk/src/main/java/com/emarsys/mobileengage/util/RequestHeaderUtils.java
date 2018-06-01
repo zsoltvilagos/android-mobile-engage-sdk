@@ -3,9 +3,8 @@ package com.emarsys.mobileengage.util;
 import com.emarsys.core.util.Assert;
 import com.emarsys.core.util.HeaderUtils;
 import com.emarsys.mobileengage.BuildConfig;
+import com.emarsys.mobileengage.RequestContext;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
-import com.emarsys.mobileengage.storage.MeIdSignatureStorage;
-import com.emarsys.mobileengage.storage.MeIdStorage;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -19,18 +18,13 @@ public class RequestHeaderUtils {
         return baseHeaders;
     }
 
-    public static Map<String, String> createBaseHeaders_V3(
-            String applicationCode,
-            MeIdStorage meIdStorage,
-            MeIdSignatureStorage meIdSignatureStorage) {
-        Assert.notNull(applicationCode, "ApplicationCode must not be null!");
-        Assert.notNull(meIdStorage, "MeIdStorage must not be null!");
-        Assert.notNull(meIdSignatureStorage, "MeIdSignatureStorage must not be null!");
+    public static Map<String, String> createBaseHeaders_V3(RequestContext requestContext) {
+        Assert.notNull(requestContext, "RequestContext must not be null!");
 
         Map<String, String> baseHeaders = new HashMap<>();
-        baseHeaders.put("X-ME-ID", meIdStorage.get());
-        baseHeaders.put("X-ME-ID-SIGNATURE", meIdSignatureStorage.get());
-        baseHeaders.put("X-ME-APPLICATIONCODE", applicationCode);
+        baseHeaders.put("X-ME-ID", requestContext.getMeIdStorage().get());
+        baseHeaders.put("X-ME-ID-SIGNATURE", requestContext.getMeIdSignatureStorage().get());
+        baseHeaders.put("X-ME-APPLICATIONCODE", requestContext.getApplicationCode());
 
         return baseHeaders;
     }

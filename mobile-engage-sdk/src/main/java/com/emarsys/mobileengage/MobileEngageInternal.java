@@ -90,8 +90,6 @@ public class MobileEngageInternal {
         EMSLogger.log(MobileEngageTopic.MOBILE_ENGAGE, "Called");
 
         RequestModel model = RequestModelUtils.createAppLogin_V2(
-                config,
-                requestContext.getAppLoginParameters(),
                 requestContext,
                 pushToken);
 
@@ -99,10 +97,7 @@ public class MobileEngageInternal {
         int currentHashCode = model.getPayload().hashCode();
 
         if (!shouldDoAppLogin(storedHashCode, currentHashCode, requestContext.getMeIdStorage())) {
-            model = RequestModelUtils.createLastMobileActivity(
-                    config,
-                    requestContext.getAppLoginParameters(),
-                    requestContext);
+            model = RequestModelUtils.createLastMobileActivity(requestContext);
         } else {
             requestContext.getAppLoginStorage().set(currentHashCode);
         }
@@ -117,10 +112,7 @@ public class MobileEngageInternal {
 
         RequestModel model = new RequestModel.Builder()
                 .url(ME_LOGOUT_V2)
-                .payload(RequestPayloadUtils.createBasePayload(
-                        config,
-                        requestContext.getAppLoginParameters(),
-                        requestContext.getDeviceInfo()))
+                .payload(RequestPayloadUtils.createBasePayload(requestContext))
                 .headers(RequestHeaderUtils.createBaseHeaders_V2(config))
                 .build();
 
@@ -144,10 +136,7 @@ public class MobileEngageInternal {
                                @Nullable Map<String, String> eventAttributes) {
         EMSLogger.log(MobileEngageTopic.MOBILE_ENGAGE, "Arguments: eventName %s, eventAttributes %s", eventName, eventAttributes);
 
-        Map<String, Object> payload = RequestPayloadUtils.createBasePayload(
-                config,
-                requestContext.getAppLoginParameters(),
-                requestContext.getDeviceInfo());
+        Map<String, Object> payload = RequestPayloadUtils.createBasePayload(requestContext);
         if (eventAttributes != null && !eventAttributes.isEmpty()) {
             payload.put("attributes", eventAttributes);
         }
@@ -182,10 +171,7 @@ public class MobileEngageInternal {
         RequestModel model = new RequestModel.Builder()
                 .url(RequestUrlUtils.createEventUrl_V3(requestContext.getMeIdStorage().get()))
                 .payload(payload)
-                .headers(RequestHeaderUtils.createBaseHeaders_V3(
-                        requestContext.getApplicationCode(),
-                        requestContext.getMeIdStorage(),
-                        requestContext.getMeIdSignatureStorage()))
+                .headers(RequestHeaderUtils.createBaseHeaders_V3(requestContext))
                 .build();
 
         MobileEngageUtils.incrementIdlingResource();
@@ -202,10 +188,7 @@ public class MobileEngageInternal {
             RequestModel model = RequestModelUtils.createInternalCustomEvent(
                     eventName,
                     eventAttributes,
-                    requestContext.getApplicationCode(),
-                    requestContext.getMeIdStorage(),
-                    requestContext.getMeIdSignatureStorage(),
-                    requestContext.getTimestampProvider());
+                    requestContext);
 
             MobileEngageUtils.incrementIdlingResource();
             manager.submit(model);
@@ -239,10 +222,7 @@ public class MobileEngageInternal {
 
     private String handleMessageOpen(String messageId) {
         if (messageId != null) {
-            Map<String, Object> payload = RequestPayloadUtils.createBasePayload(
-                    config,
-                    requestContext.getAppLoginParameters(),
-                    requestContext.getDeviceInfo());
+            Map<String, Object> payload = RequestPayloadUtils.createBasePayload(requestContext);
             payload.put("sid", messageId);
             RequestModel model = new RequestModel.Builder()
                     .url(RequestUrlUtils.createEventUrl_V2("message_open"))
