@@ -2,6 +2,7 @@ package com.emarsys.mobileengage.experimental;
 
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -18,6 +19,11 @@ public class MobileEngageExperimentalTest {
 
     @Before
     public void setUp() {
+        MobileEngageExperimental.reset();
+    }
+
+    @After
+    public void tearDown() {
         MobileEngageExperimental.reset();
     }
 
@@ -47,5 +53,29 @@ public class MobileEngageExperimentalTest {
         assertEquals(1, MobileEngageExperimental.enabledFeatures.size());
         MobileEngageExperimental.reset();
         assertEquals(0, MobileEngageExperimental.enabledFeatures.size());
+    }
+
+    @Test
+    public void testIsV3Enabled_returnsFalse_ifNeitherInAppNOrInbox_isTurnedOn() {
+        assertFalse(MobileEngageExperimental.isV3Enabled());
+    }
+
+    @Test
+    public void testIsV3Enabled_returnsTrue_ifInApp_isTurnedOn() {
+        MobileEngageExperimental.enableFeature(MobileEngageFeature.IN_APP_MESSAGING);
+        assertTrue(MobileEngageExperimental.isV3Enabled());
+    }
+
+    @Test
+    public void testIsV3Enabled_returnsTrue_ifInboxV2_isTurnedOn() {
+        MobileEngageExperimental.enableFeature(MobileEngageFeature.USER_CENTRIC_INBOX);
+        assertTrue(MobileEngageExperimental.isV3Enabled());
+    }
+
+    @Test
+    public void testIsV3Enabled_returnsTrue_ifBoth_inAppAndInboxV2_areTurnedOn() {
+        MobileEngageExperimental.enableFeature(MobileEngageFeature.IN_APP_MESSAGING);
+        MobileEngageExperimental.enableFeature(MobileEngageFeature.USER_CENTRIC_INBOX);
+        assertTrue(MobileEngageExperimental.isV3Enabled());
     }
 }

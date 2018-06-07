@@ -160,8 +160,7 @@ public class DefaultDependencyContainer implements DependencyContainer {
 
     private Repository<RequestModel, SqlSpecification> createRequestModelRepository(Context application) {
         RequestModelRepository requestModelRepository = new RequestModelRepository(application);
-        if (MobileEngageExperimental.isFeatureEnabled(MobileEngageFeature.IN_APP_MESSAGING) ||
-                MobileEngageExperimental.isFeatureEnabled(MobileEngageFeature.USER_CENTRIC_INBOX)) {
+        if (MobileEngageExperimental.isV3Enabled()) {
             return new RequestRepositoryProxy(
                     deviceInfo,
                     requestModelRepository,
@@ -194,8 +193,7 @@ public class DefaultDependencyContainer implements DependencyContainer {
     private void initializeResponseHandlers() {
         List<AbstractResponseHandler> responseHandlers = new ArrayList<>();
 
-        if (MobileEngageExperimental.isFeatureEnabled(MobileEngageFeature.IN_APP_MESSAGING) ||
-                MobileEngageExperimental.isFeatureEnabled(MobileEngageFeature.USER_CENTRIC_INBOX)) {
+        if (MobileEngageExperimental.isV3Enabled()) {
             responseHandlers.add(new MeIdResponseHandler(
                     meIdStorage,
                     meIdSignatureStorage));

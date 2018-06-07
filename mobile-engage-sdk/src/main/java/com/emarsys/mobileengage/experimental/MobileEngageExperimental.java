@@ -11,6 +11,10 @@ public class MobileEngageExperimental {
         return enabledFeatures.contains(feature.getName());
     }
 
+    public static boolean isV3Enabled() {
+        return isFeatureEnabled(MobileEngageFeature.IN_APP_MESSAGING) || isFeatureEnabled(MobileEngageFeature.USER_CENTRIC_INBOX);
+    }
+
     public static void enableFeature(FlipperFeature feature) {
         enabledFeatures.add(feature.getName());
     }
