@@ -6,7 +6,7 @@ import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SdkSuppress;
 import android.support.v4.app.NotificationCompat;
 
-import com.emarsys.mobileengage.notification.command.NotificationCommandFactory;
+import com.emarsys.mobileengage.notification.NotificationCommandFactory;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
 import org.json.JSONArray;

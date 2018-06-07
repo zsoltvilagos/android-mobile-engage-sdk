@@ -1,4 +1,4 @@
-package com.emarsys.mobileengage.notification.command;
+package com.emarsys.mobileengage.notification;
 
 import android.content.Context;
 import android.content.Intent;
@@ -7,6 +7,10 @@ import android.os.Bundle;
 
 import com.emarsys.core.util.Assert;
 import com.emarsys.core.util.JsonUtils;
+import com.emarsys.mobileengage.notification.command.AppEventCommand;
+import com.emarsys.mobileengage.notification.command.CustomEventCommand;
+import com.emarsys.mobileengage.notification.command.LaunchApplicationCommand;
+import com.emarsys.mobileengage.notification.command.OpenExternalUrlCommand;
 
 import org.json.JSONArray;
 import org.json.JSONException;

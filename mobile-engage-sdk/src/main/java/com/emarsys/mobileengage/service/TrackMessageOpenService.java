@@ -6,7 +6,7 @@ import android.os.IBinder;
 
 import com.emarsys.core.util.log.EMSLogger;
 import com.emarsys.mobileengage.MobileEngage;
-import com.emarsys.mobileengage.notification.command.NotificationCommandFactory;
+import com.emarsys.mobileengage.notification.NotificationCommandFactory;
 import com.emarsys.mobileengage.util.log.MobileEngageTopic;
 
 public class TrackMessageOpenService extends Service {

@@ -5,7 +5,7 @@ import android.content.Intent;
 import android.support.v4.app.NotificationCompat;
 
 import com.emarsys.core.validate.JsonObjectValidator;
-import com.emarsys.mobileengage.notification.command.NotificationCommandFactory;
+import com.emarsys.mobileengage.notification.NotificationCommandFactory;
 
 import org.json.JSONArray;
 import org.json.JSONException;
