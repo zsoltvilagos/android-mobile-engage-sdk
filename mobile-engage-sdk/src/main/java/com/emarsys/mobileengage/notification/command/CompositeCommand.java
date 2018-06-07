@@ -20,4 +20,8 @@ public class CompositeCommand implements Runnable {
             command.run();
         }
     }
+
+    public List<Runnable> getCommands() {
+        return commands;
+    }
 }

@@ -6,6 +6,7 @@ import android.os.IBinder;
 
 import com.emarsys.core.util.log.EMSLogger;
 import com.emarsys.mobileengage.MobileEngage;
+import com.emarsys.mobileengage.di.DependencyInjection;
 import com.emarsys.mobileengage.notification.NotificationCommandFactory;
 import com.emarsys.mobileengage.util.log.MobileEngageTopic;
 
@@ -17,7 +18,9 @@ public class TrackMessageOpenService extends Service {
 
         EMSLogger.log(MobileEngageTopic.PUSH, "Notification was clicked");
 
-        NotificationActionUtils.handleAction(intent, new NotificationCommandFactory(this));
+        NotificationActionUtils.handleAction(intent, new NotificationCommandFactory(
+                this,
+                DependencyInjection.getContainer().getMobileEngageInternal()));
 
         if (intent != null) {
             MobileEngage.trackMessageOpen(intent);
