@@ -17,6 +17,9 @@ import com.emarsys.core.timestamp.TimestampProvider;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.deeplink.DeepLinkAction;
 import com.emarsys.mobileengage.deeplink.DeepLinkInternal;
+import com.emarsys.mobileengage.di.DefaultDependencyContainer;
+import com.emarsys.mobileengage.di.DependencyContainer;
+import com.emarsys.mobileengage.di.DependencyInjection;
 import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
 import com.emarsys.mobileengage.experimental.FlipperFeature;
 import com.emarsys.mobileengage.experimental.MobileEngageFeature;
@@ -41,12 +44,14 @@ import com.emarsys.mobileengage.testUtil.CollectionTestUtils;
 import com.emarsys.mobileengage.testUtil.CurrentActivityWatchdogTestUtils;
 import com.emarsys.mobileengage.testUtil.DatabaseTestUtils;
 import com.emarsys.mobileengage.testUtil.ExperimentalTestUtils;
+import com.emarsys.mobileengage.testUtil.ReflectionTestUtils;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
 import org.hamcrest.Matchers;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -97,6 +102,7 @@ public class MobileEngageTest {
     private MobileEngageConfig userCentricConfig;
     private MobileEngageConfig inAppConfig;
     private MobileEngageConfig fullConfig;
+    private RequestContext requestContext;
 
     @Rule
     public TestRule timeout = TimeoutUtils.getTimeoutRule();
@@ -105,6 +111,7 @@ public class MobileEngageTest {
     public void init() throws Exception {
         DatabaseTestUtils.deleteMobileEngageDatabase();
         DatabaseTestUtils.deleteCoreDatabase();
+        DependencyInjection.tearDown();
 
         application = (Application) InstrumentationRegistry.getTargetContext().getApplicationContext();
         coreCompletionHandler = mock(MobileEngageCoreCompletionHandler.class);
@@ -115,11 +122,13 @@ public class MobileEngageTest {
         userCentricConfig = createConfigWithFlippers(MobileEngageFeature.USER_CENTRIC_INBOX);
         inAppConfig = createConfigWithFlippers(MobileEngageFeature.IN_APP_MESSAGING);
         fullConfig = createConfigWithFlippers(MobileEngageFeature.IN_APP_MESSAGING, MobileEngageFeature.USER_CENTRIC_INBOX);
+        requestContext = mock(RequestContext.class);
 
         MobileEngage.inboxInstance = inboxInternal;
         MobileEngage.instance = mobileEngageInternal;
         MobileEngage.deepLinkInstance = deepLinkInternal;
         MobileEngage.completionHandler = coreCompletionHandler;
+        MobileEngage.requestContext = requestContext;
 
         CurrentActivityWatchdogTestUtils.resetCurrentActivityWatchdog();
     }
@@ -129,6 +138,19 @@ public class MobileEngageTest {
         ExperimentalTestUtils.resetExperimentalFeatures();
         MobileEngage.InApp.setPaused(false);
         MobileEngage.coreSdkHandler.getLooper().quit();
+        DependencyInjection.tearDown();
+    }
+
+    @Test
+    public void testSetup_initializesDependencyInjectionContainer() throws Exception {
+        DependencyContainer container = ReflectionTestUtils.getStaticField(DependencyInjection.class, "container");
+        Assert.assertNull(container);
+
+        MobileEngage.setup(baseConfig);
+
+        container = ReflectionTestUtils.getStaticField(DependencyInjection.class, "container");
+        Assert.assertNotNull(container);
+        Assert.assertEquals(DefaultDependencyContainer.class, container.getClass());
     }
 
     @Test

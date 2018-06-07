@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.support.test.InstrumentationRegistry;
 
 import com.emarsys.mobileengage.config.MobileEngageConfig;
+import com.emarsys.mobileengage.di.DependencyInjection;
 import com.emarsys.mobileengage.experimental.MobileEngageFeature;
 import com.emarsys.mobileengage.fake.FakeStatusListener;
 import com.emarsys.mobileengage.inbox.model.Notification;
@@ -55,6 +56,7 @@ public class MobileEngageIntegrationTest {
     public void setup() {
         DatabaseTestUtils.deleteCoreDatabase();
         DatabaseTestUtils.deleteMobileEngageDatabase();
+        DependencyInjection.tearDown();
 
         context = (Application) InstrumentationRegistry.getTargetContext().getApplicationContext();
         activity = mock(Activity.class, Mockito.RETURNS_DEEP_STUBS);
@@ -80,6 +82,7 @@ public class MobileEngageIntegrationTest {
         MobileEngage.coreSdkHandler.getLooper().quit();
         clearStorages();
         MobileEngage.InApp.setPaused(false);
+        DependencyInjection.tearDown();
     }
 
     @Test

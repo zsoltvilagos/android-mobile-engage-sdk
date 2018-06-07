@@ -4,6 +4,7 @@ import android.app.Application;
 import android.support.test.InstrumentationRegistry;
 
 import com.emarsys.mobileengage.config.MobileEngageConfig;
+import com.emarsys.mobileengage.di.DependencyInjection;
 import com.emarsys.mobileengage.fake.FakeInboxResultListener;
 import com.emarsys.mobileengage.fake.FakeResetBadgeCountResultListener;
 import com.emarsys.mobileengage.fake.FakeStatusListener;
@@ -11,6 +12,7 @@ import com.emarsys.mobileengage.testUtil.ConnectionTestUtils;
 import com.emarsys.mobileengage.testUtil.DatabaseTestUtils;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -38,6 +40,7 @@ public class NotificationInboxIntegrationTest {
     @SuppressWarnings("unchecked")
     public void setup() {
         DatabaseTestUtils.deleteCoreDatabase();
+        DependencyInjection.tearDown();
 
         Application context = (Application) InstrumentationRegistry.getTargetContext().getApplicationContext();
         ConnectionTestUtils.checkConnection(context);
@@ -56,6 +59,11 @@ public class NotificationInboxIntegrationTest {
         resetLatch = new CountDownLatch(1);
         inboxListener = new FakeInboxResultListener(inboxLatch, FakeInboxResultListener.Mode.MAIN_THREAD);
         resetListener = new FakeResetBadgeCountResultListener(resetLatch);
+    }
+
+    @After
+    public void tearDown() {
+        DependencyInjection.tearDown();
     }
 
     @Test

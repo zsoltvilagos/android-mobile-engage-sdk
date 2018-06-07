@@ -4,6 +4,7 @@ import android.app.Application;
 import android.support.test.InstrumentationRegistry;
 
 import com.emarsys.mobileengage.config.MobileEngageConfig;
+import com.emarsys.mobileengage.di.DependencyInjection;
 import com.emarsys.mobileengage.experimental.MobileEngageFeature;
 import com.emarsys.mobileengage.fake.FakeInboxResultListener;
 import com.emarsys.mobileengage.fake.FakeResetBadgeCountResultListener;
@@ -47,6 +48,7 @@ public class InboxV2IntegrationTest {
         DatabaseTestUtils.deleteCoreDatabase();
         DatabaseTestUtils.deleteMobileEngageDatabase();
         SharedPrefsUtils.deleteMobileEngageSharedPrefs();
+        DependencyInjection.tearDown();
 
         Application context = (Application) InstrumentationRegistry.getTargetContext().getApplicationContext();
         ConnectionTestUtils.checkConnection(context);
@@ -74,6 +76,7 @@ public class InboxV2IntegrationTest {
         DatabaseTestUtils.deleteCoreDatabase();
         SharedPrefsUtils.deleteMobileEngageSharedPrefs();
         MobileEngage.coreSdkHandler.getLooper().quit();
+        DependencyInjection.tearDown();
     }
 
     @Test
