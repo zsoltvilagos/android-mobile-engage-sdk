@@ -1,17 +1,23 @@
 package com.emarsys.mobileengage.di;
 
 import com.emarsys.mobileengage.testUtil.ReflectionTestUtils;
+import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
 import junit.framework.Assert;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 
 import static junit.framework.Assert.fail;
 import static org.mockito.Mockito.mock;
 
 public class DependencyInjectionTest {
+
+    @Rule
+    public TestRule timeout = TimeoutUtils.getTimeoutRule();
 
     @Before
     public void init() throws Exception {
