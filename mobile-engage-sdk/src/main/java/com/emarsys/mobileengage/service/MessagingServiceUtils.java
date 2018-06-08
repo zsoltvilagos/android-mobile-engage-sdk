@@ -5,9 +5,11 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.graphics.Bitmap;
 import android.os.Build;
+import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationCompat.Action;
 import android.support.v4.content.ContextCompat;
@@ -40,7 +42,22 @@ public class MessagingServiceUtils {
         return remoteMessageData != null && remoteMessageData.size() > 0 && remoteMessageData.containsKey(MESSAGE_FILTER);
     }
 
+    static void dismissNotification(Context context, Intent intent) {
+        Assert.notNull(context, "Context must not be null!");
+        Assert.notNull(intent, "Intent must not be null!");
+
+        NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        Bundle bundle = intent.getBundleExtra("payload");
+        if (bundle != null) {
+            int notificationId = bundle.getInt("notification_id", Integer.MIN_VALUE);
+            if (notificationId != Integer.MIN_VALUE) {
+                manager.cancel(notificationId);
+            }
+        }
+    }
+
     public static Notification createNotification(
+            int notificationId,
             Context context,
             Map<String, String> remoteMessageData,
             OreoConfig oreoConfig,
@@ -52,19 +69,19 @@ public class MessagingServiceUtils {
         String title = getTitle(remoteMessageData, context);
         String body = remoteMessageData.get("body");
         String channelId = getChannelId(remoteMessageData, oreoConfig);
-        List<Action> actions = NotificationActionUtils.createActions(context, remoteMessageData);
+        List<Action> actions = NotificationActionUtils.createActions(context, remoteMessageData, notificationId);
 
         if (OreoConfig.DEFAULT_CHANNEL_ID.equals(channelId)) {
             createDefaultChannel(context, oreoConfig);
         }
 
-        PendingIntent resultPendingIntent = IntentUtils.createTrackMessageOpenServicePendingIntent(context, remoteMessageData);
+        PendingIntent resultPendingIntent = IntentUtils.createTrackMessageOpenServicePendingIntent(context, remoteMessageData, notificationId);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, channelId)
                 .setContentTitle(title)
                 .setContentText(body)
                 .setSmallIcon(smallIconResourceId)
-                .setAutoCancel(true)
+                .setAutoCancel(false)
                 .setContentIntent(resultPendingIntent);
 
         for (int i = 0; i < actions.size(); i++) {

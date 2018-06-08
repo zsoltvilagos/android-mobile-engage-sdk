@@ -123,6 +123,7 @@ public class NotificationCommandFactoryTest {
         Intent intent = IntentUtils.createTrackMessageOpenServiceIntent(
                 InstrumentationRegistry.getTargetContext().getApplicationContext(),
                 remoteMessageData,
+                0,
                 "actionId"
         );
 

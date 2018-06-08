@@ -22,7 +22,10 @@ public class NotificationActionUtils {
         command.run();
     }
 
-    public static List<NotificationCompat.Action> createActions(Context context, Map<String, String> remoteMessageData) {
+    public static List<NotificationCompat.Action> createActions(
+            Context context,
+            Map<String, String> remoteMessageData,
+            int notificationId) {
         List<NotificationCompat.Action> result = new ArrayList<>();
         String emsPayload = remoteMessageData.get("ems");
         if (emsPayload != null) {
@@ -32,7 +35,8 @@ public class NotificationActionUtils {
                     NotificationCompat.Action action = createAction(
                             actions.getJSONObject(i),
                             context,
-                            remoteMessageData);
+                            remoteMessageData,
+                            notificationId);
                     if (action != null) {
                         result.add(action);
                     }
@@ -46,7 +50,8 @@ public class NotificationActionUtils {
     private static NotificationCompat.Action createAction(
             JSONObject action,
             Context context,
-            Map<String, String> remoteMessageData) {
+            Map<String, String> remoteMessageData,
+            int notificationId) {
         NotificationCompat.Action result = null;
 
         try {
@@ -58,9 +63,8 @@ public class NotificationActionUtils {
                 result = new NotificationCompat.Action.Builder(
                         0,
                         action.getString("title"),
-                        IntentUtils.createTrackMessageOpenServicePendingIntent(context, remoteMessageData, actionId)).build();
+                        IntentUtils.createTrackMessageOpenServicePendingIntent(context, remoteMessageData, notificationId, actionId)).build();
             }
-
         } catch (JSONException ignored) {
         }
 

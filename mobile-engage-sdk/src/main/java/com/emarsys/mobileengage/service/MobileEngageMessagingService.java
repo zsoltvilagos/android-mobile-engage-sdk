@@ -29,14 +29,17 @@ public class MobileEngageMessagingService extends FirebaseMessagingService {
 
             MessagingServiceUtils.cacheNotification(remoteData);
 
+            int notificationId = (int) (System.currentTimeMillis() % Integer.MAX_VALUE);
+
             Notification notification = MessagingServiceUtils.createNotification(
+                    notificationId,
                     getApplicationContext(),
                     remoteData,
                     MobileEngage.getConfig().getOreoConfig(),
                     new MetaDataReader());
 
             ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE))
-                    .notify((int) System.currentTimeMillis(), notification);
+                    .notify(notificationId, notification);
         }
     }
 }

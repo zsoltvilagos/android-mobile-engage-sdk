@@ -23,7 +23,10 @@ public class IntentUtils {
         return intent;
     }
 
-    public static Intent createTrackMessageOpenServiceIntent(Context context, Map<String, String> remoteMessageData, String action) {
+    public static Intent createTrackMessageOpenServiceIntent(
+            Context context, Map<String, String> remoteMessageData,
+            int notificationId,
+            String action) {
         Assert.notNull(remoteMessageData, "RemoteMessageData must not be null!");
         Assert.notNull(context, "Context must not be null!");
 
@@ -37,20 +40,28 @@ public class IntentUtils {
         for (Map.Entry<String, String> entry : remoteMessageData.entrySet()) {
             bundle.putString(entry.getKey(), entry.getValue());
         }
+        bundle.putInt("notification_id", notificationId);
 
         intent.putExtra("payload", bundle);
         return intent;
     }
 
-    public static PendingIntent createTrackMessageOpenServicePendingIntent(Context context, Map<String, String> remoteMessageData) {
-        return createTrackMessageOpenServicePendingIntent(context, remoteMessageData, null);
+    public static PendingIntent createTrackMessageOpenServicePendingIntent(
+            Context context,
+            Map<String, String> remoteMessageData,
+            int notificationId) {
+        return createTrackMessageOpenServicePendingIntent(context, remoteMessageData, notificationId, null);
     }
 
-    public static PendingIntent createTrackMessageOpenServicePendingIntent(Context context, Map<String, String> remoteMessageData, String action) {
+    public static PendingIntent createTrackMessageOpenServicePendingIntent(
+            Context context,
+            Map<String, String> remoteMessageData,
+            int notificationId,
+            String action) {
         Assert.notNull(remoteMessageData, "RemoteMessageData must not be null!");
         Assert.notNull(context, "Context must not be null!");
 
-        Intent intent = createTrackMessageOpenServiceIntent(context, remoteMessageData, action);
+        Intent intent = createTrackMessageOpenServiceIntent(context, remoteMessageData, notificationId, action);
         return PendingIntent.getService(
                 context,
                 (int) (System.currentTimeMillis() % Integer.MAX_VALUE),

@@ -3,9 +3,11 @@ package com.emarsys.mobileengage.service;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.os.Bundle;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SdkSuppress;
 import android.support.test.runner.AndroidJUnit4;
@@ -43,6 +45,8 @@ import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 @RunWith(AndroidJUnit4.class)
@@ -51,6 +55,7 @@ public class MessagingServiceUtilsTest {
     static {
         mock(Context.class);
         mock(PackageManager.class);
+        mock(NotificationManager.class);
     }
 
     private static final String TITLE = "title";
@@ -104,9 +109,68 @@ public class MessagingServiceUtilsTest {
         assertFalse(MessagingServiceUtils.isMobileEngageMessage(remoteMessageData));
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void testDismissNotification_context_mustNotBeNull() {
+        MessagingServiceUtils.dismissNotification(null, new Intent());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testDismissNotification_intent_mustNotBeNull() {
+        MessagingServiceUtils.dismissNotification(mock(Context.class), null);
+    }
+
+    @Test
+    public void testDismissNotification_callsNotificationManager() {
+        int notificationId = 987;
+
+        NotificationManager notificationManagerMock = mock(NotificationManager.class);
+
+        Context mockContext = mock(Context.class);
+        when(mockContext.getSystemService(Context.NOTIFICATION_SERVICE)).thenReturn(notificationManagerMock);
+
+        Intent intent = new Intent();
+        Bundle bundle = new Bundle();
+        bundle.putInt("notification_id", notificationId);
+        intent.putExtra("payload", bundle);
+
+        MessagingServiceUtils.dismissNotification(mockContext, intent);
+
+        verify(notificationManagerMock).cancel(notificationId);
+    }
+
+    @Test
+    public void testDismissNotification_doesNotCallNotificationManager_ifBundleIsMissing() {
+        NotificationManager notificationManagerMock = mock(NotificationManager.class);
+
+        Context mockContext = mock(Context.class);
+        when(mockContext.getSystemService(Context.NOTIFICATION_SERVICE)).thenReturn(notificationManagerMock);
+
+        Intent intent = new Intent();
+
+        MessagingServiceUtils.dismissNotification(mockContext, intent);
+
+        verifyZeroInteractions(notificationManagerMock);
+    }
+
+    @Test
+    public void testDismissNotification_doesNotCallNotificationManager_ifNotificationIdIsMissing() {
+        NotificationManager notificationManagerMock = mock(NotificationManager.class);
+
+        Context mockContext = mock(Context.class);
+        when(mockContext.getSystemService(Context.NOTIFICATION_SERVICE)).thenReturn(notificationManagerMock);
+
+        Intent intent = new Intent();
+        Bundle bundle = new Bundle();
+        intent.putExtra("payload", bundle);
+
+        MessagingServiceUtils.dismissNotification(mockContext, intent);
+
+        verifyZeroInteractions(notificationManagerMock);
+    }
+
     @Test
     public void createNotification_shouldNotBeNull() {
-        assertNotNull(MessagingServiceUtils.createNotification(context, new HashMap<String, String>(), disabledOreoConfig, metaDataReader));
+        assertNotNull(MessagingServiceUtils.createNotification(0, context, new HashMap<String, String>(), disabledOreoConfig, metaDataReader));
     }
 
     @Test
@@ -116,7 +180,7 @@ public class MessagingServiceUtilsTest {
         input.put("title", TITLE);
         input.put("body", BODY);
 
-        android.app.Notification result = MessagingServiceUtils.createNotification(context, input, disabledOreoConfig, metaDataReader);
+        android.app.Notification result = MessagingServiceUtils.createNotification(0, context, input, disabledOreoConfig, metaDataReader);
 
         assertEquals(TITLE, result.extras.getString(NotificationCompat.EXTRA_TITLE));
         assertEquals(TITLE, result.extras.getString(NotificationCompat.EXTRA_TITLE_BIG));
@@ -132,7 +196,7 @@ public class MessagingServiceUtilsTest {
         Map<String, String> input = new HashMap<>();
         input.put("title", TITLE);
 
-        android.app.Notification result = MessagingServiceUtils.createNotification(context, input, disabledOreoConfig, metaDataReader);
+        android.app.Notification result = MessagingServiceUtils.createNotification(0, context, input, disabledOreoConfig, metaDataReader);
 
         assertEquals(TITLE, result.extras.getString(NotificationCompat.EXTRA_TITLE));
         assertEquals(TITLE, result.extras.getString(NotificationCompat.EXTRA_TITLE_BIG));
@@ -148,7 +212,7 @@ public class MessagingServiceUtilsTest {
         Map<String, String> input = new HashMap<>();
         input.put("body", BODY);
 
-        android.app.Notification result = MessagingServiceUtils.createNotification(context, input, disabledOreoConfig, metaDataReader);
+        android.app.Notification result = MessagingServiceUtils.createNotification(0, context, input, disabledOreoConfig, metaDataReader);
 
         String expectedTitle = expectedBasedOnApiLevel(getApplicationName(), "");
 
@@ -167,7 +231,7 @@ public class MessagingServiceUtilsTest {
         input.put("body", BODY);
         input.put("u", "{\"test_field\":\"\",\"ems_default_title\":\"" + DEFAULT_TITLE + "\",\"image\":\"https:\\/\\/media.giphy.com\\/media\\/ktvFa67wmjDEI\\/giphy.gif\",\"deep_link\":\"lifestylelabels.com\\/mobile\\/product\\/3245678\",\"sid\":\"sid_here\"}");
 
-        android.app.Notification result = MessagingServiceUtils.createNotification(context, input, disabledOreoConfig, metaDataReader);
+        android.app.Notification result = MessagingServiceUtils.createNotification(0, context, input, disabledOreoConfig, metaDataReader);
 
         String expectedTitle = expectedBasedOnApiLevel(DEFAULT_TITLE, "");
 
@@ -187,7 +251,7 @@ public class MessagingServiceUtilsTest {
         input.put("body", BODY);
         input.put("image_url", "https://ems-denna.herokuapp.com/images/Emarsys.png");
 
-        android.app.Notification result = MessagingServiceUtils.createNotification(context, input, disabledOreoConfig, metaDataReader);
+        android.app.Notification result = MessagingServiceUtils.createNotification(0, context, input, disabledOreoConfig, metaDataReader);
 
         assertEquals(TITLE, result.extras.getString(NotificationCompat.EXTRA_TITLE));
         assertEquals(TITLE, result.extras.getString(NotificationCompat.EXTRA_TITLE_BIG));
@@ -207,7 +271,7 @@ public class MessagingServiceUtilsTest {
         input.put("body", BODY);
         input.put("image_url", "https://fa.il/img.jpg");
 
-        android.app.Notification result = MessagingServiceUtils.createNotification(context, input, disabledOreoConfig, metaDataReader);
+        android.app.Notification result = MessagingServiceUtils.createNotification(0, context, input, disabledOreoConfig, metaDataReader);
 
         assertEquals(TITLE, result.extras.getString(NotificationCompat.EXTRA_TITLE));
         assertEquals(TITLE, result.extras.getString(NotificationCompat.EXTRA_TITLE_BIG));
@@ -228,7 +292,7 @@ public class MessagingServiceUtilsTest {
         input.put("title", TITLE);
         input.put("body", BODY);
 
-        android.app.Notification result = MessagingServiceUtils.createNotification(context, input, disabledOreoConfig, metaDataReader);
+        android.app.Notification result = MessagingServiceUtils.createNotification(0, context, input, disabledOreoConfig, metaDataReader);
         assertEquals(expectedColor, result.color);
     }
 
@@ -239,7 +303,7 @@ public class MessagingServiceUtilsTest {
         input.put("title", TITLE);
         input.put("body", BODY);
 
-        android.app.Notification result = MessagingServiceUtils.createNotification(context, input, disabledOreoConfig, metaDataReader);
+        android.app.Notification result = MessagingServiceUtils.createNotification(0, context, input, disabledOreoConfig, metaDataReader);
         assertEquals(android.app.Notification.COLOR_DEFAULT, result.color);
     }
 
@@ -251,7 +315,7 @@ public class MessagingServiceUtilsTest {
         input.put("body", BODY);
         input.put("channel_id", CHANNEL_ID);
 
-        android.app.Notification result = MessagingServiceUtils.createNotification(context, input, disabledOreoConfig, metaDataReader);
+        android.app.Notification result = MessagingServiceUtils.createNotification(0, context, input, disabledOreoConfig, metaDataReader);
 
         assertEquals(CHANNEL_ID, result.getChannelId());
     }
@@ -263,7 +327,7 @@ public class MessagingServiceUtilsTest {
         input.put("title", TITLE);
         input.put("body", BODY);
 
-        android.app.Notification result = MessagingServiceUtils.createNotification(context, input, enabledOreoConfig, metaDataReader);
+        android.app.Notification result = MessagingServiceUtils.createNotification(0, context, input, enabledOreoConfig, metaDataReader);
 
         String expected = "ems_me_default";
 
@@ -277,7 +341,7 @@ public class MessagingServiceUtilsTest {
         input.put("title", TITLE);
         input.put("body", BODY);
 
-        android.app.Notification result = MessagingServiceUtils.createNotification(context, input, disabledOreoConfig, metaDataReader);
+        android.app.Notification result = MessagingServiceUtils.createNotification(0, context, input, disabledOreoConfig, metaDataReader);
 
         assertNull(result.getChannelId());
     }
@@ -307,7 +371,7 @@ public class MessagingServiceUtilsTest {
         input.put("body", BODY);
         input.put("ems", ems.toString());
 
-        android.app.Notification result = MessagingServiceUtils.createNotification(context, input, disabledOreoConfig, metaDataReader);
+        android.app.Notification result = MessagingServiceUtils.createNotification(0, context, input, disabledOreoConfig, metaDataReader);
 
         assertNotNull(result.actions);
         assertEquals(2, result.actions.length);
@@ -322,7 +386,7 @@ public class MessagingServiceUtilsTest {
         input.put("title", TITLE);
         input.put("body", BODY);
 
-        android.app.Notification result = MessagingServiceUtils.createNotification(context, input, disabledOreoConfig, metaDataReader);
+        android.app.Notification result = MessagingServiceUtils.createNotification(0, context, input, disabledOreoConfig, metaDataReader);
         assertNull(result.actions);
     }
 

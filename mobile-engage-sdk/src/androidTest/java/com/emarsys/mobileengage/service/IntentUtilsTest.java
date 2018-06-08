@@ -97,40 +97,44 @@ public class IntentUtilsTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testCreateTrackMessageOpenServiceIntent_remoteMessageDataMustNotBeNull() {
-        IntentUtils.createTrackMessageOpenServiceIntent(context, null, "action");
+        IntentUtils.createTrackMessageOpenServiceIntent(context, null, 0, "action");
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testCreateTrackMessageOpenServiceIntent_contextMustNotBeNull() {
-        IntentUtils.createTrackMessageOpenServiceIntent(null, new HashMap<String, String>(), "action");
+        IntentUtils.createTrackMessageOpenServiceIntent(null, new HashMap<String, String>(), 0, "action");
     }
 
     @Test
     public void createTrackMessageOpenServiceIntent() {
+        int notificationId = 987;
+
         Map<String, String> remoteMessageData = new HashMap<>();
         remoteMessageData.put("key1", "value1");
         remoteMessageData.put("key2", "value2");
 
-        Intent resultIntent = IntentUtils.createTrackMessageOpenServiceIntent(context, remoteMessageData, "action");
+        Intent resultIntent = IntentUtils.createTrackMessageOpenServiceIntent(context, remoteMessageData, notificationId, "action");
         assertEquals("action", resultIntent.getAction());
-        assertEquals("value1", resultIntent.getBundleExtra("payload").getString("key1"));
-        assertEquals("value2", resultIntent.getBundleExtra("payload").getString("key2"));
+        Bundle payload = resultIntent.getBundleExtra("payload");
+        assertEquals("value1", payload.getString("key1"));
+        assertEquals("value2", payload.getString("key2"));
+        assertEquals(notificationId, payload.getInt("notification_id"));
     }
 
     @Test
     public void createTrackMessageOpenServiceIntent_withoutAction() {
-        Intent resultIntent = IntentUtils.createTrackMessageOpenServiceIntent(context, new HashMap<String, String>(), null);
+        Intent resultIntent = IntentUtils.createTrackMessageOpenServiceIntent(context, new HashMap<String, String>(), 0, null);
         assertEquals(null, resultIntent.getAction());
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testCreateTrackMessageOpenServicePendingIntent_remoteMessageDataMustNotBeNull() {
-        IntentUtils.createTrackMessageOpenServicePendingIntent(context, null, "action");
+        IntentUtils.createTrackMessageOpenServicePendingIntent(context, null, 0, "action");
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testCreateTrackMessageOpenServicePendingIntent_contextMustNotBeNull() {
-        IntentUtils.createTrackMessageOpenServicePendingIntent(null, new HashMap<String, String>(), "action");
+        IntentUtils.createTrackMessageOpenServicePendingIntent(null, new HashMap<String, String>(), 0, "action");
     }
 
 }

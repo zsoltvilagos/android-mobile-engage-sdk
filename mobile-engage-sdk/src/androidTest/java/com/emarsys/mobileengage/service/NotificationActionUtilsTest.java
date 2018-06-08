@@ -64,7 +64,7 @@ public class NotificationActionUtilsTest {
         Map<String, String> input = new HashMap<>();
         input.put("ems", ems.toString());
 
-        List<NotificationCompat.Action> result = NotificationActionUtils.createActions(context, input);
+        List<NotificationCompat.Action> result = NotificationActionUtils.createActions(context, input, 0);
         assertTrue(result.isEmpty());
     }
 
@@ -80,7 +80,7 @@ public class NotificationActionUtilsTest {
         Map<String, String> input = new HashMap<>();
         input.put("ems", ems.toString());
 
-        List<NotificationCompat.Action> result = NotificationActionUtils.createActions(context, input);
+        List<NotificationCompat.Action> result = NotificationActionUtils.createActions(context, input, 0);
         assertTrue(result.isEmpty());
     }
 
@@ -96,7 +96,7 @@ public class NotificationActionUtilsTest {
         Map<String, String> input = new HashMap<>();
         input.put("ems", ems.toString());
 
-        List<NotificationCompat.Action> result = NotificationActionUtils.createActions(context, input);
+        List<NotificationCompat.Action> result = NotificationActionUtils.createActions(context, input, 0);
         assertTrue(result.isEmpty());
     }
 
@@ -113,7 +113,7 @@ public class NotificationActionUtilsTest {
         Map<String, String> input = new HashMap<>();
         input.put("ems", ems.toString());
 
-        List<NotificationCompat.Action> result = NotificationActionUtils.createActions(context, input);
+        List<NotificationCompat.Action> result = NotificationActionUtils.createActions(context, input, 0);
         assertTrue(result.isEmpty());
     }
 
@@ -134,7 +134,7 @@ public class NotificationActionUtilsTest {
         Map<String, String> input = new HashMap<>();
         input.put("ems", payload.toString());
 
-        List<NotificationCompat.Action> result = NotificationActionUtils.createActions(context, input);
+        List<NotificationCompat.Action> result = NotificationActionUtils.createActions(context, input, 0);
         assertEquals(1, result.size());
         assertEquals("Action button title", result.get(0).title);
     }
@@ -162,7 +162,7 @@ public class NotificationActionUtilsTest {
         Map<String, String> input = new HashMap<>();
         input.put("ems", payload.toString());
 
-        List<NotificationCompat.Action> result = NotificationActionUtils.createActions(context, input);
+        List<NotificationCompat.Action> result = NotificationActionUtils.createActions(context, input, 0);
         assertEquals(2, result.size());
 
         assertEquals("title1", result.get(0).title);
@@ -183,7 +183,7 @@ public class NotificationActionUtilsTest {
         Map<String, String> input = new HashMap<>();
         input.put("ems", ems.toString());
 
-        List<NotificationCompat.Action> result = NotificationActionUtils.createActions(context, input);
+        List<NotificationCompat.Action> result = NotificationActionUtils.createActions(context, input, 0);
         assertTrue(result.isEmpty());
     }
 
@@ -203,7 +203,7 @@ public class NotificationActionUtilsTest {
         Map<String, String> input = new HashMap<>();
         input.put("ems", payload.toString());
 
-        List<NotificationCompat.Action> result = NotificationActionUtils.createActions(context, input);
+        List<NotificationCompat.Action> result = NotificationActionUtils.createActions(context, input, 0);
         assertEquals(1, result.size());
         assertEquals("Action button title", result.get(0).title);
     }
@@ -230,7 +230,7 @@ public class NotificationActionUtilsTest {
         Map<String, String> input = new HashMap<>();
         input.put("ems", payload.toString());
 
-        List<NotificationCompat.Action> result = NotificationActionUtils.createActions(context, input);
+        List<NotificationCompat.Action> result = NotificationActionUtils.createActions(context, input, 0);
         assertEquals(2, result.size());
         assertEquals("Action button title", result.get(0).title);
         assertEquals("Second button title", result.get(1).title);
@@ -249,7 +249,7 @@ public class NotificationActionUtilsTest {
         Map<String, String> input = new HashMap<>();
         input.put("ems", ems.toString());
 
-        List<NotificationCompat.Action> result = NotificationActionUtils.createActions(context, input);
+        List<NotificationCompat.Action> result = NotificationActionUtils.createActions(context, input, 0);
         assertTrue(result.isEmpty());
     }
 
@@ -270,7 +270,7 @@ public class NotificationActionUtilsTest {
         Map<String, String> input = new HashMap<>();
         input.put("ems", ems.toString());
 
-        List<NotificationCompat.Action> result = NotificationActionUtils.createActions(context, input);
+        List<NotificationCompat.Action> result = NotificationActionUtils.createActions(context, input, 0);
         assertEquals(1, result.size());
         assertEquals("Action button title", result.get(0).title);
     }
@@ -289,7 +289,7 @@ public class NotificationActionUtilsTest {
         Map<String, String> input = new HashMap<>();
         input.put("ems", ems.toString());
 
-        List<NotificationCompat.Action> result = NotificationActionUtils.createActions(context, input);
+        List<NotificationCompat.Action> result = NotificationActionUtils.createActions(context, input, 0);
         assertEquals(1, result.size());
         assertEquals("Action button title", result.get(0).title);
     }
@@ -316,7 +316,7 @@ public class NotificationActionUtilsTest {
         Map<String, String> input = new HashMap<>();
         input.put("ems", ems.toString());
 
-        List<NotificationCompat.Action> result = NotificationActionUtils.createActions(context, input);
+        List<NotificationCompat.Action> result = NotificationActionUtils.createActions(context, input, 0);
         assertEquals(2, result.size());
         assertEquals("Action button title", result.get(0).title);
         assertEquals("Another button title", result.get(1).title);
