@@ -1,6 +1,7 @@
 package com.emarsys.mobileengage.notification.command;
 
 import com.emarsys.core.util.Assert;
+import com.emarsys.mobileengage.EventHandler;
 import com.emarsys.mobileengage.MobileEngage;
 
 import org.json.JSONObject;
@@ -26,6 +27,9 @@ public class AppEventCommand implements Runnable {
 
     @Override
     public void run() {
-        MobileEngage.getConfig().getNotificationEventHandler().handleEvent(name, payload);
+        EventHandler notificationEventHandler = MobileEngage.getConfig().getNotificationEventHandler();
+        if (notificationEventHandler != null) {
+            notificationEventHandler.handleEvent(name, payload);
+        }
     }
 }

@@ -12,6 +12,8 @@ import com.emarsys.mobileengage.di.DependencyInjection;
 import com.emarsys.mobileengage.testUtil.ReflectionTestUtils;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
+import junit.framework.Assert;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.After;
@@ -49,8 +51,7 @@ public class AppEventCommandTest {
     @After
     public void tearDown() throws Exception {
         DependencyInjection.tearDown();
-        Handler coreSdkHandler = ReflectionTestUtils.getStaticField(MobileEngage.class, "coreSdkHandler");
-        coreSdkHandler.getLooper().quit();
+        closeMobileEngage();
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -74,5 +75,28 @@ public class AppEventCommandTest {
         new AppEventCommand(name, null).run();
 
         verify(notificationHandler).handleEvent(name, null);
+    }
+
+    @Test
+    public void testRun_shouldIgnoreHandler_ifNull() throws Exception {
+        closeMobileEngage();
+
+        config = new MobileEngageConfig.Builder()
+                .application((Application) applicationContext)
+                .credentials("EMSEC-B103E", "RM1ZSuX8mgRBhQIgOsf6m8bn/bMQLAIb")
+                .disableDefaultChannel()
+                .build();
+        MobileEngage.setup(config);
+
+        try {
+            new AppEventCommand("", null).run();
+        } catch (Exception e) {
+            Assert.fail(e.getMessage());
+        }
+    }
+
+    private void closeMobileEngage() throws Exception {
+        Handler coreSdkHandler = ReflectionTestUtils.getStaticField(MobileEngage.class, "coreSdkHandler");
+        coreSdkHandler.getLooper().quit();
     }
 }
