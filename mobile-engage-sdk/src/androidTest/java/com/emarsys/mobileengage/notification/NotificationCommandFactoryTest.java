@@ -10,6 +10,7 @@ import com.emarsys.mobileengage.MobileEngageInternal;
 import com.emarsys.mobileengage.notification.command.AppEventCommand;
 import com.emarsys.mobileengage.notification.command.CompositeCommand;
 import com.emarsys.mobileengage.notification.command.CustomEventCommand;
+import com.emarsys.mobileengage.notification.command.HideNotificationShadeCommand;
 import com.emarsys.mobileengage.notification.command.LaunchApplicationCommand;
 import com.emarsys.mobileengage.notification.command.OpenExternalUrlCommand;
 import com.emarsys.mobileengage.notification.command.TrackActionClickCommand;
@@ -88,15 +89,16 @@ public class NotificationCommandFactoryTest {
         assertEquals(CompositeCommand.class, command.getClass());
 
         CompositeCommand composite = (CompositeCommand) command;
-        assertEquals(2, composite.getCommands().size());
+        assertEquals(3, composite.getCommands().size());
         assertEquals(1, CollectionTestUtils.numberOfElementsIn(composite.getCommands(), AppEventCommand.class));
+        assertEquals(1, CollectionTestUtils.numberOfElementsIn(composite.getCommands(), HideNotificationShadeCommand.class));
         assertEquals(1, CollectionTestUtils.numberOfElementsIn(composite.getCommands(), TrackActionClickCommand.class));
     }
 
     @Test
     public void testCreateNotificationCommand_shouldCreateAppEvent_withCorrectName() throws JSONException {
         Intent intent = createAppEventIntent();
-        AppEventCommand command = extractCommandFromComposite(intent);
+        AppEventCommand command = extractCommandFromComposite(intent, 2);
 
         assertEquals("nameOfTheEvent", command.getName());
     }
@@ -104,7 +106,7 @@ public class NotificationCommandFactoryTest {
     @Test
     public void testCreateNotificationCommand_shouldCreateAppEvent_withCorrectPayload() throws JSONException {
         Intent intent = createAppEventIntent();
-        AppEventCommand command = extractCommandFromComposite(intent);
+        AppEventCommand command = extractCommandFromComposite(intent, 2);
 
         JSONObject payload = command.getPayload();
         assertEquals("payloadValue", payload.getString("payloadKey"));
@@ -127,7 +129,7 @@ public class NotificationCommandFactoryTest {
                 "actionId"
         );
 
-        AppEventCommand command = extractCommandFromComposite(intent);
+        AppEventCommand command = extractCommandFromComposite(intent, 2);
         assertEquals("eventName", command.getName());
     }
 
@@ -140,15 +142,16 @@ public class NotificationCommandFactoryTest {
         assertEquals(CompositeCommand.class, command.getClass());
 
         CompositeCommand composite = (CompositeCommand) command;
-        assertEquals(2, composite.getCommands().size());
+        assertEquals(3, composite.getCommands().size());
         assertEquals(1, CollectionTestUtils.numberOfElementsIn(composite.getCommands(), OpenExternalUrlCommand.class));
+        assertEquals(1, CollectionTestUtils.numberOfElementsIn(composite.getCommands(), HideNotificationShadeCommand.class));
         assertEquals(1, CollectionTestUtils.numberOfElementsIn(composite.getCommands(), TrackActionClickCommand.class));
     }
 
     @Test
     public void testCreateNotificationCommand_shouldCreateOpenExternalLinkCommand_withCorrectParameters() throws JSONException {
         Intent intent = createOpenExternalLinkIntent("https://www.emarsys.com");
-        OpenExternalUrlCommand command = extractCommandFromComposite(intent);
+        OpenExternalUrlCommand command = extractCommandFromComposite(intent, 2);
 
         assertEquals(context, command.getContext());
         assertEquals(Uri.parse("https://www.emarsys.com"), command.getIntent().getData());
@@ -184,7 +187,7 @@ public class NotificationCommandFactoryTest {
 
         Intent intent = createCustomEventIntent(eventName);
 
-        CustomEventCommand command = extractCommandFromComposite(intent);
+        CustomEventCommand command = extractCommandFromComposite(intent, 1);
 
         assertEquals(eventName, command.getEventName());
     }
@@ -207,7 +210,7 @@ public class NotificationCommandFactoryTest {
 
         Intent intent = createCustomEventIntent(eventName, payload);
 
-        CustomEventCommand command = extractCommandFromComposite(intent);
+        CustomEventCommand command = extractCommandFromComposite(intent, 1);
 
         assertEquals(attributes, command.getEventAttributes());
     }
@@ -218,14 +221,14 @@ public class NotificationCommandFactoryTest {
 
         Intent intent = createCustomEventIntent(eventName);
 
-        CustomEventCommand command = extractCommandFromComposite(intent);
+        CustomEventCommand command = extractCommandFromComposite(intent, 1);
 
         assertEquals(null, command.getEventAttributes());
     }
 
     @SuppressWarnings("unchecked")
-    private <T extends Runnable> T extractCommandFromComposite(Intent intent) {
-        return (T) ((CompositeCommand) factory.createNotificationCommand(intent)).getCommands().get(1);
+    private <T extends Runnable> T extractCommandFromComposite(Intent intent, int index) {
+        return (T) ((CompositeCommand) factory.createNotificationCommand(intent)).getCommands().get(index);
     }
 
     private Intent createUnknownCommandIntent() throws JSONException {

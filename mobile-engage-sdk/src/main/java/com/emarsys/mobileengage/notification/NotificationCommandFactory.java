@@ -11,6 +11,7 @@ import com.emarsys.mobileengage.MobileEngageInternal;
 import com.emarsys.mobileengage.notification.command.AppEventCommand;
 import com.emarsys.mobileengage.notification.command.CompositeCommand;
 import com.emarsys.mobileengage.notification.command.CustomEventCommand;
+import com.emarsys.mobileengage.notification.command.HideNotificationShadeCommand;
 import com.emarsys.mobileengage.notification.command.LaunchApplicationCommand;
 import com.emarsys.mobileengage.notification.command.OpenExternalUrlCommand;
 import com.emarsys.mobileengage.notification.command.TrackActionClickCommand;
@@ -56,6 +57,7 @@ public class NotificationCommandFactory {
                         JSONObject payload = action.optJSONObject("payload");
                         result = new CompositeCommand(Arrays.asList(
                                 trackActionClickCommand,
+                                new HideNotificationShadeCommand(context),
                                 new AppEventCommand(name, payload)));
                     }
                     if ("OpenExternalUrl".equals(type)) {
@@ -65,6 +67,7 @@ public class NotificationCommandFactory {
                         if (externalCommandIntent.resolveActivity(context.getPackageManager()) != null) {
                             result = new CompositeCommand(Arrays.asList(
                                     trackActionClickCommand,
+                                    new HideNotificationShadeCommand(context),
                                     new OpenExternalUrlCommand(externalCommandIntent, context)));
                         }
                     }
