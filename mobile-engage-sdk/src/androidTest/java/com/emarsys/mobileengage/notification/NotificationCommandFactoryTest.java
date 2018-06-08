@@ -153,6 +153,8 @@ public class NotificationCommandFactoryTest {
         assertEquals(context, command.getContext());
         assertEquals(Uri.parse("https://www.emarsys.com"), command.getIntent().getData());
         assertEquals(Intent.ACTION_VIEW, command.getIntent().getAction());
+        int flags = command.getIntent().getFlags();
+        assertEquals(Intent.FLAG_ACTIVITY_NEW_TASK, flags & Intent.FLAG_ACTIVITY_NEW_TASK);
     }
 
     @Test

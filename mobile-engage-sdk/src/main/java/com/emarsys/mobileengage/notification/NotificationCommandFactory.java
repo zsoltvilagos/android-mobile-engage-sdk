@@ -61,6 +61,7 @@ public class NotificationCommandFactory {
                     if ("OpenExternalUrl".equals(type)) {
                         Uri link = Uri.parse(action.getString("url"));
                         Intent externalCommandIntent = new Intent(Intent.ACTION_VIEW, link);
+                        externalCommandIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         if (externalCommandIntent.resolveActivity(context.getPackageManager()) != null) {
                             result = new CompositeCommand(Arrays.asList(
                                     trackActionClickCommand,
