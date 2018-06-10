@@ -3,10 +3,11 @@ package com.emarsys.mobileengage.config;
 import android.app.Application;
 import android.support.test.InstrumentationRegistry;
 
+import com.emarsys.mobileengage.EventHandler;
 import com.emarsys.mobileengage.MobileEngageStatusListener;
 import com.emarsys.mobileengage.experimental.FlipperFeature;
 import com.emarsys.mobileengage.experimental.MobileEngageFeature;
-import com.emarsys.mobileengage.EventHandler;
+import com.emarsys.mobileengage.notification.NotificationEventHandler;
 import com.emarsys.mobileengage.testUtil.ApplicationTestUtils;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
@@ -30,7 +31,7 @@ public class MobileEngageConfigTest {
     private Application applicationRelease;
     private OreoConfig mockOreoConfig;
     private EventHandler defaultInAppEventHandler;
-    private EventHandler defaultNotificationEventHandler;
+    private NotificationEventHandler defaultNotificationEventHandler;
     private FlipperFeature[] features;
 
     @Rule
@@ -48,7 +49,7 @@ public class MobileEngageConfigTest {
         statusListenerMock = mock(MobileEngageStatusListener.class);
         mockOreoConfig = mock(OreoConfig.class);
         defaultInAppEventHandler = mock(EventHandler.class);
-        defaultNotificationEventHandler = mock(EventHandler.class);
+        defaultNotificationEventHandler = mock(NotificationEventHandler.class);
         features = new FlipperFeature[]{
                 mock(FlipperFeature.class),
                 mock(FlipperFeature.class)

@@ -9,6 +9,7 @@ import com.emarsys.mobileengage.EventHandler;
 import com.emarsys.mobileengage.MobileEngageStatusListener;
 import com.emarsys.mobileengage.experimental.FlipperFeature;
 import com.emarsys.mobileengage.experimental.MobileEngageFeature;
+import com.emarsys.mobileengage.notification.NotificationEventHandler;
 
 import java.util.Arrays;
 
@@ -22,7 +23,7 @@ public class MobileEngageConfig {
     private final boolean idlingResourceEnabled;
     private final OreoConfig oreoConfig;
     private final EventHandler defaultInAppEventHandler;
-    private final EventHandler notificationEventHandler;
+    private final NotificationEventHandler notificationEventHandler;
     private final FlipperFeature[] flipperFeatures;
 
     MobileEngageConfig(Application application,
@@ -33,7 +34,7 @@ public class MobileEngageConfig {
                        boolean idlingResourceEnabled,
                        OreoConfig oreoConfig,
                        EventHandler defaultInAppEventHandler,
-                       EventHandler notificationEventHandler,
+                       NotificationEventHandler notificationEventHandler,
                        FlipperFeature[] enabledFeatures) {
         Assert.notNull(application, "Application must not be null");
         Assert.notNull(applicationCode, "ApplicationCode must not be null");
@@ -90,7 +91,7 @@ public class MobileEngageConfig {
         return defaultInAppEventHandler;
     }
 
-    public EventHandler getNotificationEventHandler() {
+    public NotificationEventHandler getNotificationEventHandler() {
         return notificationEventHandler;
     }
 
@@ -167,7 +168,7 @@ public class MobileEngageConfig {
         private boolean idlingResourceEnabled;
         private OreoConfig oreoConfig;
         private EventHandler defaultInAppEventHandler;
-        private EventHandler notificationEventHandler;
+        private NotificationEventHandler notificationEventHandler;
         private FlipperFeature[] experimentalFeatures;
 
         public Builder from(MobileEngageConfig baseConfig) {
@@ -226,7 +227,7 @@ public class MobileEngageConfig {
             return this;
         }
 
-        public Builder setNotificationEventHandler(EventHandler notificationEventHandler) {
+        public Builder setNotificationEventHandler(NotificationEventHandler notificationEventHandler) {
             this.notificationEventHandler = notificationEventHandler;
             return this;
         }

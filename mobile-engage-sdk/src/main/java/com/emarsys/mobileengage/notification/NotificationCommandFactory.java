@@ -58,7 +58,7 @@ public class NotificationCommandFactory {
                         result = new CompositeCommand(Arrays.asList(
                                 trackActionClickCommand,
                                 new HideNotificationShadeCommand(context),
-                                new AppEventCommand(name, payload)));
+                                new AppEventCommand(context, name, payload)));
                     }
                     if ("OpenExternalUrl".equals(type)) {
                         Uri link = Uri.parse(action.getString("url"));

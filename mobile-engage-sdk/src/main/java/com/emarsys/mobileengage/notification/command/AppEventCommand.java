@@ -1,8 +1,10 @@
 package com.emarsys.mobileengage.notification.command;
 
+import android.content.Context;
+
 import com.emarsys.core.util.Assert;
-import com.emarsys.mobileengage.EventHandler;
 import com.emarsys.mobileengage.MobileEngage;
+import com.emarsys.mobileengage.notification.NotificationEventHandler;
 
 import org.json.JSONObject;
 
@@ -10,11 +12,18 @@ public class AppEventCommand implements Runnable {
 
     private String name;
     private JSONObject payload;
+    private Context context;
 
-    public AppEventCommand(String name, JSONObject payload) {
+    public AppEventCommand(Context context, String name, JSONObject payload) {
+        Assert.notNull(context, "Context must not be null!");
         Assert.notNull(name, "Name must not be null!");
+        this.context = context;
         this.name = name;
         this.payload = payload;
+    }
+
+    public Context getContext() {
+        return context;
     }
 
     public String getName() {
@@ -27,9 +36,9 @@ public class AppEventCommand implements Runnable {
 
     @Override
     public void run() {
-        EventHandler notificationEventHandler = MobileEngage.getConfig().getNotificationEventHandler();
+        NotificationEventHandler notificationEventHandler = MobileEngage.getConfig().getNotificationEventHandler();
         if (notificationEventHandler != null) {
-            notificationEventHandler.handleEvent(name, payload);
+            notificationEventHandler.handleEvent(context, name, payload);
         }
     }
 }
