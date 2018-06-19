@@ -13,11 +13,13 @@ import com.emarsys.core.timestamp.TimestampProvider;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 import static org.mockito.Mockito.mock;
 
 public class FakeRestClient extends RestClient {
 
+    private CountDownLatch latch;
     private Mode mode;
     private List<ResponseModel> responses;
     private List<Exception> exceptions;
@@ -33,6 +35,7 @@ public class FakeRestClient extends RestClient {
         super(mock(Repository.class), mock(TimestampProvider.class));
         this.responses = new ArrayList<>(responses);
         this.mode = mode;
+        this.latch = new CountDownLatch(responses.size());
     }
 
     public FakeRestClient(Exception exception) {
@@ -44,6 +47,7 @@ public class FakeRestClient extends RestClient {
         super(mock(Repository.class), mock(TimestampProvider.class));
         this.exceptions = new ArrayList<>(exceptions);
         this.mode = Mode.ERROR_EXCEPTION;
+        this.latch = new CountDownLatch(exceptions.size());
     }
 
     @Override
@@ -58,8 +62,13 @@ public class FakeRestClient extends RestClient {
                 } else if (mode == Mode.ERROR_EXCEPTION) {
                     completionHandler.onError(model.getId(), getCurrentItem(exceptions));
                 }
+                latch.countDown();
             }
         }, 100);
+    }
+
+    public CountDownLatch getLatch() {
+        return latch;
     }
 
     private <T> T getCurrentItem(List<T> list) {
