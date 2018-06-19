@@ -89,6 +89,19 @@ public class MessagingServiceUtilsTest {
     }
 
     @Test
+    public void handleMessage_shouldReturnFalse_ifMessageIsNotHandled() {
+        Map<String, String> remoteMessageData = new HashMap<>();
+        assertFalse(MessagingServiceUtils.isMobileEngageMessage(remoteMessageData));
+    }
+
+    @Test
+    public void handleMessage_shouldReturnTrue_ifMessageIsHandled() {
+        Map<String, String> remoteMessageData = new HashMap<>();
+        remoteMessageData.put("ems_msg", "value");
+        assertTrue(MessagingServiceUtils.isMobileEngageMessage(remoteMessageData));
+    }
+
+    @Test
     public void isMobileEngageMessage_shouldBeFalse_withEmptyData() {
         Map<String, String> remoteMessageData = new HashMap<>();
         assertFalse(MessagingServiceUtils.isMobileEngageMessage(remoteMessageData));

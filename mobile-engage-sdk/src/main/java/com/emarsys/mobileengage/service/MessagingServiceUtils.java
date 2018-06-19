@@ -17,11 +17,15 @@ import android.support.v4.content.ContextCompat;
 import com.emarsys.core.resource.MetaDataReader;
 import com.emarsys.core.util.Assert;
 import com.emarsys.core.util.ImageUtils;
+import com.emarsys.core.util.log.EMSLogger;
+import com.emarsys.mobileengage.MobileEngage;
 import com.emarsys.mobileengage.config.OreoConfig;
 import com.emarsys.mobileengage.experimental.MobileEngageExperimental;
 import com.emarsys.mobileengage.experimental.MobileEngageFeature;
 import com.emarsys.mobileengage.inbox.InboxParseUtils;
 import com.emarsys.mobileengage.inbox.model.NotificationCache;
+import com.emarsys.mobileengage.util.log.MobileEngageTopic;
+import com.google.firebase.messaging.RemoteMessage;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -37,6 +41,34 @@ public class MessagingServiceUtils {
     public static final int DEFAULT_SMALL_NOTIFICATION_ICON = com.emarsys.mobileengage.R.drawable.default_small_notification_icon;
 
     static NotificationCache notificationCache = new NotificationCache();
+
+    public static boolean handleMessage(Context context, RemoteMessage remoteMessage) {
+        Map<String, String> remoteData = remoteMessage.getData();
+
+        EMSLogger.log(MobileEngageTopic.PUSH, "Remote message data %s", remoteData);
+
+        if (MessagingServiceUtils.isMobileEngageMessage(remoteData)) {
+
+            EMSLogger.log(MobileEngageTopic.PUSH, "RemoteMessage is ME message");
+
+            MessagingServiceUtils.cacheNotification(remoteData);
+
+            int notificationId = (int) (System.currentTimeMillis() % Integer.MAX_VALUE);
+
+            Notification notification = MessagingServiceUtils.createNotification(
+                    notificationId,
+                    context.getApplicationContext(),
+                    remoteData,
+                    MobileEngage.getConfig().getOreoConfig(),
+                    new MetaDataReader());
+
+            ((NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE))
+                    .notify(notificationId, notification);
+            return true;
+        }
+
+        return false;
+    }
 
     public static boolean isMobileEngageMessage(Map<String, String> remoteMessageData) {
         return remoteMessageData != null && remoteMessageData.size() > 0 && remoteMessageData.containsKey(MESSAGE_FILTER);
