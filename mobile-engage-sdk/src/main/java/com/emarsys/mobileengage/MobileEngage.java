@@ -100,8 +100,6 @@ public class MobileEngage {
 
         initializeInApp();
 
-        registerApplicationLifecycleWatchdog(application);
-
         registerCurrentActivityWatchdog(application);
 
         MobileEngageUtils.setup(config);
@@ -169,23 +167,6 @@ public class MobileEngage {
 
     private static void registerCurrentActivityWatchdog(Application application) {
         CurrentActivityWatchdog.registerApplication(application);
-    }
-
-    private static void registerApplicationLifecycleWatchdog(Application application) {
-        ActivityLifecycleAction[] applicationStartActions = null;
-        if (MobileEngageExperimental.isFeatureEnabled(MobileEngageFeature.IN_APP_MESSAGING)) {
-            applicationStartActions = new ActivityLifecycleAction[]{
-                    new InAppStartAction(instance)
-            };
-        }
-
-        ActivityLifecycleAction[] activityCreatedActions = new ActivityLifecycleAction[]{
-                new DeepLinkAction(deepLinkInstance)
-        };
-
-        application.registerActivityLifecycleCallbacks(new ActivityLifecycleWatchdog(
-                applicationStartActions,
-                activityCreatedActions));
     }
 
 }

@@ -2,6 +2,7 @@ package com.emarsys.mobileengage.di;
 
 import android.os.Handler;
 
+import com.emarsys.core.activity.ActivityLifecycleWatchdog;
 import com.emarsys.mobileengage.MobileEngageCoreCompletionHandler;
 import com.emarsys.mobileengage.MobileEngageInternal;
 import com.emarsys.mobileengage.RequestContext;
@@ -21,4 +22,6 @@ public interface DependencyContainer {
     Handler getCoreSdkHandler();
 
     RequestContext getRequestContext();
+
+    ActivityLifecycleWatchdog getActivityLifecycleWatchdog();
 }

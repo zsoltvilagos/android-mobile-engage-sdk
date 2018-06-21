@@ -7,6 +7,8 @@ import android.os.Looper;
 import android.support.annotation.NonNull;
 
 import com.emarsys.core.DeviceInfo;
+import com.emarsys.core.activity.ActivityLifecycleAction;
+import com.emarsys.core.activity.ActivityLifecycleWatchdog;
 import com.emarsys.core.concurrency.CoreSdkHandlerProvider;
 import com.emarsys.core.connection.ConnectionWatchDog;
 import com.emarsys.core.database.repository.Repository;
@@ -23,10 +25,12 @@ import com.emarsys.mobileengage.MobileEngageCoreCompletionHandler;
 import com.emarsys.mobileengage.MobileEngageInternal;
 import com.emarsys.mobileengage.RequestContext;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
+import com.emarsys.mobileengage.deeplink.DeepLinkAction;
 import com.emarsys.mobileengage.deeplink.DeepLinkInternal;
 import com.emarsys.mobileengage.experimental.MobileEngageExperimental;
 import com.emarsys.mobileengage.experimental.MobileEngageFeature;
 import com.emarsys.mobileengage.iam.DoNotDisturbProvider;
+import com.emarsys.mobileengage.iam.InAppStartAction;
 import com.emarsys.mobileengage.iam.dialog.IamDialogProvider;
 import com.emarsys.mobileengage.iam.jsbridge.InAppMessageHandlerProvider;
 import com.emarsys.mobileengage.iam.model.buttonclicked.ButtonClickedRepository;
@@ -74,11 +78,14 @@ public class DefaultDependencyContainer implements DependencyContainer {
     private Repository<RequestModel, SqlSpecification> requestModelRepository;
     private RestClient restClient;
     private Repository<Map<String, Object>, SqlSpecification> logRepositoryProxy;
+    private Application application;
+    private ActivityLifecycleWatchdog activityLifecycleWatchdog;
 
     public DefaultDependencyContainer(MobileEngageConfig mobileEngageConfig) {
         initializeDependencies(mobileEngageConfig);
         initializeInstances(mobileEngageConfig);
         initializeResponseHandlers();
+        initializeActivityLifecycleWatchdog();
     }
 
     @Override
@@ -111,8 +118,13 @@ public class DefaultDependencyContainer implements DependencyContainer {
         return completionHandler;
     }
 
+    @Override
+    public ActivityLifecycleWatchdog getActivityLifecycleWatchdog() {
+        return activityLifecycleWatchdog;
+    }
+
     private void initializeDependencies(MobileEngageConfig config) {
-        Application application = config.getApplication();
+        application = config.getApplication();
 
         uiHandler = new Handler(Looper.getMainLooper());
         coreSdkHandler = new CoreSdkHandlerProvider().provideHandler();
@@ -188,6 +200,24 @@ public class DefaultDependencyContainer implements DependencyContainer {
                 requestContext
         );
         deepLinkInternal = new DeepLinkInternal(requestManager);
+    }
+
+    private void initializeActivityLifecycleWatchdog() {
+        ActivityLifecycleAction[] applicationStartActions = null;
+        if (MobileEngageExperimental.isFeatureEnabled(MobileEngageFeature.IN_APP_MESSAGING)) {
+            applicationStartActions = new ActivityLifecycleAction[]{
+                    new InAppStartAction(mobileEngageInternal)
+            };
+        }
+
+        ActivityLifecycleAction[] activityCreatedActions = new ActivityLifecycleAction[]{
+                new DeepLinkAction(deepLinkInternal)
+        };
+
+        activityLifecycleWatchdog = new ActivityLifecycleWatchdog(
+                applicationStartActions,
+                activityCreatedActions);
+        application.registerActivityLifecycleCallbacks(activityLifecycleWatchdog);
     }
 
     private void initializeResponseHandlers() {
