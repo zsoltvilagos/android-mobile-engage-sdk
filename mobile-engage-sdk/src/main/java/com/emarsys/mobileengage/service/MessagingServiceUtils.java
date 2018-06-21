@@ -16,8 +16,10 @@ import android.support.v4.content.ContextCompat;
 
 import com.emarsys.core.resource.MetaDataReader;
 import com.emarsys.core.util.Assert;
+import com.emarsys.core.util.FileUtils;
 import com.emarsys.core.util.ImageUtils;
 import com.emarsys.core.util.log.EMSLogger;
+import com.emarsys.core.validate.JsonObjectValidator;
 import com.emarsys.mobileengage.MobileEngage;
 import com.emarsys.mobileengage.config.OreoConfig;
 import com.emarsys.mobileengage.experimental.MobileEngageExperimental;
@@ -30,6 +32,7 @@ import com.google.firebase.messaging.RemoteMessage;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -107,7 +110,8 @@ public class MessagingServiceUtils {
             createDefaultChannel(context, oreoConfig);
         }
 
-        PendingIntent resultPendingIntent = IntentUtils.createTrackMessageOpenServicePendingIntent(context, remoteMessageData, notificationId);
+        Map<String, String> preloadedRemoteMessageData = createPreloadedRemoteMessageData(context, remoteMessageData);
+        PendingIntent resultPendingIntent = IntentUtils.createTrackMessageOpenServicePendingIntent(context, preloadedRemoteMessageData, notificationId);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, channelId)
                 .setContentTitle(title)
@@ -160,6 +164,48 @@ public class MessagingServiceUtils {
             result = OreoConfig.DEFAULT_CHANNEL_ID;
         }
         return result;
+    }
+
+    static String getInAppDescriptor(Context context, Map<String, String> remoteMessageData) {
+        try {
+            if (remoteMessageData != null) {
+                String emsPayload = remoteMessageData.get("ems");
+                if (emsPayload != null) {
+                    JSONObject inAppPayload = new JSONObject(emsPayload).getJSONObject("inapp");
+                    if (inAppPayload != null) {
+                        JsonObjectValidator validator = JsonObjectValidator.from(inAppPayload);
+                        List<String> errors = validator
+                                .hasFieldWithType("campaignId", String.class)
+                                .hasFieldWithType("url", String.class)
+                                .validate();
+                        if (errors.isEmpty()) {
+                            JSONObject inAppBundle = new JSONObject();
+                            inAppBundle.put("campaignId", inAppPayload.getString("campaignId"));
+                            final String inAppUrl = inAppPayload.getString("url");
+                            inAppBundle.put("url", inAppUrl);
+                            inAppBundle.put("fileUrl", FileUtils.download(context, inAppUrl));
+                            return inAppBundle.toString();
+                        }
+                    }
+                }
+            }
+        } catch (JSONException ignored) {
+        }
+        return null;
+    }
+
+    static Map<String, String> createPreloadedRemoteMessageData(Context context, Map<String, String> remoteMessageData) {
+        HashMap<String, String> preloadedRemoteMessageData = new HashMap<>(remoteMessageData);
+        String inAppDescriptor = getInAppDescriptor(context, remoteMessageData);
+        if (inAppDescriptor != null) {
+            try {
+                JSONObject ems = new JSONObject(preloadedRemoteMessageData.get("ems"));
+                ems.put("inapp", inAppDescriptor);
+                remoteMessageData.put("ems", ems.toString());
+            } catch (JSONException ignored) {
+            }
+        }
+        return preloadedRemoteMessageData;
     }
 
     static void createDefaultChannel(Context context, OreoConfig oreoConfig) {

@@ -502,6 +502,95 @@ public class MessagingServiceUtilsTest {
     }
 
     @Test
+    public void testGetInAppDescriptor_shouldReturnNull_forNullInput() {
+        assertNull(MessagingServiceUtils.getInAppDescriptor(context, null));
+    }
+
+
+    @Test
+    public void testGetInAppDescriptor_shouldReturnNull_whenThereIsNoEmsInPayload() throws JSONException {
+        assertNull(MessagingServiceUtils.getInAppDescriptor(context, createNoEmsInPayload()));
+    }
+
+
+    @Test
+    public void testGetInAppDescriptor_shouldReturnNull_whenThereIsNoInAppInPayload() throws JSONException {
+        assertNull(MessagingServiceUtils.getInAppDescriptor(context, createNoInAppInPayload()));
+    }
+
+
+    @Test
+    public void testGetInAppDescriptor_shouldReturnNull_whenThereIsInAppInPayload() throws JSONException {
+        JSONObject result = new JSONObject(MessagingServiceUtils.getInAppDescriptor(context, createInAppInPayload()));
+        assertEquals("someId", result.getString("campaignId"));
+        assertEquals("https://hu.wikipedia.org/wiki/Mont_Blanc", result.getString("url"));
+        assertNotNull(result.getString("fileUrl"));
+    }
+
+    @Test
+    public void testGetInAppDescriptor_shouldBeNull_whenCampaignIdIsMissing() throws JSONException {
+        Map<String, String> payload = new HashMap<>();
+        JSONObject ems = new JSONObject();
+        JSONObject inapp = new JSONObject();
+        inapp.put("url", "https://hu.wikipedia.org/wiki/Mont_Blanc");
+        ems.put("inapp", inapp);
+        payload.put("ems", ems.toString());
+
+        assertNull(MessagingServiceUtils.getInAppDescriptor(context, payload));
+    }
+
+    @Test
+    public void testGetInAppDescriptor_shouldBeNull_whenUrlIsMissing() throws JSONException {
+        Map<String, String> payload = new HashMap<>();
+        JSONObject ems = new JSONObject();
+        JSONObject inapp = new JSONObject();
+        inapp.put("campaignId", "someId");
+        ems.put("inapp", inapp);
+        payload.put("ems", ems.toString());
+
+        assertNull(MessagingServiceUtils.getInAppDescriptor(context, payload));
+    }
+
+    @Test
+    public void testGetInAppDescriptor_shouldReturnWithUrlAndCampaignId_whenFileUrlIsNull() throws JSONException {
+        Map<String, String> payload = new HashMap<>();
+        JSONObject ems = new JSONObject();
+        JSONObject inapp = new JSONObject();
+        inapp.put("campaignId", "someId");
+        inapp.put("url", "https://thisIsNotARealUrl");
+        ems.put("inapp", inapp);
+        payload.put("ems", ems.toString());
+
+        JSONObject result = new JSONObject(MessagingServiceUtils.getInAppDescriptor(context, payload));
+        assertEquals("someId", result.getString("campaignId"));
+        assertEquals("https://thisIsNotARealUrl", result.getString("url"));
+        assertEquals(result.has("fileUrl"), false);
+    }
+
+
+    private Map<String, String> createNoEmsInPayload() {
+        Map<String, String> payload = new HashMap<>();
+        return payload;
+    }
+
+    private Map<String, String> createNoInAppInPayload() {
+        Map<String, String> payload = new HashMap<>();
+        payload.put("ems", "{}");
+        return payload;
+    }
+
+    private Map<String, String> createInAppInPayload() throws JSONException {
+        Map<String, String> payload = new HashMap<>();
+        JSONObject ems = new JSONObject();
+        JSONObject inapp = new JSONObject();
+        inapp.put("campaignId", "someId");
+        inapp.put("url", "https://hu.wikipedia.org/wiki/Mont_Blanc");
+        ems.put("inapp", inapp);
+        payload.put("ems", ems.toString());
+        return payload;
+    }
+
+    @Test
     public void testCacheNotification_shouldCacheNotification() {
         Map<String, String> remoteData = new HashMap<>();
         remoteData.put("ems_msg", "true");
