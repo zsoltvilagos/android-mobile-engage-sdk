@@ -110,7 +110,7 @@ public class MessagingServiceUtils {
             createDefaultChannel(context, oreoConfig);
         }
 
-        Map<String, String> preloadedRemoteMessageData = createPreloadedRemoteMessageData(context, remoteMessageData);
+        Map<String, String> preloadedRemoteMessageData = createPreloadedRemoteMessageData(remoteMessageData, getInAppDescriptor(context, remoteMessageData));
         PendingIntent resultPendingIntent = IntentUtils.createTrackMessageOpenServicePendingIntent(context, preloadedRemoteMessageData, notificationId);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, channelId)
@@ -194,14 +194,13 @@ public class MessagingServiceUtils {
         return null;
     }
 
-    static Map<String, String> createPreloadedRemoteMessageData(Context context, Map<String, String> remoteMessageData) {
+    static Map<String, String> createPreloadedRemoteMessageData(Map<String, String> remoteMessageData, String inAppDescriptor) {
         HashMap<String, String> preloadedRemoteMessageData = new HashMap<>(remoteMessageData);
-        String inAppDescriptor = getInAppDescriptor(context, remoteMessageData);
         if (inAppDescriptor != null) {
             try {
                 JSONObject ems = new JSONObject(preloadedRemoteMessageData.get("ems"));
                 ems.put("inapp", inAppDescriptor);
-                remoteMessageData.put("ems", ems.toString());
+                preloadedRemoteMessageData.put("ems", ems.toString());
             } catch (JSONException ignored) {
             }
         }

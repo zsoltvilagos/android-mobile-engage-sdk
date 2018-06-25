@@ -567,6 +567,23 @@ public class MessagingServiceUtilsTest {
         assertEquals(result.has("fileUrl"), false);
     }
 
+    @Test
+    public void testCreatePreloadedRemoteMessageData_shouldPutInAppDescriptorUnderEms_whenAvailable() throws JSONException {
+        String inAppDescriptor = "InAppDescriptor";
+        Map<String, String> inAppPayload = createNoInAppInPayload();
+        Map<String, String> result = MessagingServiceUtils.createPreloadedRemoteMessageData(inAppPayload, inAppDescriptor);
+
+        assertEquals(inAppDescriptor, new JSONObject(result.get("ems")).getString("inapp"));
+    }
+
+    @Test
+    public void testCreatePreloadedRemoteMessageData_shouldNotPutInAppDescriptorUnderEms_whenNotAvailable() throws JSONException {
+        String inAppDescriptor = null;
+        Map<String, String> inAppPayload = createNoInAppInPayload();
+        Map<String, String> result = MessagingServiceUtils.createPreloadedRemoteMessageData(inAppPayload, inAppDescriptor);
+
+        assertEquals(false, new JSONObject(result.get("ems")).has("inapp"));
+    }
 
     private Map<String, String> createNoEmsInPayload() {
         Map<String, String> payload = new HashMap<>();
