@@ -30,6 +30,7 @@ import com.emarsys.mobileengage.deeplink.DeepLinkInternal;
 import com.emarsys.mobileengage.experimental.MobileEngageExperimental;
 import com.emarsys.mobileengage.experimental.MobileEngageFeature;
 import com.emarsys.mobileengage.iam.DoNotDisturbProvider;
+import com.emarsys.mobileengage.iam.InAppPresenter;
 import com.emarsys.mobileengage.iam.InAppStartAction;
 import com.emarsys.mobileengage.iam.dialog.IamDialogProvider;
 import com.emarsys.mobileengage.iam.jsbridge.InAppMessageHandlerProvider;
@@ -80,10 +81,12 @@ public class DefaultDependencyContainer implements DependencyContainer {
     private Repository<Map<String, Object>, SqlSpecification> logRepositoryProxy;
     private Application application;
     private ActivityLifecycleWatchdog activityLifecycleWatchdog;
+    private InAppPresenter inAppPresenter;
 
     public DefaultDependencyContainer(MobileEngageConfig mobileEngageConfig) {
         initializeDependencies(mobileEngageConfig);
         initializeInstances(mobileEngageConfig);
+        initializeInAppPresenter();
         initializeResponseHandlers();
         initializeActivityLifecycleWatchdog();
     }
@@ -121,6 +124,11 @@ public class DefaultDependencyContainer implements DependencyContainer {
     @Override
     public ActivityLifecycleWatchdog getActivityLifecycleWatchdog() {
         return activityLifecycleWatchdog;
+    }
+
+    @Override
+    public InAppPresenter getInAppPresenter() {
+        return inAppPresenter;
     }
 
     private void initializeDependencies(MobileEngageConfig config) {
@@ -220,6 +228,18 @@ public class DefaultDependencyContainer implements DependencyContainer {
         application.registerActivityLifecycleCallbacks(activityLifecycleWatchdog);
     }
 
+    private void initializeInAppPresenter() {
+        inAppPresenter = new InAppPresenter(
+                coreSdkHandler,
+                new IamWebViewProvider(),
+                new InAppMessageHandlerProvider(),
+                new IamDialogProvider(),
+                buttonClickedRepository,
+                displayedIamRepository,
+                timestampProvider,
+                mobileEngageInternal);
+    }
+
     private void initializeResponseHandlers() {
         List<AbstractResponseHandler> responseHandlers = new ArrayList<>();
 
@@ -231,15 +251,9 @@ public class DefaultDependencyContainer implements DependencyContainer {
 
         if (MobileEngageExperimental.isFeatureEnabled(MobileEngageFeature.IN_APP_MESSAGING)) {
             responseHandlers.add(new InAppMessageResponseHandler(
-                    coreSdkHandler,
-                    new IamWebViewProvider(),
-                    new InAppMessageHandlerProvider(),
-                    new IamDialogProvider(),
-                    buttonClickedRepository,
-                    displayedIamRepository,
+                    inAppPresenter,
                     logRepositoryProxy,
-                    timestampProvider,
-                    mobileEngageInternal));
+                    timestampProvider));
 
             responseHandlers.add(new InAppCleanUpResponseHandler(
                     displayedIamRepository,

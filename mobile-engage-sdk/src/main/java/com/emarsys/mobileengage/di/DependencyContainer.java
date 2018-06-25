@@ -7,6 +7,7 @@ import com.emarsys.mobileengage.MobileEngageCoreCompletionHandler;
 import com.emarsys.mobileengage.MobileEngageInternal;
 import com.emarsys.mobileengage.RequestContext;
 import com.emarsys.mobileengage.deeplink.DeepLinkInternal;
+import com.emarsys.mobileengage.iam.InAppPresenter;
 import com.emarsys.mobileengage.inbox.InboxInternal;
 
 public interface DependencyContainer {
@@ -24,4 +25,6 @@ public interface DependencyContainer {
     RequestContext getRequestContext();
 
     ActivityLifecycleWatchdog getActivityLifecycleWatchdog();
+
+    InAppPresenter getInAppPresenter();
 }

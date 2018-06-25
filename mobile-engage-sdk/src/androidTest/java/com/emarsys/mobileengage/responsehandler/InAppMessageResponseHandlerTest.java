@@ -9,6 +9,7 @@ import com.emarsys.core.request.model.RequestModel;
 import com.emarsys.core.response.ResponseModel;
 import com.emarsys.core.timestamp.TimestampProvider;
 import com.emarsys.mobileengage.MobileEngageInternal;
+import com.emarsys.mobileengage.iam.InAppPresenter;
 import com.emarsys.mobileengage.iam.dialog.IamDialog;
 import com.emarsys.mobileengage.iam.dialog.IamDialogProvider;
 import com.emarsys.mobileengage.iam.dialog.action.OnDialogShownAction;
@@ -20,6 +21,7 @@ import com.emarsys.mobileengage.iam.model.buttonclicked.ButtonClickedRepository;
 import com.emarsys.mobileengage.iam.model.displayediam.DisplayedIamRepository;
 import com.emarsys.mobileengage.iam.webview.DefaultMessageLoadedListener;
 import com.emarsys.mobileengage.iam.webview.IamWebViewProvider;
+import com.emarsys.mobileengage.iam.webview.MessageLoadedListener;
 import com.emarsys.mobileengage.testUtil.CollectionTestUtils;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
@@ -48,6 +50,7 @@ public class InAppMessageResponseHandlerTest {
     }
 
     private InAppMessageResponseHandler handler;
+    private InAppPresenter presenter;
     private IamWebViewProvider webViewProvider;
     private IamDialog dialog;
 
@@ -62,141 +65,42 @@ public class InAppMessageResponseHandlerTest {
         IamDialogProvider dialogProvider = mock(IamDialogProvider.class);
         when(dialogProvider.provideDialog(any(String.class))).thenReturn(dialog);
 
-        handler = new InAppMessageResponseHandler(
+        presenter = new InAppPresenter(
                 mock(Handler.class),
                 webViewProvider,
                 mock(InAppMessageHandlerProvider.class),
                 dialogProvider,
                 mock(ButtonClickedRepository.class),
                 mock(DisplayedIamRepository.class),
-                mock(LogRepository.class),
                 mock(TimestampProvider.class),
                 mock(MobileEngageInternal.class));
+
+        handler = new InAppMessageResponseHandler(presenter,
+                mock(LogRepository.class),
+                mock(TimestampProvider.class));
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testConstructor_coreSdkHandler_shouldNotBeNull() {
+    public void testConstructor_inAppPresenter_shouldNotBeNull() {
         new InAppMessageResponseHandler(
                 null,
-                webViewProvider,
-                mock(InAppMessageHandlerProvider.class),
-                mock(IamDialogProvider.class),
-                mock(ButtonClickedRepository.class),
-                mock(DisplayedIamRepository.class),
                 mock(LogRepository.class),
-                mock(TimestampProvider.class),
-                mock(MobileEngageInternal.class));
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testConstructor_webViewProvider_shouldNotBeNull() {
-        new InAppMessageResponseHandler(
-                mock(Handler.class),
-                null,
-                mock(InAppMessageHandlerProvider.class),
-                mock(IamDialogProvider.class),
-                mock(ButtonClickedRepository.class),
-                mock(DisplayedIamRepository.class),
-                mock(LogRepository.class),
-                mock(TimestampProvider.class),
-                mock(MobileEngageInternal.class));
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testConstructor_messageHandlerProvider_shouldNotBeNull() {
-        new InAppMessageResponseHandler(
-                mock(Handler.class),
-                webViewProvider,
-                null,
-                mock(IamDialogProvider.class),
-                mock(ButtonClickedRepository.class),
-                mock(DisplayedIamRepository.class),
-                mock(LogRepository.class),
-                mock(TimestampProvider.class),
-                mock(MobileEngageInternal.class));
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testConstructor_dialogProvider_shouldNotBeNull() {
-        new InAppMessageResponseHandler(
-                mock(Handler.class),
-                webViewProvider,
-                mock(InAppMessageHandlerProvider.class),
-                null,
-                mock(ButtonClickedRepository.class),
-                mock(DisplayedIamRepository.class),
-                mock(LogRepository.class),
-                mock(TimestampProvider.class),
-                mock(MobileEngageInternal.class));
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testConstructor_buttonClickedRepository_shouldNotBeNull() {
-        new InAppMessageResponseHandler(
-                mock(Handler.class),
-                webViewProvider,
-                mock(InAppMessageHandlerProvider.class),
-                mock(IamDialogProvider.class),
-                null,
-                mock(DisplayedIamRepository.class),
-                mock(LogRepository.class),
-                mock(TimestampProvider.class),
-                mock(MobileEngageInternal.class));
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testConstructor_displayedIamRepository_shouldNotBeNull() {
-        new InAppMessageResponseHandler(
-                mock(Handler.class),
-                webViewProvider,
-                mock(InAppMessageHandlerProvider.class),
-                mock(IamDialogProvider.class),
-                mock(ButtonClickedRepository.class),
-                null,
-                mock(LogRepository.class),
-                mock(TimestampProvider.class),
-                mock(MobileEngageInternal.class));
+                mock(TimestampProvider.class));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_logRepository_shouldNotBeNull() {
         new InAppMessageResponseHandler(
-                mock(Handler.class),
-                webViewProvider,
-                mock(InAppMessageHandlerProvider.class),
-                mock(IamDialogProvider.class),
-                mock(ButtonClickedRepository.class),
-                mock(DisplayedIamRepository.class),
+                mock(InAppPresenter.class),
                 null,
-                mock(TimestampProvider.class),
-                mock(MobileEngageInternal.class));
+                mock(TimestampProvider.class));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_timestampProvider_shouldNotBeNull() {
         new InAppMessageResponseHandler(
-                mock(Handler.class),
-                webViewProvider,
-                mock(InAppMessageHandlerProvider.class),
-                mock(IamDialogProvider.class),
-                mock(ButtonClickedRepository.class),
-                mock(DisplayedIamRepository.class),
+                mock(InAppPresenter.class),
                 mock(LogRepository.class),
-                null,
-                mock(MobileEngageInternal.class));
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testConstructor_mobileEngageInternal_shouldNotBeNull() {
-        new InAppMessageResponseHandler(
-                mock(Handler.class),
-                webViewProvider,
-                mock(InAppMessageHandlerProvider.class),
-                mock(IamDialogProvider.class),
-                mock(ButtonClickedRepository.class),
-                mock(DisplayedIamRepository.class),
-                mock(LogRepository.class),
-                mock(TimestampProvider.class),
                 null);
     }
 
@@ -245,7 +149,7 @@ public class InAppMessageResponseHandlerTest {
 
         handler.handleResponse(response);
 
-        verify(webViewProvider).loadMessageAsync(eq(html), any(IamJsBridge.class), any(DefaultMessageLoadedListener.class));
+        verify(webViewProvider).loadMessageAsync(eq(html), any(IamJsBridge.class), any(MessageLoadedListener.class));
     }
 
     @Test
