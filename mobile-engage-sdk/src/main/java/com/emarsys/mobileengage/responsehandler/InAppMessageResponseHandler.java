@@ -11,6 +11,7 @@ import com.emarsys.core.util.Assert;
 import com.emarsys.core.util.log.EMSLogger;
 import com.emarsys.mobileengage.iam.InAppPresenter;
 import com.emarsys.mobileengage.iam.webview.MessageLoadedListener;
+import com.emarsys.mobileengage.util.AndroidVersionUtils;
 import com.emarsys.mobileengage.util.log.MobileEngageTopic;
 
 import org.json.JSONException;
@@ -40,10 +41,9 @@ public class InAppMessageResponseHandler extends AbstractResponseHandler {
     protected boolean shouldHandleResponse(ResponseModel responseModel) {
         JSONObject responseBody = responseModel.getParsedBody();
         boolean responseBodyNotNull = responseBody != null;
-        boolean kitkatOrAbove = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
         boolean shouldHandle = false;
 
-        if (kitkatOrAbove && responseBodyNotNull) {
+        if (AndroidVersionUtils.isKitKatOrAbove() && responseBodyNotNull) {
             try {
                 JSONObject message = responseBody.getJSONObject("message");
                 shouldHandle = message.has("html");

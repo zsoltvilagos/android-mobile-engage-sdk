@@ -26,6 +26,7 @@ import com.emarsys.mobileengage.experimental.MobileEngageExperimental;
 import com.emarsys.mobileengage.experimental.MobileEngageFeature;
 import com.emarsys.mobileengage.inbox.InboxParseUtils;
 import com.emarsys.mobileengage.inbox.model.NotificationCache;
+import com.emarsys.mobileengage.util.AndroidVersionUtils;
 import com.emarsys.mobileengage.util.log.MobileEngageTopic;
 import com.google.firebase.messaging.RemoteMessage;
 
@@ -196,7 +197,10 @@ public class MessagingServiceUtils {
 
     static Map<String, String> createPreloadedRemoteMessageData(Map<String, String> remoteMessageData, String inAppDescriptor) {
         HashMap<String, String> preloadedRemoteMessageData = new HashMap<>(remoteMessageData);
-        if (inAppDescriptor != null) {
+        if (inAppDescriptor != null
+                && AndroidVersionUtils.isKitKatOrAbove()
+                && MobileEngageExperimental.isFeatureEnabled(MobileEngageFeature.IN_APP_MESSAGING)
+                ) {
             try {
                 JSONObject ems = new JSONObject(preloadedRemoteMessageData.get("ems"));
                 ems.put("inapp", inAppDescriptor);

@@ -16,13 +16,17 @@ import android.support.v4.content.ContextCompat;
 
 import com.emarsys.core.resource.MetaDataReader;
 import com.emarsys.mobileengage.config.OreoConfig;
+import com.emarsys.mobileengage.experimental.MobileEngageExperimental;
+import com.emarsys.mobileengage.experimental.MobileEngageFeature;
 import com.emarsys.mobileengage.inbox.model.Notification;
 import com.emarsys.mobileengage.inbox.model.NotificationCache;
+import com.emarsys.mobileengage.testUtil.ExperimentalTestUtils;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -31,6 +35,7 @@ import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -86,6 +91,13 @@ public class MessagingServiceUtilsTest {
 
         enabledOreoConfig = new OreoConfig(true, "name", "description");
         disabledOreoConfig = new OreoConfig(false);
+
+        MobileEngageExperimental.enableFeature(MobileEngageFeature.IN_APP_MESSAGING);
+    }
+
+    @After
+    public void tearDown() throws IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+        ExperimentalTestUtils.resetExperimentalFeatures();
     }
 
     @Test
@@ -568,12 +580,22 @@ public class MessagingServiceUtilsTest {
     }
 
     @Test
-    public void testCreatePreloadedRemoteMessageData_shouldPutInAppDescriptorUnderEms_whenAvailable() throws JSONException {
+    public void testCreatePreloadedRemoteMessageData_shouldPutInAppDescriptorUnderEms_whenAvailableAndInAppIsTurnedOn() throws JSONException {
         String inAppDescriptor = "InAppDescriptor";
         Map<String, String> inAppPayload = createNoInAppInPayload();
         Map<String, String> result = MessagingServiceUtils.createPreloadedRemoteMessageData(inAppPayload, inAppDescriptor);
 
         assertEquals(inAppDescriptor, new JSONObject(result.get("ems")).getString("inapp"));
+    }
+
+    @Test
+    public void testCreatePreloadedRemoteMessageData_shouldNotPutInAppDescriptorUnderEms_whenAvailableButInappIsTurnedOff() throws JSONException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+        ExperimentalTestUtils.resetExperimentalFeatures();
+        String inAppDescriptor = "InAppDescriptor";
+        Map<String, String> inAppPayload = createNoInAppInPayload();
+        Map<String, String> result = MessagingServiceUtils.createPreloadedRemoteMessageData(inAppPayload, inAppDescriptor);
+
+        assertNull(new JSONObject(result.get("ems")).optString("inapp", null));
     }
 
     @Test
