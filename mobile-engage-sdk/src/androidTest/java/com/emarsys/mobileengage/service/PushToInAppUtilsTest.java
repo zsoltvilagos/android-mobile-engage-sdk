@@ -3,6 +3,7 @@ package com.emarsys.mobileengage.service;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.test.InstrumentationRegistry;
+import android.support.test.filters.SdkSuppress;
 import android.support.test.runner.AndroidJUnit4;
 
 import com.emarsys.core.activity.ActivityLifecycleWatchdog;
@@ -26,12 +27,14 @@ import org.junit.runner.RunWith;
 import java.io.File;
 import java.util.concurrent.CountDownLatch;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(AndroidJUnit4.class)
+@SdkSuppress(minSdkVersion = KITKAT)
 public class PushToInAppUtilsTest {
 
     private ActivityLifecycleWatchdog activityLifecycleWatchdog;

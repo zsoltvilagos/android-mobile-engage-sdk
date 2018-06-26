@@ -580,6 +580,7 @@ public class MessagingServiceUtilsTest {
     }
 
     @Test
+    @SdkSuppress(minSdkVersion = KITKAT)
     public void testCreatePreloadedRemoteMessageData_shouldPutInAppDescriptorUnderEms_whenAvailableAndInAppIsTurnedOn() throws JSONException {
         String inAppDescriptor = "InAppDescriptor";
         Map<String, String> inAppPayload = createNoInAppInPayload();
