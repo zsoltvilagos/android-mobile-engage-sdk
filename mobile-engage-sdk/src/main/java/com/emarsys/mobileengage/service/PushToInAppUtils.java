@@ -11,6 +11,8 @@ import com.emarsys.mobileengage.iam.PushToInAppAction;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+
 public class PushToInAppUtils {
 
     public static void handlePreloadedInAppMessage(Intent intent) {
@@ -34,6 +36,7 @@ public class PushToInAppUtils {
                                     String html = null;
                                     if (fileUrl != null) {
                                         html = FileUtils.readFileIntoString(fileUrl);
+                                        new File(fileUrl).delete();
                                     }
                                     if (html == null && url != null) {
                                         html = FileUtils.readURLIntoString(url);

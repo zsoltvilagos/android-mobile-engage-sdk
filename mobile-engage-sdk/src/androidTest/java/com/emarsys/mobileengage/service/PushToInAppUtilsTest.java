@@ -28,6 +28,7 @@ import java.io.File;
 import java.util.concurrent.CountDownLatch;
 
 import static android.os.Build.VERSION_CODES.KITKAT;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -128,5 +129,29 @@ public class PushToInAppUtilsTest {
         waitForEventLoopToFinish();
 
         verify(activityLifecycleWatchdog).addTriggerOnActivityAction(any(PushToInAppAction.class));
+    }
+
+    @Test
+    public void testHandlePreloadedInAppMessage_shouldDeleteFile_afterPushToInAppActionIsScheduled() throws Exception {
+        String fileUrl = FileUtils.download(InstrumentationRegistry.getTargetContext(), "https://www.emarsys.com");
+
+        Intent intent = new Intent();
+        Bundle payload = new Bundle();
+        JSONObject ems = new JSONObject();
+        JSONObject inapp = new JSONObject();
+        inapp.put("campaignId", "campaignId");
+        inapp.put("fileUrl", fileUrl);
+        ems.put("inapp", inapp.toString());
+        payload.putString("ems", ems.toString());
+        intent.putExtra("payload", payload);
+
+        assertEquals(true, new File(fileUrl).exists());
+
+        PushToInAppUtils.handlePreloadedInAppMessage(intent);
+        waitForEventLoopToFinish();
+
+        verify(activityLifecycleWatchdog).addTriggerOnActivityAction(any(PushToInAppAction.class));
+
+        assertEquals(false, new File(fileUrl).exists());
     }
 }
