@@ -5,8 +5,8 @@ install {
         pom.project {
             packaging 'aar'
             groupId 'com.emarsys'
-            artifactId 'mobile-engage-sdk'
-            name 'mobile-engage-sdk'
+            artifactId project.sdkArtifactName
+            name project.sdkArtifactName
         }
     }
 }

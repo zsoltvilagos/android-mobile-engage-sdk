@@ -13,6 +13,10 @@ android {
         versionCode gitVersionCode
         versionName gitVersionName
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        buildConfigField "String", "ME_BASE_V2_URL", project.ME_BASE_V2_URL
+        buildConfigField "String", "ME_BASE_V3_URL", project.ME_BASE_V3_URL
+        buildConfigField "String", "INBOX_BASE_URL", project.INBOX_BASE_URL
+        buildConfigField "String", "DEEP_LINK_BASE_URL", project.DEEP_LINK_BASE_URL
     }
     buildTypes {
         release {
