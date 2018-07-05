@@ -175,7 +175,21 @@ public class MobileEngageIntegrationTest {
     }
 
     @Test
-    public void testTrackMessageOpen_intent() throws Exception {
+    public void testTrackMessageOpen_intent_V2() throws Exception {
+        ExperimentalTestUtils.resetExperimentalFeatures();
+        Intent intent = new Intent();
+        Bundle payload = new Bundle();
+        payload.putString("key1", "value1");
+        payload.putString("u", "{\"sid\": \"dd8_zXfDdndBNEQi\"}");
+        intent.putExtra("payload", payload);
+
+        eventuallyAssertSuccess(MobileEngage.trackMessageOpen(intent));
+    }
+
+    @Test
+    public void testTrackMessageOpen_intent_V3() throws Exception {
+        doAppLogin();
+
         Intent intent = new Intent();
         Bundle payload = new Bundle();
         payload.putString("key1", "value1");

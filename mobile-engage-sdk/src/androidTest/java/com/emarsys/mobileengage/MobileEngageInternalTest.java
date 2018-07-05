@@ -4,11 +4,13 @@ import android.app.Application;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
 import com.emarsys.core.DeviceInfo;
 import com.emarsys.core.request.RequestManager;
+import com.emarsys.core.request.model.RequestMethod;
 import com.emarsys.core.request.model.RequestModel;
 import com.emarsys.core.timestamp.TimestampProvider;
 import com.emarsys.core.util.TimestampUtils;
@@ -22,6 +24,7 @@ import com.emarsys.mobileengage.storage.MeIdStorage;
 import com.emarsys.mobileengage.testUtil.ExperimentalTestUtils;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 import com.emarsys.mobileengage.util.RequestHeaderUtils;
+import com.emarsys.mobileengage.util.RequestUrlUtils;
 
 import org.junit.After;
 import org.junit.Before;
@@ -602,7 +605,8 @@ public class MobileEngageInternalTest {
     }
 
     @Test
-    public void testTrackMessageOpen_requestManagerCalledWithCorrectRequestModel() throws Exception {
+    public void testTrackMessageOpen_requestManagerCalledWithCorrectRequestModelWhenUsingV2() throws Exception {
+        ExperimentalTestUtils.resetExperimentalFeatures();
         Intent intent = getTestIntent();
 
         Map<String, Object> payload = createBasePayload();
@@ -625,6 +629,34 @@ public class MobileEngageInternalTest {
     }
 
     @Test
+    public void testTrackMessageOpen_requestManagerCalledWithCorrectRequestModelWhenUsingV3() throws Exception {
+        MobileEngageExperimental.enableFeature(MobileEngageFeature.IN_APP_MESSAGING);
+
+        Intent intent = getTestIntent();
+
+        when(requestContext.getTimestampProvider().provideTimestamp()).thenReturn(TIMESTAMP);
+
+        Map<String, Object> payload = createTrackMessageOpenPayload_V3();
+
+        ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
+
+        mobileEngage.trackMessageOpen(intent);
+
+        verify(manager).submit(captor.capture());
+
+        RequestModel result = captor.getValue();
+        RequestModel expected = new RequestModel(
+                RequestUrlUtils.createEventUrl_V3(ME_ID),
+                RequestMethod.POST,
+                payload,
+                RequestHeaderUtils.createBaseHeaders_V3(requestContext),
+                TIMESTAMP,
+                Long.MAX_VALUE,
+                result.getId());
+        assertRequestModels(expected, result);
+    }
+
+    @Test
     public void testTrackMessageOpen_returnsRequestModelId() throws Exception {
         Intent intent = getTestIntent();
 
@@ -638,7 +670,9 @@ public class MobileEngageInternalTest {
     }
 
     @Test
-    public void testTrackMessageOpen_containsCredentials_fromApploginParameters() {
+    public void testTrackMessageOpen_containsCredentials_fromApploginParameters_V2() throws Exception{
+        ExperimentalTestUtils.resetExperimentalFeatures();
+
         Intent intent = getTestIntent();
         int contactFieldId = 3;
         String contactFieldValue = "test@test.com";
@@ -649,8 +683,8 @@ public class MobileEngageInternalTest {
         verify(manager).submit(captor.capture());
 
         Map<String, Object> payload = captor.getValue().getPayload();
-        assertEquals(payload.get("contact_field_id"), contactFieldId);
-        assertEquals(payload.get("contact_field_value"), contactFieldValue);
+        assertEquals(contactFieldId, payload.get("contact_field_id"));
+        assertEquals(contactFieldValue, payload.get("contact_field_value"));
     }
 
     @Test
@@ -867,6 +901,26 @@ public class MobileEngageInternalTest {
         if (eventAttributes != null && !eventAttributes.isEmpty()) {
             event.put("attributes", eventAttributes);
         }
+
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("clicks", new ArrayList<>());
+        payload.put("viewed_messages", new ArrayList<>());
+        payload.put("events", Collections.singletonList(event));
+        return payload;
+    }
+
+
+    @NonNull
+    private Map<String, Object> createTrackMessageOpenPayload_V3() {
+        Map<String, Object> event = new HashMap<>();
+        event.put("type", "internal");
+        event.put("name", "message_open");
+
+        HashMap<String, String> attributes = new HashMap<>();
+        attributes.put("sid", "+43c_lODSmXqCvdOz");
+
+        event.put("attributes", attributes);
+        event.put("timestamp", TimestampUtils.formatTimestampWithUTC(TIMESTAMP));
 
         Map<String, Object> payload = new HashMap<>();
         payload.put("clicks", new ArrayList<>());

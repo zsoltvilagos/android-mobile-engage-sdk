@@ -198,6 +198,7 @@ public class MobileEngageInternal {
         }
     }
 
+
     public String trackMessageOpen(Intent intent) {
         EMSLogger.log(MobileEngageTopic.MOBILE_ENGAGE, "Argument: %s", intent);
 
@@ -222,17 +223,11 @@ public class MobileEngageInternal {
 
     private String handleMessageOpen(String messageId) {
         if (messageId != null) {
-            Map<String, Object> payload = RequestPayloadUtils.createBasePayload(requestContext);
-            payload.put("sid", messageId);
-            RequestModel model = new RequestModel.Builder()
-                    .url(RequestUrlUtils.createEventUrl_V2("message_open"))
-                    .payload(payload)
-                    .headers(RequestHeaderUtils.createBaseHeaders_V2(config))
-                    .build();
-
-            MobileEngageUtils.incrementIdlingResource();
-            manager.submit(model);
-            return model.getId();
+            if (MobileEngageExperimental.isFeatureEnabled(MobileEngageFeature.IN_APP_MESSAGING)) {
+                return handleMessageOpen_V3(messageId);
+            } else {
+                return handleMessageOpen_V2(messageId);
+            }
         } else {
             final String uuid = RequestModel.nextId();
             uiHandler.post(new Runnable() {
@@ -243,6 +238,26 @@ public class MobileEngageInternal {
             });
             return uuid;
         }
+    }
+
+    private String handleMessageOpen_V2(String messageId) {
+        Map<String, Object> payload = RequestPayloadUtils.createBasePayload(requestContext);
+        payload.put("sid", messageId);
+        RequestModel model = new RequestModel.Builder()
+                .url(RequestUrlUtils.createEventUrl_V2("message_open"))
+                .payload(payload)
+                .headers(RequestHeaderUtils.createBaseHeaders_V2(config))
+                .build();
+
+        MobileEngageUtils.incrementIdlingResource();
+        manager.submit(model);
+        return model.getId();
+    }
+
+    private String handleMessageOpen_V3(String messageId) {
+        HashMap<String, String> attributes = new HashMap<>();
+        attributes.put("sid", messageId);
+        return trackInternalCustomEvent("message_open", attributes);
     }
 
     private boolean shouldDoAppLogin(Integer storedHashCode, int currentHashCode, MeIdStorage meIdStorage) {
