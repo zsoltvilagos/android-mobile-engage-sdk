@@ -11,13 +11,17 @@ import com.emarsys.core.util.TimestampUtils;
 import com.emarsys.mobileengage.RequestContext;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
+import com.emarsys.mobileengage.experimental.MobileEngageExperimental;
+import com.emarsys.mobileengage.experimental.MobileEngageFeature;
 import com.emarsys.mobileengage.storage.AppLoginStorage;
 import com.emarsys.mobileengage.storage.MeIdSignatureStorage;
 import com.emarsys.mobileengage.storage.MeIdStorage;
+import com.emarsys.mobileengage.testUtil.ExperimentalTestUtils;
 import com.emarsys.mobileengage.testUtil.RequestModelTestUtils;
 import com.emarsys.mobileengage.testUtil.SharedPrefsUtils;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -26,6 +30,7 @@ import org.junit.rules.TestRule;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static junit.framework.Assert.assertFalse;
@@ -40,6 +45,7 @@ public class RequestModelUtilsTest {
     public static final String VALID_CUSTOM_EVENT_V3 = "https://mobile-events.eservice.emarsys.net/v3/devices/12345/events";
 
     private RequestContext requestContext;
+    private MeIdStorage meIdStorage;
 
     @Rule
     public TestRule timeout = TimeoutUtils.getTimeoutRule();
@@ -53,15 +59,21 @@ public class RequestModelUtilsTest {
                 .disableDefaultChannel()
                 .build();
 
+        meIdStorage = mock(MeIdStorage.class);
         requestContext = new RequestContext(
                 config,
                 new DeviceInfo(InstrumentationRegistry.getContext()),
                 mock(AppLoginStorage.class),
-                mock(MeIdStorage.class),
+                meIdStorage,
                 mock(MeIdSignatureStorage.class),
                 mock(TimestampProvider.class));
 
         requestContext.setAppLoginParameters(new AppLoginParameters(3, "test@test.com"));
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        ExperimentalTestUtils.resetExperimentalFeatures();
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -110,10 +122,8 @@ public class RequestModelUtilsTest {
         RequestModelUtils.createLastMobileActivity(null);
     }
 
-
-
     @Test
-    public void testCreateLastMobileActivity() {
+    public void testCreateLastMobileActivity_V2() {
         RequestModel expected = new RequestModel.Builder()
                 .url("https://push.eservice.emarsys.net/api/mobileengage/v2/events/ems_lastMobileActivity")
                 .payload(RequestPayloadUtils.createBasePayload(requestContext))
@@ -123,6 +133,24 @@ public class RequestModelUtilsTest {
         RequestModel result = RequestModelUtils.createLastMobileActivity(requestContext);
 
         RequestModelTestUtils.assertEqualsRequestModels(expected, result);
+    }
+
+    @Test
+    public void testCreateLastMobileActivity_V3() {
+        MobileEngageExperimental.enableFeature(MobileEngageFeature.IN_APP_MESSAGING);
+
+        when(meIdStorage.get()).thenReturn("meId");
+
+        RequestModel expected = new RequestModel.Builder()
+                .url(RequestUrlUtils.createEventUrl_V3(requestContext.getMeIdStorage().get()))
+                .payload(RequestPayloadUtils.createBasePayload(requestContext))
+                .headers(RequestHeaderUtils.createBaseHeaders_V3(requestContext))
+                .build();
+
+        RequestModel requestModel = RequestModelUtils.createLastMobileActivity(requestContext);
+
+        assertEquals(expected.getUrl(), requestModel.getUrl());
+        assertEquals("last_mobile_activity", (((List<Map<String, Object>>) requestModel.getPayload().get("events")).get(0).get("name")));
     }
 
     @Test(expected = IllegalArgumentException.class)
