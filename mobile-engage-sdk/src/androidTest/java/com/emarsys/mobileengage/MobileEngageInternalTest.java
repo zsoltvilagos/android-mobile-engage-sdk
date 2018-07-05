@@ -24,6 +24,7 @@ import com.emarsys.mobileengage.storage.MeIdStorage;
 import com.emarsys.mobileengage.testUtil.ExperimentalTestUtils;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 import com.emarsys.mobileengage.util.RequestHeaderUtils;
+import com.emarsys.mobileengage.util.RequestModelUtils;
 import com.emarsys.mobileengage.util.RequestUrlUtils;
 
 import org.junit.After;
@@ -357,7 +358,7 @@ public class MobileEngageInternalTest {
                 createLoginRequestModel(appLoginParameters),
                 appLoginParameters,
                 ME_ID,
-                createLastMobileActivityRequestModel(appLoginParameters)
+                createLastMobileActivityRequestModelV3()
         );
     }
 
@@ -369,7 +370,7 @@ public class MobileEngageInternalTest {
                 createLoginRequestModel(appLoginParameters),
                 appLoginParameters,
                 ME_ID,
-                createLastMobileActivityRequestModel(appLoginParameters)
+                createLastMobileActivityRequestModelV3()
         );
     }
 
@@ -879,6 +880,10 @@ public class MobileEngageInternalTest {
                 .payload(payload)
                 .headers(defaultHeaders)
                 .build();
+    }
+
+    private RequestModel createLastMobileActivityRequestModelV3() {
+        return RequestModelUtils.createInternalCustomEvent("last_mobile_activity", null, requestContext);
     }
 
     private void assertRequestModels(RequestModel expected, RequestModel result) {
