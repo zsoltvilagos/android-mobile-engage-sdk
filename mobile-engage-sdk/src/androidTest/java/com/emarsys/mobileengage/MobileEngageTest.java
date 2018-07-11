@@ -137,7 +137,9 @@ public class MobileEngageTest {
     public void tearDown() throws Exception {
         ExperimentalTestUtils.resetExperimentalFeatures();
         MobileEngage.InApp.setPaused(false);
-        MobileEngage.coreSdkHandler.getLooper().quit();
+        if (MobileEngage.coreSdkHandler != null) {
+            MobileEngage.coreSdkHandler.getLooper().quit();
+        }
         DependencyInjection.tearDown();
     }
 
@@ -162,7 +164,7 @@ public class MobileEngageTest {
     }
 
     @Test
-    public void testSetup_initializesCoreCompletionHandler_withMeIdResponseHandler_whenInAppIsOn() throws Exception  {
+    public void testSetup_initializesCoreCompletionHandler_withMeIdResponseHandler_whenInAppIsOn() throws Exception {
         ExperimentalTestUtils.resetExperimentalFeatures();
         MobileEngage.completionHandler = null;
         MobileEngage.setup(inAppConfig);
@@ -173,7 +175,7 @@ public class MobileEngageTest {
     }
 
     @Test
-    public void testSetup_initializesCoreCompletionHandler_withMeIdResponseHandler_whenUserCentricInboxIsOn() throws Exception  {
+    public void testSetup_initializesCoreCompletionHandler_withMeIdResponseHandler_whenUserCentricInboxIsOn() throws Exception {
         ExperimentalTestUtils.resetExperimentalFeatures();
         MobileEngage.completionHandler = null;
         MobileEngage.setup(userCentricConfig);
@@ -186,7 +188,7 @@ public class MobileEngageTest {
     }
 
     @Test
-    public void testSetup_initializesCoreCompletionHandler_withMeIdResponseHandler_onlyOnce_WhenBothUserCentricInboxAndInAppIsOn() throws Exception  {
+    public void testSetup_initializesCoreCompletionHandler_withMeIdResponseHandler_onlyOnce_WhenBothUserCentricInboxAndInAppIsOn() throws Exception {
         ExperimentalTestUtils.resetExperimentalFeatures();
         MobileEngage.completionHandler = null;
         MobileEngage.setup(fullConfig);
@@ -490,7 +492,7 @@ public class MobileEngageTest {
     public void testAppLogin_withUser_callsInternalMobileEngage() {
         MobileEngage.appLogin(4, "CONTACT_FIELD_VALUE");
 
-        verify(mobileEngageInternal).appLogin();
+        verify(mobileEngageInternal).appLogin(4, "CONTACT_FIELD_VALUE");
     }
 
     @Test

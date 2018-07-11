@@ -43,6 +43,7 @@ import java.util.Map;
 import static com.emarsys.mobileengage.MobileEngageInternal.MOBILEENGAGE_SDK_VERSION;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.mock;
@@ -233,6 +234,31 @@ public class MobileEngageInternalTest {
         verify(manager).submit(captor.capture());
 
         assertEquals(captor.getValue().getId(), result);
+    }
+
+    @Test
+    public void testAppLogin_shouldSetAppLoginParametersOnRequestContext() {
+        final RequestContext requestContext = mock(RequestContext.class, RETURNS_DEEP_STUBS);
+        when(requestContext.getConfig()).thenReturn(baseConfig);
+
+
+        MobileEngageInternal internal =  new MobileEngageInternal(
+                baseConfig,
+                manager,
+                mock(Handler.class),
+                coreCompletionHandler,
+                requestContext);
+
+        final int contactFieldId = 3;
+        final String contactFieldValue = "email@address.com";
+        internal.appLogin(contactFieldId, contactFieldValue);
+
+        ArgumentCaptor<AppLoginParameters> captor = ArgumentCaptor.forClass(AppLoginParameters.class);
+        verify(requestContext).setAppLoginParameters(captor.capture());
+
+        final AppLoginParameters appLoginParameters = captor.getValue();
+        assertEquals(contactFieldId, appLoginParameters.getContactFieldId());
+        assertEquals(contactFieldValue, appLoginParameters.getContactFieldValue());
     }
 
     @Test
@@ -490,7 +516,7 @@ public class MobileEngageInternalTest {
     }
 
     @Test
-    public void testCustomEvent_V2_containsCredentials_fromApploginParameters() throws Exception {
+    public void testCustomEvent_V2_containsCredentials_fromAppLoginParameters() throws Exception {
         ExperimentalTestUtils.resetExperimentalFeatures();
 
         int contactFieldId = 3;
