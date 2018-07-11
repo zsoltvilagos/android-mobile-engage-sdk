@@ -12,6 +12,7 @@ import com.emarsys.core.util.Assert;
 import com.emarsys.core.util.TimestampUtils;
 import com.emarsys.core.util.log.EMSLogger;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
+import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
 import com.emarsys.mobileengage.experimental.MobileEngageExperimental;
 import com.emarsys.mobileengage.experimental.MobileEngageFeature;
 import com.emarsys.mobileengage.storage.MeIdStorage;
@@ -84,6 +85,12 @@ public class MobileEngageInternal {
         if (requestContext.getAppLoginParameters() != null) {
             appLogin();
         }
+    }
+
+    public String appLogin(int contactFieldId,
+                                  @NonNull String contactFieldValue) {
+        requestContext.setAppLoginParameters(new AppLoginParameters(contactFieldId, contactFieldValue));
+        return appLogin();
     }
 
     public String appLogin() {

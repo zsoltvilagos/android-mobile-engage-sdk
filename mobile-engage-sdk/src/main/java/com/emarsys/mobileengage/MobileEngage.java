@@ -120,8 +120,7 @@ public class MobileEngage {
     public static String appLogin(int contactFieldId,
                                   @NonNull String contactFieldValue) {
         Assert.notNull(contactFieldValue, "ContactFieldValue must not be null!");
-        requestContext.setAppLoginParameters(new AppLoginParameters(contactFieldId, contactFieldValue));
-        return instance.appLogin();
+        return instance.appLogin(contactFieldId, contactFieldValue);
     }
 
     public static String appLogout() {
