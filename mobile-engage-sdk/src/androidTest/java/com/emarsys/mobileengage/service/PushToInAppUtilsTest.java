@@ -78,18 +78,6 @@ public class PushToInAppUtilsTest {
         verify(activityLifecycleWatchdog).addTriggerOnActivityAction(any(PushToInAppAction.class));
     }
 
-    private void waitForEventLoopToFinish() throws InterruptedException {
-        final CountDownLatch latch = new CountDownLatch(1);
-        DependencyInjection.getContainer().getCoreSdkHandler().post(new Runnable() {
-            @Override
-            public void run() {
-                latch.countDown();
-            }
-        });
-
-        latch.await();
-    }
-
     @Test
     public void testHandlePreloadedInAppMessage_shouldCallAddTriggerOnActivityAction_whenFileUrlIsAvailableButTheFileIsMissing() throws JSONException, InterruptedException {
         Intent intent = new Intent();
@@ -153,5 +141,17 @@ public class PushToInAppUtilsTest {
         verify(activityLifecycleWatchdog).addTriggerOnActivityAction(any(PushToInAppAction.class));
 
         assertEquals(false, new File(fileUrl).exists());
+    }
+
+    private void waitForEventLoopToFinish() throws InterruptedException {
+        final CountDownLatch latch = new CountDownLatch(1);
+        DependencyInjection.getContainer().getCoreSdkHandler().post(new Runnable() {
+            @Override
+            public void run() {
+                latch.countDown();
+            }
+        });
+
+        latch.await();
     }
 }
