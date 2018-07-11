@@ -199,8 +199,7 @@ public class MessagingServiceUtils {
         HashMap<String, String> preloadedRemoteMessageData = new HashMap<>(remoteMessageData);
         if (inAppDescriptor != null
                 && AndroidVersionUtils.isKitKatOrAbove()
-                && MobileEngageExperimental.isFeatureEnabled(MobileEngageFeature.IN_APP_MESSAGING)
-                ) {
+                && MobileEngageExperimental.isFeatureEnabled(MobileEngageFeature.IN_APP_MESSAGING)) {
             try {
                 JSONObject ems = new JSONObject(preloadedRemoteMessageData.get("ems"));
                 ems.put("inapp", inAppDescriptor);
