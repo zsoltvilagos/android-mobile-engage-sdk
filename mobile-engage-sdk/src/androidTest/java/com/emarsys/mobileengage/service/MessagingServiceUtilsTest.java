@@ -576,7 +576,7 @@ public class MessagingServiceUtilsTest {
         JSONObject result = new JSONObject(MessagingServiceUtils.getInAppDescriptor(context, payload));
         assertEquals("someId", result.getString("campaignId"));
         assertEquals("https://thisIsNotARealUrl", result.getString("url"));
-        assertEquals(result.has("fileUrl"), false);
+        assertEquals(false, result.has("fileUrl"));
     }
 
     @Test
