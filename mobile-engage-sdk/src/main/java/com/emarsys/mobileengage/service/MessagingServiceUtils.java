@@ -47,6 +47,7 @@ public class MessagingServiceUtils {
     static NotificationCache notificationCache = new NotificationCache();
 
     public static boolean handleMessage(Context context, RemoteMessage remoteMessage) {
+        boolean handled = false;
         Map<String, String> remoteData = remoteMessage.getData();
 
         EMSLogger.log(MobileEngageTopic.PUSH, "Remote message data %s", remoteData);
@@ -68,10 +69,11 @@ public class MessagingServiceUtils {
 
             ((NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE))
                     .notify(notificationId, notification);
-            return true;
+
+            handled = true;
         }
 
-        return false;
+        return handled;
     }
 
     public static boolean isMobileEngageMessage(Map<String, String> remoteMessageData) {
