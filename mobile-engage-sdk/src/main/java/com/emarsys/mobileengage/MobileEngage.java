@@ -7,13 +7,10 @@ import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.emarsys.core.activity.ActivityLifecycleAction;
-import com.emarsys.core.activity.ActivityLifecycleWatchdog;
 import com.emarsys.core.activity.CurrentActivityWatchdog;
 import com.emarsys.core.util.Assert;
 import com.emarsys.core.util.log.EMSLogger;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
-import com.emarsys.mobileengage.deeplink.DeepLinkAction;
 import com.emarsys.mobileengage.deeplink.DeepLinkInternal;
 import com.emarsys.mobileengage.di.DefaultDependencyContainer;
 import com.emarsys.mobileengage.di.DependencyContainer;
@@ -21,8 +18,6 @@ import com.emarsys.mobileengage.di.DependencyInjection;
 import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
 import com.emarsys.mobileengage.experimental.FlipperFeature;
 import com.emarsys.mobileengage.experimental.MobileEngageExperimental;
-import com.emarsys.mobileengage.experimental.MobileEngageFeature;
-import com.emarsys.mobileengage.iam.InAppStartAction;
 import com.emarsys.mobileengage.inbox.InboxInternal;
 import com.emarsys.mobileengage.inbox.InboxResultListener;
 import com.emarsys.mobileengage.inbox.ResetBadgeCountResultListener;
@@ -100,7 +95,7 @@ public class MobileEngage {
 
         initializeInApp();
 
-        registerCurrentActivityWatchdog(application);
+        registerWatchdogs(application);
 
         MobileEngageUtils.setup(config);
     }
@@ -165,8 +160,9 @@ public class MobileEngage {
         InApp.setPaused(false);
     }
 
-    private static void registerCurrentActivityWatchdog(Application application) {
+    private static void registerWatchdogs(Application application) {
         CurrentActivityWatchdog.registerApplication(application);
+        application.registerActivityLifecycleCallbacks(container.getActivityLifecycleWatchdog());
     }
 
 }

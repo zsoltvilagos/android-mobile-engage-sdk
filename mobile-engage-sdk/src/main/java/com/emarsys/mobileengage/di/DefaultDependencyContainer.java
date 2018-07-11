@@ -225,7 +225,6 @@ public class DefaultDependencyContainer implements DependencyContainer {
         activityLifecycleWatchdog = new ActivityLifecycleWatchdog(
                 applicationStartActions,
                 activityCreatedActions);
-        application.registerActivityLifecycleCallbacks(activityLifecycleWatchdog);
     }
 
     private void initializeInAppPresenter() {
