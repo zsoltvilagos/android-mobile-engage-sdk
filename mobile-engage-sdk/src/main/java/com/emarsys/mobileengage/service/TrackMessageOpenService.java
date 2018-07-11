@@ -18,15 +18,16 @@ public class TrackMessageOpenService extends Service {
 
         EMSLogger.log(MobileEngageTopic.PUSH, "Notification was clicked");
 
-        PushToInAppUtils.handlePreloadedInAppMessage(intent);
-
-        MessagingServiceUtils.dismissNotification(this, intent);
-
-        NotificationActionUtils.handleAction(intent, new NotificationCommandFactory(
-                this,
-                DependencyInjection.getContainer().getMobileEngageInternal()));
-
         if (intent != null) {
+
+            PushToInAppUtils.handlePreloadedInAppMessage(intent, DependencyInjection.getContainer());
+
+            MessagingServiceUtils.dismissNotification(this, intent);
+
+            NotificationActionUtils.handleAction(intent, new NotificationCommandFactory(
+                    this,
+                    DependencyInjection.getContainer().getMobileEngageInternal()));
+
             MobileEngage.trackMessageOpen(intent);
         }
         stopSelf(startId);

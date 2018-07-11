@@ -2,6 +2,7 @@ package com.emarsys.mobileengage.service;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SdkSuppress;
 import android.support.test.runner.AndroidJUnit4;
@@ -32,31 +33,44 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 @RunWith(AndroidJUnit4.class)
 @SdkSuppress(minSdkVersion = KITKAT)
 public class PushToInAppUtilsTest {
 
+    private DependencyContainer dependencyContainer;
     private ActivityLifecycleWatchdog activityLifecycleWatchdog;
+    private Handler coreSdkHandler;
 
     @Rule
     public TestRule timeout = TimeoutUtils.getTimeoutRule();
 
-
     @Before
     public void setUp() {
-        DependencyContainer dependencyContainer = mock(DependencyContainer.class);
+        coreSdkHandler = new CoreSdkHandlerProvider().provideHandler();
         activityLifecycleWatchdog = mock(ActivityLifecycleWatchdog.class);
+
+        dependencyContainer = mock(DependencyContainer.class);
         when(dependencyContainer.getActivityLifecycleWatchdog()).thenReturn(activityLifecycleWatchdog);
         when(dependencyContainer.getInAppPresenter()).thenReturn(mock(InAppPresenter.class));
-        when(dependencyContainer.getCoreSdkHandler()).thenReturn(new CoreSdkHandlerProvider().provideHandler());
-        DependencyInjection.setup(dependencyContainer);
+        when(dependencyContainer.getCoreSdkHandler()).thenReturn(coreSdkHandler);
     }
 
     @After
     public void tearDown() {
         DependencyInjection.tearDown();
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testHandlePreloadedInAppMessage_intentMustNotBeNull() {
+        PushToInAppUtils.handlePreloadedInAppMessage(null, dependencyContainer);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testHandlePreloadedInAppMessage_dependencyContainerMustNotBeNull() {
+        PushToInAppUtils.handlePreloadedInAppMessage(new Intent(), null);
     }
 
     @Test
@@ -71,9 +85,9 @@ public class PushToInAppUtilsTest {
         payload.putString("ems", ems.toString());
         intent.putExtra("payload", payload);
 
-        PushToInAppUtils.handlePreloadedInAppMessage(intent);
+        PushToInAppUtils.handlePreloadedInAppMessage(intent, dependencyContainer);
 
-        waitForEventLoopToFinish();
+        waitForEventLoopToFinish(coreSdkHandler);
 
         verify(activityLifecycleWatchdog).addTriggerOnActivityAction(any(PushToInAppAction.class));
     }
@@ -93,9 +107,9 @@ public class PushToInAppUtilsTest {
         payload.putString("ems", ems.toString());
         intent.putExtra("payload", payload);
 
-        PushToInAppUtils.handlePreloadedInAppMessage(intent);
+        PushToInAppUtils.handlePreloadedInAppMessage(intent, dependencyContainer);
 
-        waitForEventLoopToFinish();
+        waitForEventLoopToFinish(coreSdkHandler);
 
         verify(activityLifecycleWatchdog).addTriggerOnActivityAction(any(PushToInAppAction.class));
     }
@@ -112,9 +126,9 @@ public class PushToInAppUtilsTest {
         payload.putString("ems", ems.toString());
         intent.putExtra("payload", payload);
 
-        PushToInAppUtils.handlePreloadedInAppMessage(intent);
+        PushToInAppUtils.handlePreloadedInAppMessage(intent, dependencyContainer);
 
-        waitForEventLoopToFinish();
+        waitForEventLoopToFinish(coreSdkHandler);
 
         verify(activityLifecycleWatchdog).addTriggerOnActivityAction(any(PushToInAppAction.class));
     }
@@ -135,17 +149,33 @@ public class PushToInAppUtilsTest {
 
         assertEquals(true, new File(fileUrl).exists());
 
-        PushToInAppUtils.handlePreloadedInAppMessage(intent);
-        waitForEventLoopToFinish();
+        PushToInAppUtils.handlePreloadedInAppMessage(intent, dependencyContainer);
+
+        waitForEventLoopToFinish(coreSdkHandler);
 
         verify(activityLifecycleWatchdog).addTriggerOnActivityAction(any(PushToInAppAction.class));
 
         assertEquals(false, new File(fileUrl).exists());
     }
 
-    private void waitForEventLoopToFinish() throws InterruptedException {
+    @Test
+    public void testHandlePreloadedInAppMessage_shouldNotScheduleInAppDisplay_ifInAppProperty_isMissing() throws InterruptedException {
+        Intent intent = new Intent();
+        Bundle payload = new Bundle();
+        JSONObject ems = new JSONObject();
+        payload.putString("ems", ems.toString());
+        intent.putExtra("payload", payload);
+
+        PushToInAppUtils.handlePreloadedInAppMessage(intent, dependencyContainer);
+
+        waitForEventLoopToFinish(coreSdkHandler);
+
+        verifyZeroInteractions(activityLifecycleWatchdog);
+    }
+
+    private void waitForEventLoopToFinish(Handler handler) throws InterruptedException {
         final CountDownLatch latch = new CountDownLatch(1);
-        DependencyInjection.getContainer().getCoreSdkHandler().post(new Runnable() {
+        handler.post(new Runnable() {
             @Override
             public void run() {
                 latch.countDown();
