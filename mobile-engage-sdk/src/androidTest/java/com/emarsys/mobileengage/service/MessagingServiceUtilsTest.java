@@ -101,33 +101,33 @@ public class MessagingServiceUtilsTest {
     }
 
     @Test
-    public void handleMessage_shouldReturnFalse_ifMessageIsNotHandled() {
+    public void testHandleMessage_shouldReturnFalse_ifMessageIsNotHandled() {
         Map<String, String> remoteMessageData = new HashMap<>();
         assertFalse(MessagingServiceUtils.isMobileEngageMessage(remoteMessageData));
     }
 
     @Test
-    public void handleMessage_shouldReturnTrue_ifMessageIsHandled() {
+    public void testHandleMessage_shouldReturnTrue_ifMessageIsHandled() {
         Map<String, String> remoteMessageData = new HashMap<>();
         remoteMessageData.put("ems_msg", "value");
         assertTrue(MessagingServiceUtils.isMobileEngageMessage(remoteMessageData));
     }
 
     @Test
-    public void isMobileEngageMessage_shouldBeFalse_withEmptyData() {
+    public void testIsMobileEngageMessage_shouldBeFalse_withEmptyData() {
         Map<String, String> remoteMessageData = new HashMap<>();
         assertFalse(MessagingServiceUtils.isMobileEngageMessage(remoteMessageData));
     }
 
     @Test
-    public void isMobileEngageMessage_shouldBeTrue_withDataWhichContainsTheCorrectKey() {
+    public void testIsMobileEngageMessage_shouldBeTrue_withDataWhichContainsTheCorrectKey() {
         Map<String, String> remoteMessageData = new HashMap<>();
         remoteMessageData.put("ems_msg", "value");
         assertTrue(MessagingServiceUtils.isMobileEngageMessage(remoteMessageData));
     }
 
     @Test
-    public void isMobileEngageMessage_shouldBeFalse_withDataWithout_ems_msg() {
+    public void testIsMobileEngageMessage_shouldBeFalse_withDataWithout_ems_msg() {
         Map<String, String> remoteMessageData = new HashMap<>();
         remoteMessageData.put("key1", "value1");
         remoteMessageData.put("key2", "value2");
@@ -532,7 +532,7 @@ public class MessagingServiceUtilsTest {
 
 
     @Test
-    public void testGetInAppDescriptor_shouldReturnNull_whenThereIsInAppInPayload() throws JSONException {
+    public void testGetInAppDescriptor_shouldReturnValidDescriptor_whenThereIsInAppInPayload() throws JSONException {
         JSONObject result = new JSONObject(MessagingServiceUtils.getInAppDescriptor(context, createInAppInPayload()));
         assertEquals("someId", result.getString("campaignId"));
         assertEquals("https://hu.wikipedia.org/wiki/Mont_Blanc", result.getString("url"));
