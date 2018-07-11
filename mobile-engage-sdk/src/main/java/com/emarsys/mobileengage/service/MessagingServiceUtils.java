@@ -168,31 +168,33 @@ public class MessagingServiceUtils {
     }
 
     static String getInAppDescriptor(Context context, Map<String, String> remoteMessageData) {
+        String result = null;
+
         try {
             if (remoteMessageData != null) {
                 String emsPayload = remoteMessageData.get("ems");
                 if (emsPayload != null) {
                     JSONObject inAppPayload = new JSONObject(emsPayload).getJSONObject("inapp");
-                    if (inAppPayload != null) {
-                        JsonObjectValidator validator = JsonObjectValidator.from(inAppPayload);
-                        List<String> errors = validator
-                                .hasFieldWithType("campaignId", String.class)
-                                .hasFieldWithType("url", String.class)
-                                .validate();
-                        if (errors.isEmpty()) {
-                            JSONObject inAppBundle = new JSONObject();
-                            inAppBundle.put("campaignId", inAppPayload.getString("campaignId"));
-                            final String inAppUrl = inAppPayload.getString("url");
-                            inAppBundle.put("url", inAppUrl);
-                            inAppBundle.put("fileUrl", FileUtils.download(context, inAppUrl));
-                            return inAppBundle.toString();
-                        }
+                    List<String> errors = JsonObjectValidator
+                            .from(inAppPayload)
+                            .hasFieldWithType("campaignId", String.class)
+                            .hasFieldWithType("url", String.class)
+                            .validate();
+                    if (errors.isEmpty()) {
+                        String inAppUrl = inAppPayload.getString("url");
+
+                        JSONObject inAppDescriptor = new JSONObject();
+                        inAppDescriptor.put("campaignId", inAppPayload.getString("campaignId"));
+                        inAppDescriptor.put("url", inAppUrl);
+                        inAppDescriptor.put("fileUrl", FileUtils.download(context, inAppUrl));
+
+                        result = inAppDescriptor.toString();
                     }
                 }
             }
         } catch (JSONException ignored) {
         }
-        return null;
+        return result;
     }
 
     static Map<String, String> createPreloadedRemoteMessageData(Map<String, String> remoteMessageData, String inAppDescriptor) {
