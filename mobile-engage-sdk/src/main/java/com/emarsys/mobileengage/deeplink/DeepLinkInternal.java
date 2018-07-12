@@ -7,6 +7,7 @@ import android.os.Build;
 
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.request.model.RequestModel;
+import com.emarsys.core.util.Assert;
 import com.emarsys.mobileengage.MobileEngageInternal;
 import com.emarsys.mobileengage.MobileEngageUtils;
 import com.emarsys.mobileengage.RequestContext;
@@ -24,6 +25,8 @@ public class DeepLinkInternal {
     private final RequestManager manager;
 
     public DeepLinkInternal(RequestManager manager, RequestContext requestContext) {
+        Assert.notNull(manager, "RequestManager must not be null!");
+        Assert.notNull(requestContext, "RequestContext must not be null!");
         this.manager = manager;
         this.requestContext = requestContext;
     }

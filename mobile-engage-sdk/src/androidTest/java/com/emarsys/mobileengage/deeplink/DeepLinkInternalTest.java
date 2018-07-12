@@ -70,9 +70,14 @@ public class DeepLinkInternalTest {
         deepLinkInternal = new DeepLinkInternal(manager, requestContext);
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void testConstructor_requestManagerMustNotBeNull() {
         new DeepLinkInternal(null, requestContext);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructor_requestContextMustNotBeNull() {
+        new DeepLinkInternal(manager, null);
     }
 
     @Test
