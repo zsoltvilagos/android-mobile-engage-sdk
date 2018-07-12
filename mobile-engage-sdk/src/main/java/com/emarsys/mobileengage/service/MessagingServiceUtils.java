@@ -20,7 +20,6 @@ import com.emarsys.core.util.FileUtils;
 import com.emarsys.core.util.ImageUtils;
 import com.emarsys.core.util.log.EMSLogger;
 import com.emarsys.core.validate.JsonObjectValidator;
-import com.emarsys.mobileengage.MobileEngage;
 import com.emarsys.mobileengage.config.OreoConfig;
 import com.emarsys.mobileengage.experimental.MobileEngageExperimental;
 import com.emarsys.mobileengage.experimental.MobileEngageFeature;
@@ -46,7 +45,11 @@ public class MessagingServiceUtils {
 
     static NotificationCache notificationCache = new NotificationCache();
 
-    public static boolean handleMessage(Context context, RemoteMessage remoteMessage) {
+    public static boolean handleMessage(Context context, RemoteMessage remoteMessage, OreoConfig oreoConfig) {
+        Assert.notNull(context, "Context must not be null!");
+        Assert.notNull(remoteMessage, "RemoteMessage must not be null!");
+        Assert.notNull(oreoConfig, "OreoConfig must not be null!");
+
         boolean handled = false;
         Map<String, String> remoteData = remoteMessage.getData();
 
@@ -64,7 +67,7 @@ public class MessagingServiceUtils {
                     notificationId,
                     context.getApplicationContext(),
                     remoteData,
-                    MobileEngage.getConfig().getOreoConfig(),
+                    oreoConfig,
                     new MetaDataReader());
 
             ((NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE))

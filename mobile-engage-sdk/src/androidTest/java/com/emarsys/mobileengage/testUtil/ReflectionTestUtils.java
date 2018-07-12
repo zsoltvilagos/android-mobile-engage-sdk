@@ -1,5 +1,6 @@
 package com.emarsys.mobileengage.testUtil;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 
 public class ReflectionTestUtils {
@@ -16,6 +17,13 @@ public class ReflectionTestUtils {
         field.setAccessible(true);
         Object result = field.get(null);
         return (T) result;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> T instantiate(Class type, int constructorIndex, Object... args) throws Exception {
+        Constructor<?> constructor = type.getDeclaredConstructors()[constructorIndex];
+        constructor.setAccessible(true);
+        return (T) constructor.newInstance(args);
     }
 
 }

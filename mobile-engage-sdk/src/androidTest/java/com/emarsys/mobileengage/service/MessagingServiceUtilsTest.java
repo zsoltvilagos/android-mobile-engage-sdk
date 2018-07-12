@@ -21,7 +21,9 @@ import com.emarsys.mobileengage.experimental.MobileEngageFeature;
 import com.emarsys.mobileengage.inbox.model.Notification;
 import com.emarsys.mobileengage.inbox.model.NotificationCache;
 import com.emarsys.mobileengage.testUtil.ExperimentalTestUtils;
+import com.emarsys.mobileengage.testUtil.ReflectionTestUtils;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
+import com.google.firebase.messaging.RemoteMessage;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -100,17 +102,29 @@ public class MessagingServiceUtilsTest {
         ExperimentalTestUtils.resetExperimentalFeatures();
     }
 
-    @Test
-    public void testHandleMessage_shouldReturnFalse_ifMessageIsNotHandled() {
-        Map<String, String> remoteMessageData = new HashMap<>();
-        assertFalse(MessagingServiceUtils.isMobileEngageMessage(remoteMessageData));
+    @Test(expected = IllegalArgumentException.class)
+    public void testHandleMessage_contextShouldNotBeNull() throws Exception {
+        MessagingServiceUtils.handleMessage(null, createEMSRemoteMessage(), enabledOreoConfig);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testHandleMessage_remoteMessageShouldNotBeNull() throws Exception {
+        MessagingServiceUtils.handleMessage(context, null, enabledOreoConfig);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testHandleMessage_oreoConfigShouldNotBeNull() throws Exception {
+        MessagingServiceUtils.handleMessage(context, createEMSRemoteMessage(), null);
     }
 
     @Test
-    public void testHandleMessage_shouldReturnTrue_ifMessageIsHandled() {
-        Map<String, String> remoteMessageData = new HashMap<>();
-        remoteMessageData.put("ems_msg", "value");
-        assertTrue(MessagingServiceUtils.isMobileEngageMessage(remoteMessageData));
+    public void testHandleMessage_shouldReturnFalse_ifMessageIsNotHandled() throws Exception {
+        assertFalse(MessagingServiceUtils.handleMessage(context, createRemoteMessage(), enabledOreoConfig));
+    }
+
+    @Test
+    public void testHandleMessage_shouldReturnTrue_ifMessageIsHandled() throws Exception {
+        assertTrue(MessagingServiceUtils.handleMessage(context, createEMSRemoteMessage(), enabledOreoConfig));
     }
 
     @Test
@@ -518,7 +532,6 @@ public class MessagingServiceUtilsTest {
         assertNull(MessagingServiceUtils.getInAppDescriptor(context, null));
     }
 
-
     @Test
     public void testGetInAppDescriptor_shouldReturnNull_whenThereIsNoEmsInPayload() throws JSONException {
         assertNull(MessagingServiceUtils.getInAppDescriptor(context, createNoEmsInPayload()));
@@ -608,28 +621,6 @@ public class MessagingServiceUtilsTest {
         assertEquals(false, new JSONObject(result.get("ems")).has("inapp"));
     }
 
-    private Map<String, String> createNoEmsInPayload() {
-        Map<String, String> payload = new HashMap<>();
-        return payload;
-    }
-
-    private Map<String, String> createNoInAppInPayload() {
-        Map<String, String> payload = new HashMap<>();
-        payload.put("ems", "{}");
-        return payload;
-    }
-
-    private Map<String, String> createInAppInPayload() throws JSONException {
-        Map<String, String> payload = new HashMap<>();
-        JSONObject ems = new JSONObject();
-        JSONObject inapp = new JSONObject();
-        inapp.put("campaignId", "someId");
-        inapp.put("url", "https://hu.wikipedia.org/wiki/Mont_Blanc");
-        ems.put("inapp", inapp);
-        payload.put("ems", ems.toString());
-        return payload;
-    }
-
     @Test
     public void testCacheNotification_shouldCacheNotification() {
         Map<String, String> remoteData = new HashMap<>();
@@ -660,6 +651,43 @@ public class MessagingServiceUtilsTest {
         assertEquals(customData, result.getCustomData());
         Assert.assertTrue(before <= result.getReceivedAt());
         Assert.assertTrue(result.getReceivedAt() <= after);
+    }
+
+    private RemoteMessage createRemoteMessage() throws Exception {
+        Bundle bundle = new Bundle();
+        bundle.putString("title", "title");
+        bundle.putString("body", "body");
+        return ReflectionTestUtils.instantiate(RemoteMessage.class, 0, bundle);
+    }
+
+    private RemoteMessage createEMSRemoteMessage() throws Exception {
+        Bundle bundle = new Bundle();
+        bundle.putString("title", "title");
+        bundle.putString("body", "body");
+        bundle.putString("ems_msg", "value");
+        return ReflectionTestUtils.instantiate(RemoteMessage.class, 0, bundle);
+    }
+
+    private Map<String, String> createNoEmsInPayload() {
+        Map<String, String> payload = new HashMap<>();
+        return payload;
+    }
+
+    private Map<String, String> createNoInAppInPayload() {
+        Map<String, String> payload = new HashMap<>();
+        payload.put("ems", "{}");
+        return payload;
+    }
+
+    private Map<String, String> createInAppInPayload() throws JSONException {
+        Map<String, String> payload = new HashMap<>();
+        JSONObject ems = new JSONObject();
+        JSONObject inapp = new JSONObject();
+        inapp.put("campaignId", "someId");
+        inapp.put("url", "https://hu.wikipedia.org/wiki/Mont_Blanc");
+        ems.put("inapp", inapp);
+        payload.put("ems", ems.toString());
+        return payload;
     }
 
     private String expectedBasedOnApiLevel(String before23, String fromApi23) {
