@@ -9,6 +9,7 @@ import android.support.test.InstrumentationRegistry;
 
 import com.emarsys.core.DeviceInfo;
 import com.emarsys.core.concurrency.CoreSdkHandlerProvider;
+import com.emarsys.core.request.RequestIdProvider;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.response.ResponseModel;
 import com.emarsys.core.timestamp.TimestampProvider;
@@ -129,14 +130,16 @@ public class MobileEngageInternalStatusListenerTest {
         when(meIdStorage.get()).thenReturn("meId");
         MeIdSignatureStorage meIdSignatureStorage = mock(MeIdSignatureStorage.class);
         when(meIdSignatureStorage.get()).thenReturn("meIdSignature");
-
+        RequestIdProvider requestIdProvider = mock(RequestIdProvider.class);
+        when(requestIdProvider.provideId()).thenReturn("REQUEST_ID");
         requestContext = new RequestContext(
                 baseConfig,
                 mock(DeviceInfo.class),
                 new AppLoginStorage(context),
                 meIdStorage,
                 meIdSignatureStorage,
-                mock(TimestampProvider.class));
+                mock(TimestampProvider.class),
+                requestIdProvider);
 
         mobileEngage = new MobileEngageInternal(
                 baseConfig,

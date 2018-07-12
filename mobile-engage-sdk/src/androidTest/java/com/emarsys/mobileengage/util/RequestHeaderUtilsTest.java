@@ -5,6 +5,7 @@ import android.content.Context;
 import android.support.test.InstrumentationRegistry;
 
 import com.emarsys.core.DeviceInfo;
+import com.emarsys.core.request.RequestIdProvider;
 import com.emarsys.core.timestamp.TimestampProvider;
 import com.emarsys.core.util.HeaderUtils;
 import com.emarsys.mobileengage.BuildConfig;
@@ -97,8 +98,20 @@ public class RequestHeaderUtilsTest {
         meIdSignatureStorage.set(meIdSignature);
         MobileEngageConfig config = mock(MobileEngageConfig.class);
         when(config.getApplicationCode()).thenReturn(APPLICATION_CODE);
+        RequestIdProvider requestIdProvider = mock(RequestIdProvider.class);
+        when(requestIdProvider.provideId()).thenReturn("REQUEST_ID");
 
-        RequestContext requestContext = new RequestContext(config, mock(DeviceInfo.class), mock(AppLoginStorage.class), meIdStorage, meIdSignatureStorage, mock(TimestampProvider.class));
+        TimestampProvider timestampProvider = mock(TimestampProvider.class);
+        when(timestampProvider.provideTimestamp()).thenReturn(100_000L);
+
+        RequestContext requestContext = new RequestContext(
+                config,
+                mock(DeviceInfo.class),
+                mock(AppLoginStorage.class),
+                meIdStorage,
+                meIdSignatureStorage,
+                timestampProvider,
+                requestIdProvider);
 
         Map<String, String> expected = new HashMap<>();
         expected.put("X-ME-ID", meId);

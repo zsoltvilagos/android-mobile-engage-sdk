@@ -29,7 +29,7 @@ public class RequestModelUtils {
 
         Map<String, Object> payload = RequestPayloadUtils.createAppLoginPayload(requestContext, pushToken);
 
-        return new RequestModel.Builder()
+        return new RequestModel.Builder(requestContext.getTimestampProvider(), requestContext.getRequestIdProvider())
                 .url(ME_LOGIN_V2)
                 .payload(payload)
                 .headers(RequestHeaderUtils.createBaseHeaders_V2(requestContext.getConfig()))
@@ -45,7 +45,7 @@ public class RequestModelUtils {
                     null,
                     requestContext);
         } else {
-            result = new RequestModel.Builder()
+            result = new RequestModel.Builder(requestContext.getTimestampProvider(), requestContext.getRequestIdProvider())
                     .url(ME_LAST_MOBILE_ACTIVITY_V2)
                     .payload(RequestPayloadUtils.createBasePayload(requestContext))
                     .headers(RequestHeaderUtils.createBaseHeaders_V2(requestContext.getConfig()))
@@ -81,7 +81,7 @@ public class RequestModelUtils {
                 RequestHeaderUtils.createBaseHeaders_V3(requestContext),
                 requestContext.getTimestampProvider().provideTimestamp(),
                 Long.MAX_VALUE,
-                RequestModel.nextId());
+                requestContext.getRequestIdProvider().provideId());
     }
 
 }

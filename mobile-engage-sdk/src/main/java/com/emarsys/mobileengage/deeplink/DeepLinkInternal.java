@@ -9,6 +9,7 @@ import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.request.model.RequestModel;
 import com.emarsys.mobileengage.MobileEngageInternal;
 import com.emarsys.mobileengage.MobileEngageUtils;
+import com.emarsys.mobileengage.RequestContext;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -18,11 +19,13 @@ import static com.emarsys.mobileengage.endpoint.Endpoint.DEEP_LINK_CLICK;
 public class DeepLinkInternal {
 
     private static final String EMS_DEEP_LINK_TRACKED_KEY = "ems_deep_link_tracked";
+    private final RequestContext requestContext;
 
-    private RequestManager manager;
+    private final RequestManager manager;
 
-    public DeepLinkInternal(RequestManager manager) {
+    public DeepLinkInternal(RequestManager manager, RequestContext requestContext) {
         this.manager = manager;
+        this.requestContext = requestContext;
     }
 
     public void trackDeepLinkOpen(Activity activity, Intent intent) {
@@ -38,7 +41,7 @@ public class DeepLinkInternal {
                 HashMap<String, Object> payload = new HashMap<>();
                 payload.put(ems_dl, deepLinkQueryParam);
 
-                RequestModel model = new RequestModel.Builder()
+                RequestModel model = new RequestModel.Builder(requestContext.getTimestampProvider(), requestContext.getRequestIdProvider())
                         .url(DEEP_LINK_CLICK)
                         .headers(createHeaders())
                         .payload(payload)

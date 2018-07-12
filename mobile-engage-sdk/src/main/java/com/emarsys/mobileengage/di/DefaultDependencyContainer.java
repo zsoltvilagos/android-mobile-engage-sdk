@@ -14,6 +14,7 @@ import com.emarsys.core.connection.ConnectionWatchDog;
 import com.emarsys.core.database.repository.Repository;
 import com.emarsys.core.database.repository.SqlSpecification;
 import com.emarsys.core.database.repository.log.LogRepository;
+import com.emarsys.core.request.RequestIdProvider;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.request.RestClient;
 import com.emarsys.core.request.model.RequestModel;
@@ -82,6 +83,7 @@ public class DefaultDependencyContainer implements DependencyContainer {
     private Application application;
     private ActivityLifecycleWatchdog activityLifecycleWatchdog;
     private InAppPresenter inAppPresenter;
+    private RequestIdProvider requestIdProvider;
 
     public DefaultDependencyContainer(MobileEngageConfig mobileEngageConfig) {
         initializeDependencies(mobileEngageConfig);
@@ -137,6 +139,7 @@ public class DefaultDependencyContainer implements DependencyContainer {
         uiHandler = new Handler(Looper.getMainLooper());
         coreSdkHandler = new CoreSdkHandlerProvider().provideHandler();
         timestampProvider = new TimestampProvider();
+        requestIdProvider = new RequestIdProvider();
         doNotDisturbProvider = new DoNotDisturbProvider();
         appLoginStorage = new AppLoginStorage(application);
         meIdStorage = new MeIdStorage(application);
@@ -175,7 +178,8 @@ public class DefaultDependencyContainer implements DependencyContainer {
                 appLoginStorage,
                 meIdStorage,
                 meIdSignatureStorage,
-                timestampProvider);
+                timestampProvider,
+                requestIdProvider);
     }
 
     private Repository<RequestModel, SqlSpecification> createRequestModelRepository(Context application) {
@@ -207,7 +211,7 @@ public class DefaultDependencyContainer implements DependencyContainer {
                 restClient,
                 requestContext
         );
-        deepLinkInternal = new DeepLinkInternal(requestManager);
+        deepLinkInternal = new DeepLinkInternal(requestManager, requestContext);
     }
 
     private void initializeActivityLifecycleWatchdog() {

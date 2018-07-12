@@ -88,7 +88,7 @@ public class MobileEngageInternal {
     }
 
     public String appLogin(int contactFieldId,
-                                  @NonNull String contactFieldValue) {
+                           @NonNull String contactFieldValue) {
         requestContext.setAppLoginParameters(new AppLoginParameters(contactFieldId, contactFieldValue));
         return appLogin();
     }
@@ -117,7 +117,7 @@ public class MobileEngageInternal {
     public String appLogout() {
         EMSLogger.log(MobileEngageTopic.MOBILE_ENGAGE, "Called");
 
-        RequestModel model = new RequestModel.Builder()
+        RequestModel model = new RequestModel.Builder(requestContext.getTimestampProvider(), requestContext.getRequestIdProvider())
                 .url(ME_LOGOUT_V2)
                 .payload(RequestPayloadUtils.createBasePayload(requestContext))
                 .headers(RequestHeaderUtils.createBaseHeaders_V2(config))
@@ -147,7 +147,7 @@ public class MobileEngageInternal {
         if (eventAttributes != null && !eventAttributes.isEmpty()) {
             payload.put("attributes", eventAttributes);
         }
-        RequestModel model = new RequestModel.Builder()
+        RequestModel model = new RequestModel.Builder(requestContext.getTimestampProvider(), requestContext.getRequestIdProvider())
                 .url(RequestUrlUtils.createEventUrl_V2(eventName))
                 .payload(payload)
                 .headers(RequestHeaderUtils.createBaseHeaders_V2(config))
@@ -175,7 +175,7 @@ public class MobileEngageInternal {
         payload.put("viewed_messages", new ArrayList<>());
         payload.put("events", Collections.singletonList(event));
 
-        RequestModel model = new RequestModel.Builder()
+        RequestModel model = new RequestModel.Builder(requestContext.getTimestampProvider(), requestContext.getRequestIdProvider())
                 .url(RequestUrlUtils.createEventUrl_V3(requestContext.getMeIdStorage().get()))
                 .payload(payload)
                 .headers(RequestHeaderUtils.createBaseHeaders_V3(requestContext))
@@ -201,7 +201,7 @@ public class MobileEngageInternal {
             manager.submit(model);
             return model.getId();
         } else {
-            return RequestModel.nextId();
+            return requestContext.getRequestIdProvider().provideId();
         }
     }
 
@@ -236,7 +236,7 @@ public class MobileEngageInternal {
                 return handleMessageOpen_V2(messageId);
             }
         } else {
-            final String uuid = RequestModel.nextId();
+            final String uuid = requestContext.getRequestIdProvider().provideId();
             uiHandler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -250,7 +250,7 @@ public class MobileEngageInternal {
     private String handleMessageOpen_V2(String messageId) {
         Map<String, Object> payload = RequestPayloadUtils.createBasePayload(requestContext);
         payload.put("sid", messageId);
-        RequestModel model = new RequestModel.Builder()
+        RequestModel model = new RequestModel.Builder(requestContext.getTimestampProvider(), requestContext.getRequestIdProvider())
                 .url(RequestUrlUtils.createEventUrl_V2("message_open"))
                 .payload(payload)
                 .headers(RequestHeaderUtils.createBaseHeaders_V2(config))

@@ -5,9 +5,17 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 
+import com.emarsys.core.DeviceInfo;
+import com.emarsys.core.request.RequestIdProvider;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.request.model.RequestModel;
+import com.emarsys.core.timestamp.TimestampProvider;
 import com.emarsys.mobileengage.MobileEngageInternal;
+import com.emarsys.mobileengage.RequestContext;
+import com.emarsys.mobileengage.config.MobileEngageConfig;
+import com.emarsys.mobileengage.storage.AppLoginStorage;
+import com.emarsys.mobileengage.storage.MeIdSignatureStorage;
+import com.emarsys.mobileengage.storage.MeIdStorage;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
 import org.junit.Before;
@@ -32,21 +40,39 @@ public class DeepLinkInternalTest {
     private Activity mockActivity;
     private DeepLinkInternal deepLinkInternal;
     private RequestManager manager;
+    private RequestContext requestContext;
+    private TimestampProvider timestampProvider;
+    private RequestIdProvider requestIdProvider;
 
     @Rule
     public TestRule timeout = TimeoutUtils.getTimeoutRule();
+
 
     @Before
     public void init() {
         mockActivity = mock(Activity.class, Mockito.RETURNS_DEEP_STUBS);
 
         manager = mock(RequestManager.class);
-        deepLinkInternal = new DeepLinkInternal(manager);
+
+        timestampProvider = mock(TimestampProvider.class);
+        requestIdProvider = mock(RequestIdProvider.class);
+        when(requestIdProvider.provideId()).thenReturn("REQUEST_ID");
+        requestContext = new RequestContext(
+                mock(MobileEngageConfig.class),
+                mock(DeviceInfo.class),
+                mock(AppLoginStorage.class),
+                mock(MeIdStorage.class),
+                mock(MeIdSignatureStorage.class),
+                timestampProvider,
+                requestIdProvider
+        );
+
+        deepLinkInternal = new DeepLinkInternal(manager, requestContext);
     }
 
     @Test
     public void testConstructor_requestManagerMustNotBeNull() {
-        new DeepLinkInternal(null);
+        new DeepLinkInternal(null, requestContext);
     }
 
     @Test
@@ -60,7 +86,7 @@ public class DeepLinkInternalTest {
         headers.put("User-Agent",
                 String.format("Mobile Engage SDK %s Android %s", MobileEngageInternal.MOBILEENGAGE_SDK_VERSION, Build.VERSION.SDK_INT));
 
-        RequestModel expected = new RequestModel.Builder()
+        RequestModel expected = new RequestModel.Builder(timestampProvider, requestIdProvider)
                 .url("https://deep-link.eservice.emarsys.net/api/clicks")
                 .headers(headers)
                 .payload(payload)

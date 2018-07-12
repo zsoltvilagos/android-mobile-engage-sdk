@@ -11,6 +11,7 @@ import com.emarsys.core.DeviceInfo;
 import com.emarsys.core.activity.ActivityLifecycleAction;
 import com.emarsys.core.activity.ActivityLifecycleWatchdog;
 import com.emarsys.core.activity.CurrentActivityWatchdog;
+import com.emarsys.core.request.RequestIdProvider;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.request.model.RequestModelRepository;
 import com.emarsys.core.timestamp.TimestampProvider;
@@ -80,6 +81,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(AndroidJUnit4.class)
 public class MobileEngageTest {
@@ -446,6 +448,9 @@ public class MobileEngageTest {
                 null,
                 completionHandler);
 
+        RequestIdProvider requestIdProvider = mock(RequestIdProvider.class);
+        when(requestIdProvider.provideId()).thenReturn("REQUEST_ID");
+
         MobileEngageInternal internal = new MobileEngageInternal(
                 baseConfig,
                 succeedingManager,
@@ -457,7 +462,8 @@ public class MobileEngageTest {
                         new AppLoginStorage(application),
                         mock(MeIdStorage.class),
                         mock(MeIdSignatureStorage.class),
-                        mock(TimestampProvider.class)
+                        mock(TimestampProvider.class),
+                        requestIdProvider
                 ));
 
         MobileEngage.completionHandler = completionHandler;

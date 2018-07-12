@@ -1,6 +1,7 @@
 package com.emarsys.mobileengage;
 
 import com.emarsys.core.DeviceInfo;
+import com.emarsys.core.request.RequestIdProvider;
 import com.emarsys.core.timestamp.TimestampProvider;
 import com.emarsys.core.util.Assert;
 import com.emarsys.core.util.log.EMSLogger;
@@ -18,6 +19,7 @@ public class RequestContext {
     private final MeIdStorage meIdStorage;
     private final MeIdSignatureStorage meIdSignatureStorage;
     private final TimestampProvider timestampProvider;
+    private final RequestIdProvider requestIdProvider;
     private AppLoginParameters appLoginParameters;
 
     public RequestContext(
@@ -26,7 +28,8 @@ public class RequestContext {
             AppLoginStorage appLoginStorage,
             MeIdStorage meIdStorage,
             MeIdSignatureStorage meIdSignatureStorage,
-            TimestampProvider timestampProvider) {
+            TimestampProvider timestampProvider,
+            RequestIdProvider requestIdProvider) {
         Assert.notNull(config, "Config must not be null!");
         Assert.notNull(deviceInfo, "DeviceInfo must not be null!");
         Assert.notNull(appLoginStorage, "AppLoginStorage must not be null!");
@@ -39,6 +42,7 @@ public class RequestContext {
         this.meIdStorage = meIdStorage;
         this.meIdSignatureStorage = meIdSignatureStorage;
         this.timestampProvider = timestampProvider;
+        this.requestIdProvider = requestIdProvider;
     }
 
     public String getApplicationCode() {
@@ -67,6 +71,10 @@ public class RequestContext {
 
     public TimestampProvider getTimestampProvider() {
         return timestampProvider;
+    }
+
+    public RequestIdProvider getRequestIdProvider() {
+        return requestIdProvider;
     }
 
     public AppLoginParameters getAppLoginParameters() {

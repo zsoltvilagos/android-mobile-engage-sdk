@@ -4,6 +4,7 @@ import android.app.Application;
 import android.support.test.InstrumentationRegistry;
 
 import com.emarsys.core.DeviceInfo;
+import com.emarsys.core.request.RequestIdProvider;
 import com.emarsys.core.request.model.RequestMethod;
 import com.emarsys.core.request.model.RequestModel;
 import com.emarsys.core.timestamp.TimestampProvider;
@@ -43,12 +44,16 @@ public class RequestModelUtilsTest {
     private static final String APPLICATION_CODE = "applicationCode";
     private static final String APPLICATION_PASSWORD = "applicationPassword";
     public static final String VALID_CUSTOM_EVENT_V3 = "https://mobile-events.eservice.emarsys.net/v3/devices/12345/events";
+    public static final String REQUEST_ID = "REQUEST_ID";
+    public static final long TIMESTAMP = 100_000;
 
     private RequestContext requestContext;
     private MeIdStorage meIdStorage;
 
     @Rule
     public TestRule timeout = TimeoutUtils.getTimeoutRule();
+    private RequestIdProvider requestIdProvider;
+    private TimestampProvider timestampProvider;
 
     @Before
     public void setup() {
@@ -60,13 +65,19 @@ public class RequestModelUtilsTest {
                 .build();
 
         meIdStorage = mock(MeIdStorage.class);
+        requestIdProvider = mock(RequestIdProvider.class);
+        when(requestIdProvider.provideId()).thenReturn(REQUEST_ID);
+
+        timestampProvider = mock(TimestampProvider.class);
+        when(timestampProvider.provideTimestamp()).thenReturn(TIMESTAMP);
         requestContext = new RequestContext(
                 config,
                 new DeviceInfo(InstrumentationRegistry.getContext()),
                 mock(AppLoginStorage.class),
                 meIdStorage,
                 mock(MeIdSignatureStorage.class),
-                mock(TimestampProvider.class));
+                timestampProvider,
+                requestIdProvider);
 
         requestContext.setAppLoginParameters(new AppLoginParameters(3, "test@test.com"));
     }
@@ -83,7 +94,7 @@ public class RequestModelUtilsTest {
 
     @Test
     public void testIsCustomEvent_V3_returnsTrue_ifIndeedV3Event() {
-        RequestModel requestModel = new RequestModel.Builder()
+        RequestModel requestModel = new RequestModel.Builder(timestampProvider, requestIdProvider)
                 .url(VALID_CUSTOM_EVENT_V3)
                 .build();
 
@@ -92,7 +103,7 @@ public class RequestModelUtilsTest {
 
     @Test
     public void testIsCustomEvent_V3_returnsFalse_ifThereIsNoMatch() {
-        RequestModel requestModel = new RequestModel.Builder()
+        RequestModel requestModel = new RequestModel.Builder(timestampProvider, requestIdProvider)
                 .url("https://www.google.com")
                 .build();
 
@@ -106,7 +117,7 @@ public class RequestModelUtilsTest {
 
     @Test
     public void testCreateAppLogin_V2() {
-        RequestModel expected = new RequestModel.Builder()
+        RequestModel expected = new RequestModel.Builder(timestampProvider, requestIdProvider)
                 .url("https://push.eservice.emarsys.net/api/mobileengage/v2/users/login")
                 .payload(RequestPayloadUtils.createAppLoginPayload(requestContext, null))
                 .headers(RequestHeaderUtils.createBaseHeaders_V2(requestContext.getConfig()))
@@ -124,7 +135,7 @@ public class RequestModelUtilsTest {
 
     @Test
     public void testCreateLastMobileActivity_V2() {
-        RequestModel expected = new RequestModel.Builder()
+        RequestModel expected = new RequestModel.Builder(timestampProvider, requestIdProvider)
                 .url("https://push.eservice.emarsys.net/api/mobileengage/v2/events/ems_lastMobileActivity")
                 .payload(RequestPayloadUtils.createBasePayload(requestContext))
                 .headers(RequestHeaderUtils.createBaseHeaders_V2(requestContext.getConfig()))
@@ -141,7 +152,7 @@ public class RequestModelUtilsTest {
 
         when(meIdStorage.get()).thenReturn("meId");
 
-        RequestModel expected = new RequestModel.Builder()
+        RequestModel expected = new RequestModel.Builder(timestampProvider, requestIdProvider)
                 .url(RequestUrlUtils.createEventUrl_V3(requestContext.getMeIdStorage().get()))
                 .payload(RequestPayloadUtils.createBasePayload(requestContext))
                 .headers(RequestHeaderUtils.createBaseHeaders_V3(requestContext))

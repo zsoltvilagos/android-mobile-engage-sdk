@@ -6,9 +6,16 @@ import android.content.Intent;
 import android.net.Uri;
 import android.support.test.InstrumentationRegistry;
 
+import com.emarsys.core.DeviceInfo;
+import com.emarsys.core.request.RequestIdProvider;
 import com.emarsys.core.request.RequestManager;
+import com.emarsys.core.timestamp.TimestampProvider;
 import com.emarsys.mobileengage.MobileEngageUtils;
+import com.emarsys.mobileengage.RequestContext;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
+import com.emarsys.mobileengage.storage.AppLoginStorage;
+import com.emarsys.mobileengage.storage.MeIdSignatureStorage;
+import com.emarsys.mobileengage.storage.MeIdStorage;
 import com.emarsys.mobileengage.testUtil.DatabaseTestUtils;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 import com.emarsys.mobileengage.util.MobileEngageIdlingResource;
@@ -25,6 +32,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
 
 public class DeepLinkInternalIdlingResourceTest {
 
@@ -53,7 +61,20 @@ public class DeepLinkInternalIdlingResourceTest {
                 .disableDefaultChannel()
                 .build();
 
-        deepLink = new DeepLinkInternal(mock(RequestManager.class));
+        RequestIdProvider requestIdProvider = mock(RequestIdProvider.class);
+        when(requestIdProvider.provideId()).thenReturn("REQUEST_ID");
+
+        RequestContext requestContext = new RequestContext(
+                mock(MobileEngageConfig.class),
+                mock(DeviceInfo.class),
+                mock(AppLoginStorage.class),
+                mock(MeIdStorage.class),
+                mock(MeIdSignatureStorage.class),
+                mock(TimestampProvider.class),
+                requestIdProvider
+        );
+
+        deepLink = new DeepLinkInternal(mock(RequestManager.class), requestContext);
 
         activity = mock(Activity.class, Mockito.RETURNS_DEEP_STUBS);
 

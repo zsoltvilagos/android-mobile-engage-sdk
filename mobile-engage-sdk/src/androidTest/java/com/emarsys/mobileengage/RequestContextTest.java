@@ -1,6 +1,7 @@
 package com.emarsys.mobileengage;
 
 import com.emarsys.core.DeviceInfo;
+import com.emarsys.core.request.RequestIdProvider;
 import com.emarsys.core.timestamp.TimestampProvider;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.storage.AppLoginStorage;
@@ -29,7 +30,8 @@ public class RequestContextTest {
                 mock(AppLoginStorage.class),
                 mock(MeIdStorage.class),
                 mock(MeIdSignatureStorage.class),
-                mock(TimestampProvider.class));
+                mock(TimestampProvider.class),
+                mock(RequestIdProvider.class));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -40,7 +42,8 @@ public class RequestContextTest {
                 mock(AppLoginStorage.class),
                 mock(MeIdStorage.class),
                 mock(MeIdSignatureStorage.class),
-                mock(TimestampProvider.class));
+                mock(TimestampProvider.class),
+                mock(RequestIdProvider.class));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -51,7 +54,8 @@ public class RequestContextTest {
                 null,
                 mock(MeIdStorage.class),
                 mock(MeIdSignatureStorage.class),
-                mock(TimestampProvider.class));
+                mock(TimestampProvider.class),
+                mock(RequestIdProvider.class));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -62,7 +66,8 @@ public class RequestContextTest {
                 mock(AppLoginStorage.class),
                 null,
                 mock(MeIdSignatureStorage.class),
-                mock(TimestampProvider.class));
+                mock(TimestampProvider.class),
+                mock(RequestIdProvider.class));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -73,7 +78,8 @@ public class RequestContextTest {
                 mock(AppLoginStorage.class),
                 mock(MeIdStorage.class),
                 null,
-                mock(TimestampProvider.class));
+                mock(TimestampProvider.class),
+                mock(RequestIdProvider.class));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -84,7 +90,8 @@ public class RequestContextTest {
                 mock(AppLoginStorage.class),
                 mock(MeIdStorage.class),
                 mock(MeIdSignatureStorage.class),
-                null);
+                null,
+                mock(RequestIdProvider.class));
     }
 
     @Test
@@ -97,7 +104,8 @@ public class RequestContextTest {
                 mock(AppLoginStorage.class),
                 mock(MeIdStorage.class),
                 mock(MeIdSignatureStorage.class),
-                mock(TimestampProvider.class));
+                mock(TimestampProvider.class),
+                mock(RequestIdProvider.class));
 
         Assert.assertEquals(applicationCode, underTest.getApplicationCode());
 

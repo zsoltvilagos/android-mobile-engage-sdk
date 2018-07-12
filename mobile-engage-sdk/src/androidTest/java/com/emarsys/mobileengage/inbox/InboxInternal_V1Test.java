@@ -5,6 +5,7 @@ import android.support.test.InstrumentationRegistry;
 
 import com.emarsys.core.CoreCompletionHandler;
 import com.emarsys.core.DeviceInfo;
+import com.emarsys.core.request.RequestIdProvider;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.request.RestClient;
 import com.emarsys.core.request.model.RequestMethod;
@@ -50,10 +51,13 @@ import static com.emarsys.mobileengage.fake.FakeInboxResultListener.Mode;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class InboxInternal_V1Test {
 
     public static final String APPLICATION_ID = "id";
+    public static final String REQUEST_ID = "REQUEST_ID";
+    public static final long TIMESTAMP = 100_000;
     private static List<Notification> notificationList;
 
     private InboxResultListener<NotificationInboxStatus> resultListenerMock;
@@ -73,6 +77,8 @@ public class InboxInternal_V1Test {
     private RestClient restClient;
     private DeviceInfo deviceInfo;
     private RequestContext requestContext;
+    private RequestIdProvider requestIdProvider;
+    private TimestampProvider timestampProvider;
 
     @Rule
     public TestRule timeout = TimeoutUtils.getTimeoutRule();
@@ -98,13 +104,19 @@ public class InboxInternal_V1Test {
         restClient = mock(RestClient.class);
         deviceInfo = new DeviceInfo(application);
 
+        requestIdProvider = mock(RequestIdProvider.class);
+        when(requestIdProvider.provideId()).thenReturn(REQUEST_ID);
+
+        timestampProvider = mock(TimestampProvider.class);
+        when(timestampProvider.provideTimestamp()).thenReturn(TIMESTAMP);
         requestContext = new RequestContext(
                 config,
                 deviceInfo,
                 new AppLoginStorage(application),
                 mock(MeIdStorage.class),
                 mock(MeIdSignatureStorage.class),
-                mock(TimestampProvider.class)
+                timestampProvider,
+                requestIdProvider
         );
 
         inbox = new InboxInternal_V1(manager, restClient, requestContext);
@@ -601,7 +613,7 @@ public class InboxInternal_V1Test {
         payload.put("sid", "sid1");
         payload.put("source", "inbox");
 
-        RequestModel expected = new RequestModel.Builder()
+        RequestModel expected = new RequestModel.Builder(timestampProvider, requestIdProvider)
                 .url("https://push.eservice.emarsys.net/api/mobileengage/v2/events/message_open")
                 .payload(payload)
                 .headers(defaultHeaders)
@@ -657,7 +669,7 @@ public class InboxInternal_V1Test {
         headers.putAll(RequestHeaderUtils.createDefaultHeaders(config));
         headers.putAll(RequestHeaderUtils.createBaseHeaders_V2(config));
 
-        return new RequestModel.Builder()
+        return new RequestModel.Builder(timestampProvider, requestIdProvider)
                 .url(path)
                 .headers(headers)
                 .method(method)

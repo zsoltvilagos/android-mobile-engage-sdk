@@ -10,6 +10,7 @@ import android.support.test.runner.AndroidJUnit4;
 import com.emarsys.core.CoreCompletionHandler;
 import com.emarsys.core.DeviceInfo;
 import com.emarsys.core.concurrency.CoreSdkHandlerProvider;
+import com.emarsys.core.request.RequestIdProvider;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.request.model.RequestModel;
 import com.emarsys.core.response.ResponseModel;
@@ -78,6 +79,8 @@ public class MobileEngageInternalIdlingResourceTest {
         MeIdSignatureStorage meIdSignatureStorage = mock(MeIdSignatureStorage.class);
         when(meIdSignatureStorage.get()).thenReturn("meIdSignature");
 
+        RequestIdProvider requestIdProvider = mock(RequestIdProvider.class);
+        when(requestIdProvider.provideId()).thenReturn("REQUEST_ID");
         mobileEngage = new MobileEngageInternal(
                 config,
                 mock(RequestManager.class),
@@ -89,7 +92,8 @@ public class MobileEngageInternalIdlingResourceTest {
                         mock(AppLoginStorage.class),
                         meIdStorage,
                         meIdSignatureStorage,
-                        mock(TimestampProvider.class)));
+                        mock(TimestampProvider.class),
+                        requestIdProvider));
 
         MobileEngageUtils.setup(config);
         idlingResource = mock(MobileEngageIdlingResource.class);
@@ -160,14 +164,14 @@ public class MobileEngageInternalIdlingResourceTest {
     }
 
     @Test
-    public void testTrackMessageOpen_emptyIntent_doesNotCallIdlingResource(){
+    public void testTrackMessageOpen_emptyIntent_doesNotCallIdlingResource() {
         mobileEngage.trackMessageOpen(new Intent());
 
         verifyZeroInteractions(idlingResource);
     }
 
     @Test
-    public void testTrackMessageOpen_correctIntent_callsIdlingResource(){
+    public void testTrackMessageOpen_correctIntent_callsIdlingResource() {
         Intent intent = new Intent();
         Bundle bundlePayload = new Bundle();
         bundlePayload.putString("key1", "value1");
@@ -180,7 +184,7 @@ public class MobileEngageInternalIdlingResourceTest {
     }
 
     @Test
-    public void testCoreCompletionHandler_onSuccess_callsIdlingResource(){
+    public void testCoreCompletionHandler_onSuccess_callsIdlingResource() {
         coreCompletionHandler.onSuccess(
                 "id",
                 new ResponseModel.Builder()
@@ -193,7 +197,7 @@ public class MobileEngageInternalIdlingResourceTest {
     }
 
     @Test
-    public void testCoreCompletionHandler_onError_responseModel_callsIdlingResource(){
+    public void testCoreCompletionHandler_onError_responseModel_callsIdlingResource() {
         coreCompletionHandler.onError(
                 "id",
                 new ResponseModel.Builder()
@@ -206,7 +210,7 @@ public class MobileEngageInternalIdlingResourceTest {
     }
 
     @Test
-    public void testCoreCompletionHandler_onError_exception_callsIdlingResource(){
+    public void testCoreCompletionHandler_onError_exception_callsIdlingResource() {
         coreCompletionHandler.onError("id", new Exception("exception"));
 
         verify(idlingResource, times(1)).decrement();

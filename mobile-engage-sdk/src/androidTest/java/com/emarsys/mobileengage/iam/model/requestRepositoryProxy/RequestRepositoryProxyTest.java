@@ -7,6 +7,7 @@ import com.emarsys.core.DeviceInfo;
 import com.emarsys.core.database.repository.Repository;
 import com.emarsys.core.database.repository.SqlSpecification;
 import com.emarsys.core.database.repository.specification.QueryAll;
+import com.emarsys.core.request.RequestIdProvider;
 import com.emarsys.core.request.model.CompositeRequestModel;
 import com.emarsys.core.request.model.RequestContract;
 import com.emarsys.core.request.model.RequestMethod;
@@ -67,6 +68,7 @@ public class RequestRepositoryProxyTest {
     private DoNotDisturbProvider doNotDisturbProvider;
 
     private RequestRepositoryProxy compositeRepository;
+    private RequestIdProvider requestIdProvider;
 
     @Rule
     public TestRule timeout = TimeoutUtils.getTimeoutRule();
@@ -92,6 +94,10 @@ public class RequestRepositoryProxyTest {
 
         timestampProvider = mock(TimestampProvider.class);
         when(timestampProvider.provideTimestamp()).thenReturn(TIMESTAMP);
+
+        requestIdProvider = mock(RequestIdProvider.class);
+        when(requestIdProvider.provideId()).thenReturn("REQUEST_ID");
+
         doNotDisturbProvider = mock(DoNotDisturbProvider.class);
 
         compositeRepository = new RequestRepositoryProxy(
@@ -486,7 +492,7 @@ public class RequestRepositoryProxyTest {
                 headers,
                 System.currentTimeMillis(),
                 999,
-                RequestModel.nextId()
+                requestIdProvider.provideId()
         );
     }
 
@@ -498,7 +504,7 @@ public class RequestRepositoryProxyTest {
         headers.put("header1", "value1");
         headers.put("header2", "value2");
 
-        return new RequestModel.Builder()
+        return new RequestModel.Builder(timestampProvider, requestIdProvider)
                 .url("https://emarsys.com")
                 .payload(payload)
                 .headers(headers)

@@ -4,6 +4,7 @@ import android.app.Application;
 import android.support.test.InstrumentationRegistry;
 
 import com.emarsys.core.DeviceInfo;
+import com.emarsys.core.request.RequestIdProvider;
 import com.emarsys.core.timestamp.TimestampProvider;
 import com.emarsys.mobileengage.BuildConfig;
 import com.emarsys.mobileengage.MobileEngageInternal;
@@ -34,14 +35,17 @@ import java.util.Map;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class RequestPayloadUtilsTest {
     private static final String APPLICATION_CODE = "applicationCode";
     private static final String APPLICATION_PASSWORD = "applicationPassword";
     public static final String MOBILEENGAGE_SDK_VERSION = BuildConfig.VERSION_NAME;
     public static final String PUSH_TOKEN = "pushToken";
+    public static final String REQUEST_ID = "REQUEST_ID";
 
     private RequestContext requestContext;
+    private RequestIdProvider requestIdProvider;
 
     @Rule
     public TestRule timeout = TimeoutUtils.getTimeoutRule();
@@ -55,13 +59,17 @@ public class RequestPayloadUtilsTest {
                 .disableDefaultChannel()
                 .build();
 
+        requestIdProvider = mock(RequestIdProvider.class);
+        when(requestIdProvider.provideId()).thenReturn(REQUEST_ID);
+
         requestContext = new RequestContext(
                 config,
                 new DeviceInfo(InstrumentationRegistry.getContext()),
                 mock(AppLoginStorage.class),
                 mock(MeIdStorage.class),
                 mock(MeIdSignatureStorage.class),
-                mock(TimestampProvider.class));
+                mock(TimestampProvider.class),
+                requestIdProvider);
 
         requestContext.setAppLoginParameters(new AppLoginParameters(3, "test@test.com"));
     }
@@ -142,7 +150,7 @@ public class RequestPayloadUtilsTest {
         requestContext.setAppLoginParameters(new AppLoginParameters());
         Map<String, Object> expected = new HashMap<>();
         expected.put("application_id", requestContext.getApplicationCode());
-        expected.put("hardware_id", requestContext.getDeviceInfo().getHwid());;
+        expected.put("hardware_id", requestContext.getDeviceInfo().getHwid());
 
         Map<String, Object> result = RequestPayloadUtils.createBasePayload(requestContext);
 

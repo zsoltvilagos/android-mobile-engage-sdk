@@ -5,6 +5,7 @@ import android.support.test.InstrumentationRegistry;
 
 import com.emarsys.core.CoreCompletionHandler;
 import com.emarsys.core.DeviceInfo;
+import com.emarsys.core.request.RequestIdProvider;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.request.RestClient;
 import com.emarsys.core.request.model.RequestMethod;
@@ -62,6 +63,7 @@ public class InboxInternal_V2Test {
     public static final String APPLICATION_ID = "id";
     public static final String ME_ID = "12345";
     public static final String ME_ID_SIGNATURE = "1111signature";
+    public static final String REQUEST_ID = "REQUEST_ID";
     private static String ENDPOINT_BASE_V3 = "https://mobile-events.eservice.emarsys.net/v3/devices/";
     public static final String MESSAGE_ID = "id";
     public static final String SID = "sid";
@@ -80,6 +82,7 @@ public class InboxInternal_V2Test {
     private Notification notification;
     private FakeStatusListener statusListener;
     private TimestampProvider timestampProvider;
+    private RequestIdProvider requestIdProvider;
 
     @Rule
     public TestRule timeout = TimeoutUtils.getTimeoutRule();
@@ -156,6 +159,9 @@ public class InboxInternal_V2Test {
         meIdSignatureStorage = mock(MeIdSignatureStorage.class);
         when(meIdSignatureStorage.get()).thenReturn(ME_ID_SIGNATURE);
 
+        requestIdProvider = mock(RequestIdProvider.class);
+        when(requestIdProvider.provideId()).thenReturn(REQUEST_ID);
+
         timestampProvider = mock(TimestampProvider.class);
         when(timestampProvider.provideTimestamp()).thenReturn(TIMESTAMP);
         requestContext = new RequestContext(
@@ -164,7 +170,8 @@ public class InboxInternal_V2Test {
                 mock(AppLoginStorage.class),
                 meIdStorage,
                 meIdSignatureStorage,
-                timestampProvider);
+                timestampProvider,
+                requestIdProvider);
 
         inbox = new InboxInternal_V2(manager, restClient, requestContext);
 
@@ -498,7 +505,7 @@ public class InboxInternal_V2Test {
         responses.add(notificationStatusResponse1);
         responses.add(notificationStatusResponse2);
 
-        when(timestampProvider.provideTimestamp()).thenReturn(System.currentTimeMillis(), System.currentTimeMillis() + (1000 * 60 + 1));
+        when(timestampProvider.provideTimestamp()).thenReturn(0L, 0L, 60_001L, 60_001L);
 
         inbox = new InboxInternal_V2(
                 manager,
@@ -711,7 +718,7 @@ public class InboxInternal_V2Test {
         payload.put("viewed_messages", new ArrayList<>());
         payload.put("events", Collections.singletonList(event));
 
-        RequestModel expected = new RequestModel.Builder()
+        RequestModel expected = new RequestModel.Builder(timestampProvider, requestIdProvider)
                 .url(ENDPOINT_BASE_V3 + ME_ID + "/events")
                 .payload(payload)
                 .headers(RequestHeaderUtils.createBaseHeaders_V3(requestContext))
@@ -917,7 +924,7 @@ public class InboxInternal_V2Test {
         headers.putAll(RequestHeaderUtils.createDefaultHeaders(config));
         headers.putAll(RequestHeaderUtils.createBaseHeaders_V2(config));
 
-        return new RequestModel.Builder()
+        return new RequestModel.Builder(timestampProvider, requestIdProvider)
                 .url(path)
                 .headers(headers)
                 .method(method)
