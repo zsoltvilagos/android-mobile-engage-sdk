@@ -36,6 +36,7 @@ public class RequestContext {
         Assert.notNull(meIdStorage, "MeIdStorage must not be null!");
         Assert.notNull(meIdSignatureStorage, "MeIdSignatureStorage must not be null!");
         Assert.notNull(timestampProvider, "TimestampProvider must not be null!");
+        Assert.notNull(requestIdProvider, "RequestIdProvider must not be null!");
         this.config = config;
         this.deviceInfo = deviceInfo;
         this.appLoginStorage = appLoginStorage;

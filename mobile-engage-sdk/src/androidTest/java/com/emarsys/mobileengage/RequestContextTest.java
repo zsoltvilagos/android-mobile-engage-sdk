@@ -94,6 +94,18 @@ public class RequestContextTest {
                 mock(RequestIdProvider.class));
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructor_IdProvider_ShouldNotBeNull() {
+        new RequestContext(
+                mock(MobileEngageConfig.class),
+                mock(DeviceInfo.class),
+                mock(AppLoginStorage.class),
+                mock(MeIdStorage.class),
+                mock(MeIdSignatureStorage.class),
+                mock(TimestampProvider.class),
+                null);
+    }
+
     @Test
     public void testGetApplicationCode_shouldReturnConfigsApplicationCode() {
         String applicationCode = "applicationCode";
@@ -108,6 +120,5 @@ public class RequestContextTest {
                 mock(RequestIdProvider.class));
 
         Assert.assertEquals(applicationCode, underTest.getApplicationCode());
-
     }
 }
