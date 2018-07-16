@@ -139,9 +139,7 @@ public class MobileEngageTest {
     public void tearDown() throws Exception {
         ExperimentalTestUtils.resetExperimentalFeatures();
         MobileEngage.InApp.setPaused(false);
-        if (MobileEngage.coreSdkHandler != null) {
-            MobileEngage.coreSdkHandler.getLooper().quit();
-        }
+        MobileEngage.coreSdkHandler.getLooper().quit();
         DependencyInjection.tearDown();
     }
 
