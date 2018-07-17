@@ -118,8 +118,7 @@ public class MobileEngageInternalIdlingResourceTest {
 
     @Test
     public void testAppLogin_callsIdlingResource() {
-        mobileEngage.requestContext.setAppLoginParameters(new AppLoginParameters(3, "test@test.com"));
-        mobileEngage.appLogin();
+        mobileEngage.appLogin(3, "test@test.com");
 
         verify(idlingResource, times(1)).increment();
     }

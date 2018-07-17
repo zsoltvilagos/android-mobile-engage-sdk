@@ -220,8 +220,7 @@ public class MobileEngageInternalTest {
 
         ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
 
-        requestContext.setAppLoginParameters(new AppLoginParameters(contactFieldId, contactFieldValue));
-        mobileEngage.appLogin();
+        mobileEngage.appLogin(contactFieldId, contactFieldValue);
 
         verify(manager).submit(captor.capture());
 
@@ -234,8 +233,7 @@ public class MobileEngageInternalTest {
         meIdStorage.remove();
         ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
 
-        requestContext.setAppLoginParameters(new AppLoginParameters(5, "value"));
-        String result = mobileEngage.appLogin();
+        String result = mobileEngage.appLogin(5, "value");
 
         verify(manager).submit(captor.capture());
 
@@ -297,8 +295,7 @@ public class MobileEngageInternalTest {
 
         ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
 
-        requestContext.setAppLoginParameters(appLoginParameters);
-        mobileEngage.appLogin();
+        mobileEngage.appLogin(appLoginParameters.getContactFieldId(), appLoginParameters.getContactFieldValue());
 
         verify(manager).submit(captor.capture());
         RequestModel requestModel = captor.getValue();
@@ -312,8 +309,7 @@ public class MobileEngageInternalTest {
 
         captor = ArgumentCaptor.forClass(RequestModel.class);
 
-        requestContext.setAppLoginParameters(appLoginParameters);
-        mobileEngage.appLogin();
+        mobileEngage.appLogin(appLoginParameters.getContactFieldId(), appLoginParameters.getContactFieldValue());
 
         verify(manager).submit(captor.capture());
         requestModel = captor.getValue();
@@ -740,7 +736,7 @@ public class MobileEngageInternalTest {
         requestContext.setAppLoginParameters(new AppLoginParameters());
         spy.setPushToken("123456789");
 
-        verify(spy, times(1)).appLogin();
+        verify(spy, times(1)).sendAppLogin();
     }
 
     @Test
@@ -752,7 +748,7 @@ public class MobileEngageInternalTest {
         requestContext.setAppLoginParameters(new AppLoginParameters(contactFieldId, contactFieldValue));
         spy.setPushToken("123456789");
 
-        verify(spy, times(1)).appLogin();
+        verify(spy, times(1)).sendAppLogin();
     }
 
     @Test
@@ -762,7 +758,7 @@ public class MobileEngageInternalTest {
         requestContext.setAppLoginParameters(null);
         spy.setPushToken("123456789");
 
-        verify(spy, times(0)).appLogin();
+        verify(spy, times(0)).sendAppLogin();
     }
 
     private void testSequentialApplogins(
@@ -826,9 +822,8 @@ public class MobileEngageInternalTest {
             boolean shouldReinstantiateMobileEngage) {
         ArgumentCaptor<RequestModel> captor = ArgumentCaptor.forClass(RequestModel.class);
 
-        requestContext.setAppLoginParameters(firstAppLoginParameter);
         meIdStorage.set(firstMeId);
-        mobileEngage.appLogin();
+        mobileEngage.appLogin(firstAppLoginParameter.getContactFieldId(), firstAppLoginParameter.getContactFieldValue());
 
         verify(manager).submit(captor.capture());
         RequestModel requestModel = captor.getValue();
@@ -849,7 +844,7 @@ public class MobileEngageInternalTest {
 
         requestContext.setAppLoginParameters(secondAppLoginParameter);
         meIdStorage.set(secondMeId);
-        mobileEngage.appLogin();
+        mobileEngage.appLogin(secondAppLoginParameter.getContactFieldId(), secondAppLoginParameter.getContactFieldValue());
 
         verify(manager).submit(captor.capture());
         requestModel = captor.getValue();

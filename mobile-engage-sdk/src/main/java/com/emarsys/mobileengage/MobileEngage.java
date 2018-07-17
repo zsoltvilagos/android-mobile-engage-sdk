@@ -100,40 +100,42 @@ public class MobileEngage {
         MobileEngageUtils.setup(config);
     }
 
+    @NonNull
     public static MobileEngageConfig getConfig() {
         return config;
     }
 
-    public static void setPushToken(String pushToken) {
+    public static void setPushToken(@NonNull String pushToken) {
         instance.setPushToken(pushToken);
     }
 
-    public static void setStatusListener(MobileEngageStatusListener listener) {
+    public static void setStatusListener(@NonNull MobileEngageStatusListener listener) {
         completionHandler.setStatusListener(listener);
     }
 
+    @NonNull
     public static String appLogin() {
-        requestContext.setAppLoginParameters(new AppLoginParameters());
         return instance.appLogin();
     }
 
-    public static String appLogin(int contactFieldId,
-                                  @NonNull String contactFieldValue) {
+    @NonNull
+    public static String appLogin(int contactFieldId, @NonNull String contactFieldValue) {
         Assert.notNull(contactFieldValue, "ContactFieldValue must not be null!");
         return instance.appLogin(contactFieldId, contactFieldValue);
     }
 
+    @NonNull
     public static String appLogout() {
-        requestContext.setAppLoginParameters(null);
         return instance.appLogout();
     }
 
-    public static String trackCustomEvent(@NonNull String eventName,
-                                          @Nullable Map<String, String> eventAttributes) {
+    @NonNull
+    public static String trackCustomEvent(@NonNull String eventName, @Nullable Map<String, String> eventAttributes) {
         Assert.notNull(eventName, "EventName must not be null!");
         return instance.trackCustomEvent(eventName, eventAttributes);
     }
 
+    @NonNull
     public static String trackMessageOpen(@NonNull Intent intent) {
         Assert.notNull(intent, "Intent must not be null!");
         return instance.trackMessageOpen(intent);

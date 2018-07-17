@@ -156,8 +156,7 @@ public class MobileEngageInternalStatusListenerTest {
 
     @Test
     public void testAppLogin_statusListenerCalledWithSuccess() throws Exception {
-        requestContext.setAppLoginParameters(new AppLoginParameters(CONTACT_FIELD_ID, CONTACT_FIELD_VALUE));
-        eventuallyAssertSuccess(mobileEngage.appLogin());
+        eventuallyAssertSuccess(mobileEngage.appLogin(CONTACT_FIELD_ID, CONTACT_FIELD_VALUE));
     }
 
     @Test
@@ -184,8 +183,7 @@ public class MobileEngageInternalStatusListenerTest {
     @Test
     public void testAppLogin_statusListenerCalledWithFailure() throws Exception {
         mobileEngageWith(mainThreadStatusListener, failingManager);
-        requestContext.setAppLoginParameters(new AppLoginParameters(CONTACT_FIELD_ID, CONTACT_FIELD_VALUE));
-        eventuallyAssertFailure(mobileEngage.appLogin());
+        eventuallyAssertFailure(mobileEngage.appLogin(CONTACT_FIELD_ID, CONTACT_FIELD_VALUE));
     }
 
     @Test
