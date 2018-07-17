@@ -32,7 +32,7 @@ node('master') {
                 }
 
                 stage("instrumentation-test") {
-                    androidInstrumentationTest withScreenOn: true, withLock: env.ANDROID_DEVICE_FARM_LOCK, withRetryCount: 2, runTrulyParallel: true, withStepNames: env.ANDROID_STEP_NAMES, andArchive: '**/outputs/androidTest-results/connected/*.xml'
+                    androidInstrumentationTest withScreenOn: true, withLock: env.ANDROID_DEVICE_FARM_LOCK, withRetryCount: 2, runTrulyParallel: false, withStepNames: env.ANDROID_STEP_NAMES, andArchive: '**/outputs/androidTest-results/connected/*.xml'
                 }
 
                 stage('local-maven-deploy') {
