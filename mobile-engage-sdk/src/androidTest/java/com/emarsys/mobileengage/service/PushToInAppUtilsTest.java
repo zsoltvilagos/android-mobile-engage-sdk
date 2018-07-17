@@ -60,6 +60,7 @@ public class PushToInAppUtilsTest {
 
     @After
     public void tearDown() {
+        coreSdkHandler.getLooper().quit();
         DependencyInjection.tearDown();
     }
 
