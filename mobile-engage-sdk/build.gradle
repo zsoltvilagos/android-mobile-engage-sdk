@@ -1,3 +1,4 @@
+apply from: 'dev.gradle'
 apply from: 'version.gradle'
 apply plugin: 'com.android.library'
 apply plugin: 'com.github.dcendents.android-maven'
@@ -13,10 +14,10 @@ android {
         versionCode gitVersionCode
         versionName gitVersionName
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-        buildConfigField "String", "ME_BASE_V2_URL", project.ME_BASE_V2_URL
-        buildConfigField "String", "ME_BASE_V3_URL", project.ME_BASE_V3_URL
-        buildConfigField "String", "INBOX_BASE_URL", project.INBOX_BASE_URL
-        buildConfigField "String", "DEEP_LINK_BASE_URL", project.DEEP_LINK_BASE_URL
+        buildConfigField "String", "ME_BASE_V2_URL", System.env.ME_BASEV2_URL ?: project.ME_BASE_V2_URL
+        buildConfigField "String", "ME_BASE_V3_URL", System.env.ME_BASE_V3_URL ?: project.ME_BASE_V3_URL
+        buildConfigField "String", "INBOX_BASE_URL", System.env.INBOX_BASE_URL ?: project.INBOX_BASE_URL
+        buildConfigField "String", "DEEP_LINK_BASE_URL", System.env.DEEP_LINK_BASE_URL ?: project.DEEP_LINK_BASE_URL
     }
     buildTypes {
         release {
@@ -30,7 +31,7 @@ group = 'com.emarsys'
 version = gitVersionName
 
 dependencies {
-    if (project.hasProperty('development') || System.env.DEVELOPMENT_MODE) {
+    if (project.ext.devConfig.useLatestArtifacts || System.env.DEVELOPMENT_MODE) {
         compile 'com.emarsys:core-sdk:+'
     } else {
         compile 'com.emarsys:core-sdk:1.3.0'
