@@ -40,6 +40,8 @@ import static org.mockito.Mockito.when;
 @SdkSuppress(minSdkVersion = KITKAT)
 public class PushToInAppUtilsTest {
 
+    private static final String URL = "https://www.google.com";
+
     private DependencyContainer dependencyContainer;
     private ActivityLifecycleWatchdog activityLifecycleWatchdog;
     private Handler coreSdkHandler;
@@ -81,7 +83,7 @@ public class PushToInAppUtilsTest {
         JSONObject ems = new JSONObject();
         JSONObject inapp = new JSONObject();
         inapp.put("campaignId", "campaignId");
-        inapp.put("fileUrl", FileUtils.download(InstrumentationRegistry.getTargetContext(), "https://www.emarsys.com"));
+        inapp.put("fileUrl", FileUtils.download(InstrumentationRegistry.getTargetContext(), URL));
         ems.put("inapp", inapp.toString());
         payload.putString("ems", ems.toString());
         intent.putExtra("payload", payload);
@@ -100,10 +102,11 @@ public class PushToInAppUtilsTest {
         JSONObject ems = new JSONObject();
         JSONObject inapp = new JSONObject();
         inapp.put("campaignId", "campaignId");
-        String fireUrl = FileUtils.download(InstrumentationRegistry.getTargetContext(), "https://www.emarsys.com");
-        new File(fireUrl).delete();
+        String fireUrl = FileUtils.download(InstrumentationRegistry.getTargetContext(), URL);
+        File file = new File(fireUrl);
+        file.delete();
         inapp.put("fileUrl", fireUrl);
-        inapp.put("url", "https://www.emarsys.com");
+        inapp.put("url", URL);
         ems.put("inapp", inapp.toString());
         payload.putString("ems", ems.toString());
         intent.putExtra("payload", payload);
@@ -122,7 +125,7 @@ public class PushToInAppUtilsTest {
         JSONObject ems = new JSONObject();
         JSONObject inapp = new JSONObject();
         inapp.put("campaignId", "campaignId");
-        inapp.put("url", "https://www.emarsys.com");
+        inapp.put("url", URL);
         ems.put("inapp", inapp.toString());
         payload.putString("ems", ems.toString());
         intent.putExtra("payload", payload);
@@ -136,7 +139,7 @@ public class PushToInAppUtilsTest {
 
     @Test
     public void testHandlePreloadedInAppMessage_shouldDeleteFile_afterPushToInAppActionIsScheduled() throws Exception {
-        String fileUrl = FileUtils.download(InstrumentationRegistry.getTargetContext(), "https://www.emarsys.com");
+        String fileUrl = FileUtils.download(InstrumentationRegistry.getTargetContext(), URL);
 
         Intent intent = new Intent();
         Bundle payload = new Bundle();
