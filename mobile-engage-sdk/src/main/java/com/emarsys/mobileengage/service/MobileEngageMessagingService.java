@@ -13,6 +13,16 @@ public class MobileEngageMessagingService extends FirebaseMessagingService {
         super.onMessageReceived(remoteMessage);
 
         boolean handled = MessagingServiceUtils.handleMessage(this, remoteMessage, MobileEngage.getConfig().getOreoConfig());
+
         EMSLogger.log(MobileEngageTopic.PUSH, "Remote message handled by MobileEngage: %b", handled);
+    }
+
+    @Override
+    public void onNewToken(String token) {
+        super.onNewToken(token);
+
+        EMSLogger.log(MobileEngageTopic.PUSH, "New token: %s", token);
+
+        MobileEngage.setPushToken(token);
     }
 }
