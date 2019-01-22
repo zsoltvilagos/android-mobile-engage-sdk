@@ -3,11 +3,9 @@ apply from: 'version.gradle'
 apply plugin: 'com.android.library'
 apply plugin: 'com.github.dcendents.android-maven'
 apply plugin: 'com.jfrog.bintray'
-apply plugin: 'com.getkeepsafe.dexcount'
 
 android {
     compileSdkVersion 26
-    buildToolsVersion "26.0.2"
     defaultConfig {
         minSdkVersion 14
         targetSdkVersion 26

@@ -2,23 +2,22 @@
 
 buildscript {
     repositories {
+        google()
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.3.0'
+        classpath 'com.android.tools.build:gradle:3.3.0'
         classpath 'com.github.dcendents:android-maven-gradle-plugin:1.4.1'
-        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4'
         classpath 'com.getkeepsafe.dexcount:dexcount-gradle-plugin:0.7.1'
     }
 }
 
 allprojects {
     repositories {
-        jcenter()
         mavenLocal()
-        maven {
-            url "https://maven.google.com"
-        }
+        google()
+        jcenter()
     }
 }
 
