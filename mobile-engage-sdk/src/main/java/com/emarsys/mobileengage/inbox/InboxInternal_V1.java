@@ -4,7 +4,6 @@ import android.os.Handler;
 import android.os.Looper;
 
 import com.emarsys.core.CoreCompletionHandler;
-import com.emarsys.core.DeviceInfo;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.request.RestClient;
 import com.emarsys.core.request.model.RequestMethod;
@@ -175,8 +174,7 @@ public class InboxInternal_V1 implements InboxInternal {
 
     private Map<String, String> createBaseHeaders(MobileEngageConfig config) {
         Map<String, String> result = new HashMap<>();
-
-        result.put("x-ems-me-hardware-id", new DeviceInfo(config.getApplication()).getHwid());
+        result.put("x-ems-me-hardware-id", requestContext.getDeviceInfo().getHwid());
         result.put("x-ems-me-application-code", config.getApplicationCode());
         result.put("x-ems-me-contact-field-id", String.valueOf(requestContext.getAppLoginParameters().getContactFieldId()));
         result.put("x-ems-me-contact-field-value", requestContext.getAppLoginParameters().getContactFieldValue());

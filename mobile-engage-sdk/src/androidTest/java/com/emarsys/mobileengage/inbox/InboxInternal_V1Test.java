@@ -5,6 +5,7 @@ import android.support.test.InstrumentationRegistry;
 
 import com.emarsys.core.CoreCompletionHandler;
 import com.emarsys.core.DeviceInfo;
+import com.emarsys.core.notification.NotificationSettings;
 import com.emarsys.core.request.RequestIdProvider;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.request.RestClient;
@@ -79,6 +80,7 @@ public class InboxInternal_V1Test {
     private RequestContext requestContext;
     private RequestIdProvider requestIdProvider;
     private TimestampProvider timestampProvider;
+    private NotificationSettings mockNotificationSettings;
 
     @Rule
     public TestRule timeout = TimeoutUtils.getTimeoutRule();
@@ -86,6 +88,9 @@ public class InboxInternal_V1Test {
     @Before
     @SuppressWarnings("unchecked")
     public void init() throws Exception {
+        mockNotificationSettings = mock(NotificationSettings.class);
+
+
         latch = new CountDownLatch(1);
 
         application = (Application) InstrumentationRegistry.getTargetContext().getApplicationContext();
@@ -102,7 +107,7 @@ public class InboxInternal_V1Test {
 
         defaultHeaders = RequestHeaderUtils.createDefaultHeaders(config);
         restClient = mock(RestClient.class);
-        deviceInfo = new DeviceInfo(application);
+        deviceInfo = new DeviceInfo(application, mockNotificationSettings);
 
         requestIdProvider = mock(RequestIdProvider.class);
         when(requestIdProvider.provideId()).thenReturn(REQUEST_ID);
@@ -132,6 +137,7 @@ public class InboxInternal_V1Test {
         ((List) cacheField.get(null)).clear();
 
         cache = new NotificationCache();
+
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -609,7 +615,7 @@ public class InboxInternal_V1Test {
 
         Map<String, Object> payload = new HashMap<>();
         payload.put("application_id", APPLICATION_ID);
-        payload.put("hardware_id", new DeviceInfo(application).getHwid());
+        payload.put("hardware_id", new DeviceInfo(application, mockNotificationSettings).getHwid());
         payload.put("sid", "sid1");
         payload.put("source", "inbox");
 
@@ -659,7 +665,7 @@ public class InboxInternal_V1Test {
     }
 
     private RequestModel createRequestModel(String path, RequestMethod method) {
-        DeviceInfo deviceInfo = new DeviceInfo(InstrumentationRegistry.getContext());
+        DeviceInfo deviceInfo = new DeviceInfo(InstrumentationRegistry.getContext(), mockNotificationSettings);
 
         Map<String, String> headers = new HashMap<>();
         headers.put("x-ems-me-hardware-id", deviceInfo.getHwid());

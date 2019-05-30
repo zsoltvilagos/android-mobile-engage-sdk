@@ -11,7 +11,7 @@ android {
         targetSdkVersion 26
         versionCode gitVersionCode
         versionName gitVersionName
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "com.emarsys.mobileengage.MultidexTestRunner"
         buildConfigField "String", "ME_BASE_V2_URL", System.env.ME_BASEV2_URL ?: project.ME_BASE_V2_URL
         buildConfigField "String", "ME_BASE_V3_URL", System.env.ME_BASE_V3_URL ?: project.ME_BASE_V3_URL
         buildConfigField "String", "INBOX_BASE_URL", System.env.INBOX_BASE_URL ?: project.INBOX_BASE_URL
@@ -40,16 +40,17 @@ dependencies {
         compile 'com.emarsys:core-sdk:1.4.2'
     }
 
-    compile 'com.android.support:appcompat-v7:26.1.0'
-    compile "com.android.support:support-annotations:26.1.0"
     compile 'com.google.firebase:firebase-core:16.0.6'
     compile 'com.google.firebase:firebase-messaging:17.3.4'
-    compile('com.android.support.test.espresso:espresso-idling-resource:2.2.2')
+    compile 'com.android.support.test.espresso:espresso-idling-resource:2.2.2'
 
-    testCompile 'junit:junit:4.12'
-    testCompile 'org.mockito:mockito-core:2.12.0'
-    androidTestCompile 'org.mockito:mockito-android:2.12.0'
-    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation('com.android.support.test:runner:1.0.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    androidTestImplementation 'com.android.support:multidex-instrumentation:1.0.2'
+    androidTestImplementation 'org.mockito:mockito-android:2.25.0'
+    androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
 }

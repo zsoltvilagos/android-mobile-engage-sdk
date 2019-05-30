@@ -9,12 +9,13 @@ import android.support.test.InstrumentationRegistry;
 
 import com.emarsys.core.DeviceInfo;
 import com.emarsys.core.concurrency.CoreSdkHandlerProvider;
+import com.emarsys.core.notification.ChannelSettings;
+import com.emarsys.core.notification.NotificationSettings;
 import com.emarsys.core.request.RequestIdProvider;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.response.ResponseModel;
 import com.emarsys.core.timestamp.TimestampProvider;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
-import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
 import com.emarsys.mobileengage.fake.FakeRequestManager;
 import com.emarsys.mobileengage.fake.FakeStatusListener;
 import com.emarsys.mobileengage.responsehandler.AbstractResponseHandler;
@@ -31,6 +32,7 @@ import org.junit.rules.TestRule;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
@@ -67,6 +69,7 @@ public class MobileEngageInternalStatusListenerTest {
     @Rule
     public TestRule timeout = TimeoutUtils.getTimeoutRule();
     private RequestContext requestContext;
+    private DeviceInfo mockDeviceInfo;
 
     @Before
     public void init() throws Exception {
@@ -132,14 +135,32 @@ public class MobileEngageInternalStatusListenerTest {
         when(meIdSignatureStorage.get()).thenReturn("meIdSignature");
         RequestIdProvider requestIdProvider = mock(RequestIdProvider.class);
         when(requestIdProvider.provideId()).thenReturn("REQUEST_ID");
+
+        mockDeviceInfo = mock(DeviceInfo.class);
         requestContext = new RequestContext(
                 baseConfig,
-                mock(DeviceInfo.class),
+                mockDeviceInfo,
                 new AppLoginStorage(context),
                 meIdStorage,
                 meIdSignatureStorage,
                 mock(TimestampProvider.class),
                 requestIdProvider);
+
+        NotificationSettings mockNotificationSettings = mock(NotificationSettings.class);
+        ChannelSettings mockChannelSettings = mock(ChannelSettings.class);
+        List<ChannelSettings> channelSettingsList = new ArrayList<>();
+        channelSettingsList.add(mockChannelSettings);
+
+        when(mockDeviceInfo.getNotificationSettings()).thenReturn(mockNotificationSettings);
+        when(mockNotificationSettings.areNotificationsEnabled()).thenReturn(true);
+        when(mockNotificationSettings.getImportance()).thenReturn(0);
+        when(mockNotificationSettings.getChannelSettings()).thenReturn(channelSettingsList);
+        when(mockChannelSettings.isShouldShowLights()).thenReturn(true);
+        when(mockChannelSettings.isShouldVibrate()).thenReturn(true);
+        when(mockChannelSettings.isCanBypassDnd()).thenReturn(true);
+        when(mockChannelSettings.isCanShowBadge()).thenReturn(true);
+        when(mockChannelSettings.getImportance()).thenReturn(0);
+        when(mockChannelSettings.getChannelId()).thenReturn("channelId");
 
         mobileEngage = new MobileEngageInternal(
                 baseConfig,

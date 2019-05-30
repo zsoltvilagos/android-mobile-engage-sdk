@@ -10,13 +10,14 @@ import android.support.test.runner.AndroidJUnit4;
 import com.emarsys.core.CoreCompletionHandler;
 import com.emarsys.core.DeviceInfo;
 import com.emarsys.core.concurrency.CoreSdkHandlerProvider;
+import com.emarsys.core.notification.ChannelSettings;
+import com.emarsys.core.notification.NotificationSettings;
 import com.emarsys.core.request.RequestIdProvider;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.request.model.RequestModel;
 import com.emarsys.core.response.ResponseModel;
 import com.emarsys.core.timestamp.TimestampProvider;
 import com.emarsys.mobileengage.config.MobileEngageConfig;
-import com.emarsys.mobileengage.event.applogin.AppLoginParameters;
 import com.emarsys.mobileengage.responsehandler.AbstractResponseHandler;
 import com.emarsys.mobileengage.storage.AppLoginStorage;
 import com.emarsys.mobileengage.storage.MeIdSignatureStorage;
@@ -35,6 +36,7 @@ import org.junit.runner.RunWith;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.mockito.Mockito.mock;
@@ -53,6 +55,7 @@ public class MobileEngageInternalIdlingResourceTest {
 
     @Rule
     public TestRule timeout = TimeoutUtils.getTimeoutRule();
+    private DeviceInfo mockDeviceInfo;
 
     @Before
     public void init() throws Exception {
@@ -81,6 +84,24 @@ public class MobileEngageInternalIdlingResourceTest {
 
         RequestIdProvider requestIdProvider = mock(RequestIdProvider.class);
         when(requestIdProvider.provideId()).thenReturn("REQUEST_ID");
+
+        mockDeviceInfo = mock(DeviceInfo.class);
+        NotificationSettings mockNotificationSettings = mock(NotificationSettings.class);
+        ChannelSettings mockChannelSettings = mock(ChannelSettings.class);
+        List<ChannelSettings> channelSettingsList = new ArrayList<>();
+        channelSettingsList.add(mockChannelSettings);
+
+        when(mockDeviceInfo.getNotificationSettings()).thenReturn(mockNotificationSettings);
+        when(mockNotificationSettings.areNotificationsEnabled()).thenReturn(true);
+        when(mockNotificationSettings.getImportance()).thenReturn(0);
+        when(mockNotificationSettings.getChannelSettings()).thenReturn(channelSettingsList);
+        when(mockChannelSettings.isShouldShowLights()).thenReturn(true);
+        when(mockChannelSettings.isShouldVibrate()).thenReturn(true);
+        when(mockChannelSettings.isCanBypassDnd()).thenReturn(true);
+        when(mockChannelSettings.isCanShowBadge()).thenReturn(true);
+        when(mockChannelSettings.getImportance()).thenReturn(0);
+        when(mockChannelSettings.getChannelId()).thenReturn("channelId");
+
         mobileEngage = new MobileEngageInternal(
                 config,
                 mock(RequestManager.class),
@@ -88,7 +109,7 @@ public class MobileEngageInternalIdlingResourceTest {
                 mock(MobileEngageCoreCompletionHandler.class),
                 new RequestContext(
                         config,
-                        mock(DeviceInfo.class),
+                        mockDeviceInfo,
                         mock(AppLoginStorage.class),
                         meIdStorage,
                         meIdSignatureStorage,

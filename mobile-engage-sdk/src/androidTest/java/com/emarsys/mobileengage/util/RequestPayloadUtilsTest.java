@@ -4,6 +4,8 @@ import android.app.Application;
 import android.support.test.InstrumentationRegistry;
 
 import com.emarsys.core.DeviceInfo;
+import com.emarsys.core.notification.ChannelSettings;
+import com.emarsys.core.notification.NotificationSettings;
 import com.emarsys.core.request.RequestIdProvider;
 import com.emarsys.core.timestamp.TimestampProvider;
 import com.emarsys.mobileengage.BuildConfig;
@@ -26,6 +28,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -43,6 +46,16 @@ public class RequestPayloadUtilsTest {
     public static final String MOBILEENGAGE_SDK_VERSION = BuildConfig.VERSION_NAME;
     public static final String PUSH_TOKEN = "pushToken";
     public static final String REQUEST_ID = "REQUEST_ID";
+    public static final Boolean ARE_NOTIFICATIONS_ENABLED = true;
+    public static final int IMPORTANCE = 0;
+    public static final String CHANNEL_ID = "channelId";
+    public static final Boolean DND = true;
+    public static final Boolean CAN_SHOW_BADGE = true;
+    public static final Boolean SHOULD_VIBRATE = true;
+    public static final Boolean SHOULD_SHOW_LIGHTS = true;
+
+    private NotificationSettings mockNotificationSettings;
+    private ChannelSettings mockChannelSetting;
 
     private RequestContext requestContext;
     private RequestIdProvider requestIdProvider;
@@ -52,6 +65,7 @@ public class RequestPayloadUtilsTest {
 
     @Before
     public void setup() {
+
         SharedPrefsUtils.deleteMobileEngageSharedPrefs();
         MobileEngageConfig config = new MobileEngageConfig.Builder()
                 .application((Application) InstrumentationRegistry.getTargetContext().getApplicationContext())
@@ -61,10 +75,26 @@ public class RequestPayloadUtilsTest {
 
         requestIdProvider = mock(RequestIdProvider.class);
         when(requestIdProvider.provideId()).thenReturn(REQUEST_ID);
+        mockNotificationSettings = mock(NotificationSettings.class);
+        mockChannelSetting = mock(ChannelSettings.class);
+
+        List<ChannelSettings> channelSettings = new ArrayList<>();
+        channelSettings.add(mockChannelSetting);
+
+        when(mockNotificationSettings.areNotificationsEnabled()).thenReturn(ARE_NOTIFICATIONS_ENABLED);
+        when(mockNotificationSettings.getImportance()).thenReturn(IMPORTANCE);
+        when(mockNotificationSettings.getChannelSettings()).thenReturn(channelSettings);
+        when(mockChannelSetting.getChannelId()).thenReturn(CHANNEL_ID);
+        when(mockChannelSetting.getImportance()).thenReturn(IMPORTANCE);
+        when(mockChannelSetting.isCanBypassDnd()).thenReturn(DND);
+        when(mockChannelSetting.isCanShowBadge()).thenReturn(CAN_SHOW_BADGE);
+        when(mockChannelSetting.isShouldVibrate()).thenReturn(SHOULD_VIBRATE);
+        when(mockChannelSetting.isShouldShowLights()).thenReturn(SHOULD_SHOW_LIGHTS);
+
 
         requestContext = new RequestContext(
                 config,
-                new DeviceInfo(InstrumentationRegistry.getContext()),
+                new DeviceInfo(InstrumentationRegistry.getContext(), mockNotificationSettings),
                 mock(AppLoginStorage.class),
                 mock(MeIdStorage.class),
                 mock(MeIdSignatureStorage.class),
@@ -175,6 +205,28 @@ public class RequestPayloadUtilsTest {
 
         expected.put("push_token", false);
 
+        Map<String, Object> pushSettings = new HashMap<>();
+
+        Map<String, Object> channelSettingsMap = new HashMap<>();
+
+
+        channelSettingsMap.put("channelId", CHANNEL_ID);
+        channelSettingsMap.put("importance", IMPORTANCE);
+        channelSettingsMap.put("canBypassDnd", DND);
+        channelSettingsMap.put("canShowBadge", CAN_SHOW_BADGE);
+        channelSettingsMap.put("shouldVibrate", SHOULD_VIBRATE);
+        channelSettingsMap.put("shouldShowLights", SHOULD_SHOW_LIGHTS);
+
+        List<Map<String, Object>> channelSettings = new ArrayList<>();
+        channelSettings.add(channelSettingsMap);
+
+        pushSettings.put("areNotificationsEnabled", ARE_NOTIFICATIONS_ENABLED);
+        pushSettings.put("importance", IMPORTANCE);
+        if (AndroidVersionUtils.isOreoOrAbove()) {
+            pushSettings.put("channelSettings", channelSettings);
+        }
+        expected.put("pushSettings", pushSettings);
+
         Map<String, Object> result = RequestPayloadUtils.createAppLoginPayload(requestContext, null);
 
         assertEquals(expected, result);
@@ -183,6 +235,10 @@ public class RequestPayloadUtilsTest {
     @Test
     public void testCreateAppLoginPayload_withPushToken() {
         Map<String, Object> expected = RequestPayloadUtils.createBasePayload(requestContext);
+        Map<String, Object> pushSettings = new HashMap<>();
+        Map<String, Object> channelSettingsMap = new HashMap<>();
+        List<Map<String, Object>> channelSettings = new ArrayList<>();
+
         expected.put("platform", requestContext.getDeviceInfo().getPlatform());
         expected.put("language", requestContext.getDeviceInfo().getLanguage());
         expected.put("timezone", requestContext.getDeviceInfo().getTimezone());
@@ -192,6 +248,24 @@ public class RequestPayloadUtilsTest {
         expected.put("ems_sdk", MOBILEENGAGE_SDK_VERSION);
 
         expected.put("push_token", PUSH_TOKEN);
+
+        channelSettingsMap.put("channelId", CHANNEL_ID);
+        channelSettingsMap.put("importance", IMPORTANCE);
+        channelSettingsMap.put("canBypassDnd", DND);
+        channelSettingsMap.put("canShowBadge", CAN_SHOW_BADGE);
+        channelSettingsMap.put("shouldVibrate", SHOULD_VIBRATE);
+        channelSettingsMap.put("shouldShowLights", SHOULD_SHOW_LIGHTS);
+
+        channelSettings.add(channelSettingsMap);
+
+        pushSettings.put("areNotificationsEnabled", ARE_NOTIFICATIONS_ENABLED);
+        pushSettings.put("importance", IMPORTANCE);
+
+        if (AndroidVersionUtils.isOreoOrAbove()) {
+            pushSettings.put("channelSettings", channelSettings);
+        }
+
+        expected.put("pushSettings", pushSettings);
 
         Map<String, Object> result = RequestPayloadUtils.createAppLoginPayload(requestContext, PUSH_TOKEN);
 

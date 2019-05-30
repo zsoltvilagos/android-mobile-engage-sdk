@@ -9,6 +9,8 @@ import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
 import com.emarsys.core.DeviceInfo;
+import com.emarsys.core.notification.ChannelSettings;
+import com.emarsys.core.notification.NotificationSettings;
 import com.emarsys.core.request.RequestIdProvider;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.request.model.RequestMethod;
@@ -24,6 +26,7 @@ import com.emarsys.mobileengage.storage.MeIdSignatureStorage;
 import com.emarsys.mobileengage.storage.MeIdStorage;
 import com.emarsys.mobileengage.testUtil.ExperimentalTestUtils;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
+import com.emarsys.mobileengage.util.AndroidVersionUtils;
 import com.emarsys.mobileengage.util.RequestHeaderUtils;
 import com.emarsys.mobileengage.util.RequestModelUtils;
 import com.emarsys.mobileengage.util.RequestUrlUtils;
@@ -39,6 +42,7 @@ import org.mockito.ArgumentCaptor;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static com.emarsys.mobileengage.MobileEngageInternal.MOBILEENGAGE_SDK_VERSION;
@@ -90,6 +94,7 @@ public class MobileEngageInternalTest {
 
     @Rule
     public TestRule timeout = TimeoutUtils.getTimeoutRule();
+    private NotificationSettings mockNotificationSettings;
 
     @Before
     public void init() {
@@ -98,7 +103,22 @@ public class MobileEngageInternalTest {
         manager = mock(RequestManager.class);
         coreCompletionHandler = mock(MobileEngageCoreCompletionHandler.class);
         application = (Application) InstrumentationRegistry.getTargetContext().getApplicationContext();
-        deviceInfo = new DeviceInfo(application);
+        mockNotificationSettings = mock(NotificationSettings.class);
+        ChannelSettings mockChannelSettings = mock(ChannelSettings.class);
+        List<ChannelSettings> channelSettingsList = new ArrayList<>();
+        channelSettingsList.add(mockChannelSettings);
+
+        when(mockNotificationSettings.areNotificationsEnabled()).thenReturn(true);
+        when(mockNotificationSettings.getImportance()).thenReturn(0);
+        when(mockNotificationSettings.getChannelSettings()).thenReturn(channelSettingsList);
+        when(mockChannelSettings.isShouldShowLights()).thenReturn(true);
+        when(mockChannelSettings.isShouldVibrate()).thenReturn(true);
+        when(mockChannelSettings.isCanBypassDnd()).thenReturn(true);
+        when(mockChannelSettings.isCanShowBadge()).thenReturn(true);
+        when(mockChannelSettings.getImportance()).thenReturn(0);
+        when(mockChannelSettings.getChannelId()).thenReturn("channelId");
+
+        deviceInfo = new DeviceInfo(application, mockNotificationSettings);
         appLoginStorage = new AppLoginStorage(application);
         appLoginStorage.remove();
 
@@ -869,6 +889,26 @@ public class MobileEngageInternalTest {
     }
 
     private Map<String, Object> injectLoginPayload(Map<String, Object> payload) {
+        Map<String, Object> pushSettings = new HashMap<>();
+        pushSettings.put("areNotificationsEnabled", deviceInfo.getNotificationSettings().areNotificationsEnabled());
+        pushSettings.put("importance", deviceInfo.getNotificationSettings().getImportance());
+
+        if (AndroidVersionUtils.isOreoOrAbove()) {
+            List<Map<String, Object>> channelSettingsList = new ArrayList<>();
+
+            for (ChannelSettings channelSettings : deviceInfo.getNotificationSettings().getChannelSettings()) {
+                Map<String, Object> channelSettingsMap = new HashMap<>();
+                channelSettingsMap.put("channelId", channelSettings.getChannelId());
+                channelSettingsMap.put("importance", channelSettings.getImportance());
+                channelSettingsMap.put("canBypassDnd", channelSettings.isCanBypassDnd());
+                channelSettingsMap.put("canShowBadge", channelSettings.isCanShowBadge());
+                channelSettingsMap.put("shouldVibrate", channelSettings.isShouldVibrate());
+                channelSettingsMap.put("shouldShowLights", channelSettings.isShouldShowLights());
+                channelSettingsList.add(channelSettingsMap);
+            }
+
+            pushSettings.put("channelSettings", channelSettingsList);
+        }
         payload.put("platform", deviceInfo.getPlatform());
         payload.put("language", deviceInfo.getLanguage());
         payload.put("timezone", deviceInfo.getTimezone());
@@ -876,6 +916,7 @@ public class MobileEngageInternalTest {
         payload.put("application_version", deviceInfo.getApplicationVersion());
         payload.put("os_version", deviceInfo.getOsVersion());
         payload.put("ems_sdk", MOBILEENGAGE_SDK_VERSION);
+        payload.put("pushSettings", pushSettings);
 
         String pushToken = mobileEngage.getPushToken();
         if (pushToken == null) {

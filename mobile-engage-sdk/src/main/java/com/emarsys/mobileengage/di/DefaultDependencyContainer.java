@@ -1,10 +1,12 @@
 package com.emarsys.mobileengage.di;
 
 import android.app.Application;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
+import android.support.v4.app.NotificationManagerCompat;
 
 import com.emarsys.core.DeviceInfo;
 import com.emarsys.core.activity.ActivityLifecycleAction;
@@ -15,6 +17,9 @@ import com.emarsys.core.connection.ConnectionWatchDog;
 import com.emarsys.core.database.repository.Repository;
 import com.emarsys.core.database.repository.SqlSpecification;
 import com.emarsys.core.database.repository.log.LogRepository;
+import com.emarsys.core.notification.NotificationManagerHelper;
+import com.emarsys.core.notification.NotificationManagerProxy;
+import com.emarsys.core.notification.NotificationSettings;
 import com.emarsys.core.request.RequestIdProvider;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.request.RestClient;
@@ -134,6 +139,11 @@ public class DefaultDependencyContainer implements DependencyContainer {
         return inAppPresenter;
     }
 
+    @Override
+    public DeviceInfo getDeviceInfo() {
+        return deviceInfo;
+    }
+
     private void initializeDependencies(MobileEngageConfig config) {
         application = config.getApplication();
 
@@ -145,7 +155,12 @@ public class DefaultDependencyContainer implements DependencyContainer {
         appLoginStorage = new AppLoginStorage(application);
         meIdStorage = new MeIdStorage(application);
         meIdSignatureStorage = new MeIdSignatureStorage(application);
-        deviceInfo = new DeviceInfo(application);
+
+        NotificationManagerProxy notificationManagerProxy = new NotificationManagerProxy((NotificationManager) application.getSystemService(Context.NOTIFICATION_SERVICE), NotificationManagerCompat.from(application));
+        NotificationSettings notificationSettings = new NotificationManagerHelper(notificationManagerProxy);
+
+        deviceInfo = new DeviceInfo(application, notificationSettings);
+
         buttonClickedRepository = new ButtonClickedRepository(application);
         displayedIamRepository = new DisplayedIamRepository(application);
         completionHandler = new MobileEngageCoreCompletionHandler(config.getStatusListener());

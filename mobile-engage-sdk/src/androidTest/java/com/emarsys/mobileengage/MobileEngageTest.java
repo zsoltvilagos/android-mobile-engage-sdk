@@ -11,6 +11,8 @@ import com.emarsys.core.DeviceInfo;
 import com.emarsys.core.activity.ActivityLifecycleAction;
 import com.emarsys.core.activity.ActivityLifecycleWatchdog;
 import com.emarsys.core.activity.CurrentActivityWatchdog;
+import com.emarsys.core.notification.ChannelSettings;
+import com.emarsys.core.notification.NotificationSettings;
 import com.emarsys.core.request.RequestIdProvider;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.request.model.RequestModelRepository;
@@ -64,6 +66,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
@@ -105,6 +108,7 @@ public class MobileEngageTest {
     private MobileEngageConfig inAppConfig;
     private MobileEngageConfig fullConfig;
     private RequestContext requestContext;
+    private DeviceInfo mockDeviceInfo;
 
     @Rule
     public TestRule timeout = TimeoutUtils.getTimeoutRule();
@@ -125,6 +129,23 @@ public class MobileEngageTest {
         inAppConfig = createConfigWithFlippers(MobileEngageFeature.IN_APP_MESSAGING);
         fullConfig = createConfigWithFlippers(MobileEngageFeature.IN_APP_MESSAGING, MobileEngageFeature.USER_CENTRIC_INBOX);
         requestContext = mock(RequestContext.class);
+        mockDeviceInfo = mock(DeviceInfo.class);
+        NotificationSettings mockNotificationSettings = mock(NotificationSettings.class);
+        ChannelSettings mockChannelSettings = mock(ChannelSettings.class);
+        List<ChannelSettings> channelSettingsList = new ArrayList<>();
+        channelSettingsList.add(mockChannelSettings);
+
+        when(requestContext.getDeviceInfo()).thenReturn(mockDeviceInfo);
+        when(mockDeviceInfo.getNotificationSettings()).thenReturn(mockNotificationSettings);
+        when(mockNotificationSettings.areNotificationsEnabled()).thenReturn(true);
+        when(mockNotificationSettings.getImportance()).thenReturn(0);
+        when(mockNotificationSettings.getChannelSettings()).thenReturn(channelSettingsList);
+        when(mockChannelSettings.isShouldShowLights()).thenReturn(true);
+        when(mockChannelSettings.isShouldVibrate()).thenReturn(true);
+        when(mockChannelSettings.isCanBypassDnd()).thenReturn(true);
+        when(mockChannelSettings.isCanShowBadge()).thenReturn(true);
+        when(mockChannelSettings.getImportance()).thenReturn(0);
+        when(mockChannelSettings.getChannelId()).thenReturn("channelId");
 
         MobileEngage.inboxInstance = inboxInternal;
         MobileEngage.instance = mobileEngageInternal;
@@ -456,7 +477,7 @@ public class MobileEngageTest {
                 completionHandler,
                 new RequestContext(
                         baseConfig,
-                        mock(DeviceInfo.class),
+                        mockDeviceInfo,
                         new AppLoginStorage(application),
                         mock(MeIdStorage.class),
                         mock(MeIdSignatureStorage.class),

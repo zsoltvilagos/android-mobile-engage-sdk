@@ -14,6 +14,7 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationCompat.Action;
 import android.support.v4.content.ContextCompat;
 
+import com.emarsys.core.DeviceInfo;
 import com.emarsys.core.resource.MetaDataReader;
 import com.emarsys.core.util.Assert;
 import com.emarsys.core.util.FileUtils;
@@ -21,6 +22,8 @@ import com.emarsys.core.util.ImageUtils;
 import com.emarsys.core.util.log.EMSLogger;
 import com.emarsys.core.validate.JsonObjectValidator;
 import com.emarsys.mobileengage.config.OreoConfig;
+import com.emarsys.mobileengage.di.DependencyContainer;
+import com.emarsys.mobileengage.di.DependencyInjection;
 import com.emarsys.mobileengage.experimental.MobileEngageExperimental;
 import com.emarsys.mobileengage.experimental.MobileEngageFeature;
 import com.emarsys.mobileengage.inbox.InboxParseUtils;
@@ -49,6 +52,8 @@ public class MessagingServiceUtils {
         Assert.notNull(context, "Context must not be null!");
         Assert.notNull(remoteMessage, "RemoteMessage must not be null!");
         Assert.notNull(oreoConfig, "OreoConfig must not be null!");
+        DependencyContainer container = DependencyInjection.getContainer();
+        DeviceInfo deviceInfo = container.getDeviceInfo();
 
         boolean handled = false;
         Map<String, String> remoteData = remoteMessage.getData();
@@ -68,7 +73,8 @@ public class MessagingServiceUtils {
                     context.getApplicationContext(),
                     remoteData,
                     oreoConfig,
-                    new MetaDataReader());
+                    new MetaDataReader(),
+                    deviceInfo);
 
             ((NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE))
                     .notify(notificationId, notification);
@@ -102,11 +108,11 @@ public class MessagingServiceUtils {
             Context context,
             Map<String, String> remoteMessageData,
             OreoConfig oreoConfig,
-            MetaDataReader metaDataReader) {
+            MetaDataReader metaDataReader, DeviceInfo deviceInfo) {
 
         int smallIconResourceId = metaDataReader.getInt(context, METADATA_SMALL_NOTIFICATION_ICON_KEY, DEFAULT_SMALL_NOTIFICATION_ICON);
         int colorResourceId = metaDataReader.getInt(context, METADATA_NOTIFICATION_COLOR);
-        Bitmap image = ImageUtils.loadOptimizedBitmap(context, remoteMessageData.get("image_url"));
+        Bitmap image = ImageUtils.loadOptimizedBitmap(context, deviceInfo, remoteMessageData.get("image_url"));
         String title = getTitle(remoteMessageData, context);
         String body = remoteMessageData.get("body");
         String channelId = getChannelId(remoteMessageData, oreoConfig);

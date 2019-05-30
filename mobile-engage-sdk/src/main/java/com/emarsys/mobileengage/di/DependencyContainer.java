@@ -2,6 +2,7 @@ package com.emarsys.mobileengage.di;
 
 import android.os.Handler;
 
+import com.emarsys.core.DeviceInfo;
 import com.emarsys.core.activity.ActivityLifecycleWatchdog;
 import com.emarsys.mobileengage.MobileEngageCoreCompletionHandler;
 import com.emarsys.mobileengage.MobileEngageInternal;
@@ -27,4 +28,6 @@ public interface DependencyContainer {
     ActivityLifecycleWatchdog getActivityLifecycleWatchdog();
 
     InAppPresenter getInAppPresenter();
+
+    DeviceInfo getDeviceInfo();
 }

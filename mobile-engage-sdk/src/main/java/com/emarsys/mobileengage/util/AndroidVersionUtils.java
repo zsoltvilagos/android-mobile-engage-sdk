@@ -8,4 +8,7 @@ public class AndroidVersionUtils {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
     }
 
+    public static boolean isOreoOrAbove() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
+    }
 }

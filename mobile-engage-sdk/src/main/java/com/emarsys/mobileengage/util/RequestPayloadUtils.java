@@ -1,6 +1,7 @@
 package com.emarsys.mobileengage.util;
 
 import com.emarsys.core.DeviceInfo;
+import com.emarsys.core.notification.ChannelSettings;
 import com.emarsys.core.util.Assert;
 import com.emarsys.mobileengage.MobileEngageInternal;
 import com.emarsys.mobileengage.RequestContext;
@@ -9,6 +10,7 @@ import com.emarsys.mobileengage.iam.model.IamConversionUtils;
 import com.emarsys.mobileengage.iam.model.buttonclicked.ButtonClicked;
 import com.emarsys.mobileengage.iam.model.displayediam.DisplayedIam;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -41,19 +43,39 @@ public class RequestPayloadUtils {
         return payload;
     }
 
-    public static Map<String, Object> createAppLoginPayload(
-            RequestContext requestContext,
-            String pushToken) {
+    public static Map<String, Object> createAppLoginPayload(RequestContext requestContext, String pushToken) {
         Assert.notNull(requestContext, "RequestContext must not be null!");
-        Map<String, Object> payload = RequestPayloadUtils.createBasePayload(requestContext);
 
-        payload.put("platform", requestContext.getDeviceInfo().getPlatform());
-        payload.put("language", requestContext.getDeviceInfo().getLanguage());
-        payload.put("timezone", requestContext.getDeviceInfo().getTimezone());
-        payload.put("device_model", requestContext.getDeviceInfo().getModel());
-        payload.put("application_version", requestContext.getDeviceInfo().getApplicationVersion());
-        payload.put("os_version", requestContext.getDeviceInfo().getOsVersion());
+        DeviceInfo deviceInfo = requestContext.getDeviceInfo();
+        Map<String, Object> payload = RequestPayloadUtils.createBasePayload(requestContext);
+        Map<String, Object> pushSettings = new HashMap<>();
+        pushSettings.put("areNotificationsEnabled", deviceInfo.getNotificationSettings().areNotificationsEnabled());
+        pushSettings.put("importance", deviceInfo.getNotificationSettings().getImportance());
+
+        if (AndroidVersionUtils.isOreoOrAbove()) {
+            List<Map<String, Object>> channelSettingsList = new ArrayList<>();
+
+            for (ChannelSettings channelSettings : deviceInfo.getNotificationSettings().getChannelSettings()) {
+                Map<String, Object> channelSettingsMap = new HashMap<>();
+                channelSettingsMap.put("channelId", channelSettings.getChannelId());
+                channelSettingsMap.put("importance", channelSettings.getImportance());
+                channelSettingsMap.put("canBypassDnd", channelSettings.isCanBypassDnd());
+                channelSettingsMap.put("canShowBadge", channelSettings.isCanShowBadge());
+                channelSettingsMap.put("shouldVibrate", channelSettings.isShouldVibrate());
+                channelSettingsMap.put("shouldShowLights", channelSettings.isShouldShowLights());
+                channelSettingsList.add(channelSettingsMap);
+            }
+
+            pushSettings.put("channelSettings", channelSettingsList);
+        }
+        payload.put("platform", deviceInfo.getPlatform());
+        payload.put("language", deviceInfo.getLanguage());
+        payload.put("timezone", deviceInfo.getTimezone());
+        payload.put("device_model", deviceInfo.getModel());
+        payload.put("application_version", deviceInfo.getApplicationVersion());
+        payload.put("os_version", deviceInfo.getOsVersion());
         payload.put("ems_sdk", MobileEngageInternal.MOBILEENGAGE_SDK_VERSION);
+        payload.put("pushSettings", pushSettings);
 
         if (pushToken == null) {
             payload.put("push_token", false);
