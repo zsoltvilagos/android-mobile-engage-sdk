@@ -210,22 +210,22 @@ public class RequestPayloadUtilsTest {
         Map<String, Object> channelSettingsMap = new HashMap<>();
 
 
-        channelSettingsMap.put("channelId", CHANNEL_ID);
+        channelSettingsMap.put("channel_id", CHANNEL_ID);
         channelSettingsMap.put("importance", IMPORTANCE);
-        channelSettingsMap.put("canBypassDnd", DND);
-        channelSettingsMap.put("canShowBadge", CAN_SHOW_BADGE);
-        channelSettingsMap.put("shouldVibrate", SHOULD_VIBRATE);
-        channelSettingsMap.put("shouldShowLights", SHOULD_SHOW_LIGHTS);
+        channelSettingsMap.put("can_bypass_dnd", DND);
+        channelSettingsMap.put("can_show_badge", CAN_SHOW_BADGE);
+        channelSettingsMap.put("should_vibrate", SHOULD_VIBRATE);
+        channelSettingsMap.put("should_show_lights", SHOULD_SHOW_LIGHTS);
 
         List<Map<String, Object>> channelSettings = new ArrayList<>();
         channelSettings.add(channelSettingsMap);
 
-        pushSettings.put("areNotificationsEnabled", ARE_NOTIFICATIONS_ENABLED);
+        pushSettings.put("are_notifications_enabled", ARE_NOTIFICATIONS_ENABLED);
         pushSettings.put("importance", IMPORTANCE);
         if (AndroidVersionUtils.isOreoOrAbove()) {
-            pushSettings.put("channelSettings", channelSettings);
+            pushSettings.put("channel_settings", channelSettings);
         }
-        expected.put("pushSettings", pushSettings);
+        expected.put("push_settings", pushSettings);
 
         Map<String, Object> result = RequestPayloadUtils.createAppLoginPayload(requestContext, null);
 
@@ -249,23 +249,23 @@ public class RequestPayloadUtilsTest {
 
         expected.put("push_token", PUSH_TOKEN);
 
-        channelSettingsMap.put("channelId", CHANNEL_ID);
+        channelSettingsMap.put("channel_id", CHANNEL_ID);
         channelSettingsMap.put("importance", IMPORTANCE);
-        channelSettingsMap.put("canBypassDnd", DND);
-        channelSettingsMap.put("canShowBadge", CAN_SHOW_BADGE);
-        channelSettingsMap.put("shouldVibrate", SHOULD_VIBRATE);
-        channelSettingsMap.put("shouldShowLights", SHOULD_SHOW_LIGHTS);
+        channelSettingsMap.put("can_bypass_dnd", DND);
+        channelSettingsMap.put("can_show_badge", CAN_SHOW_BADGE);
+        channelSettingsMap.put("should_vibrate", SHOULD_VIBRATE);
+        channelSettingsMap.put("should_show_lights", SHOULD_SHOW_LIGHTS);
 
         channelSettings.add(channelSettingsMap);
 
-        pushSettings.put("areNotificationsEnabled", ARE_NOTIFICATIONS_ENABLED);
+        pushSettings.put("are_notifications_enabled", ARE_NOTIFICATIONS_ENABLED);
         pushSettings.put("importance", IMPORTANCE);
 
         if (AndroidVersionUtils.isOreoOrAbove()) {
-            pushSettings.put("channelSettings", channelSettings);
+            pushSettings.put("channel_settings", channelSettings);
         }
 
-        expected.put("pushSettings", pushSettings);
+        expected.put("push_settings", pushSettings);
 
         Map<String, Object> result = RequestPayloadUtils.createAppLoginPayload(requestContext, PUSH_TOKEN);
 
