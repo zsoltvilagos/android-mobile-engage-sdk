@@ -890,7 +890,7 @@ public class MobileEngageInternalTest {
 
     private Map<String, Object> injectLoginPayload(Map<String, Object> payload) {
         Map<String, Object> pushSettings = new HashMap<>();
-        pushSettings.put("areNotificationsEnabled", deviceInfo.getNotificationSettings().areNotificationsEnabled());
+        pushSettings.put("are_notifications_enabled", deviceInfo.getNotificationSettings().areNotificationsEnabled());
         pushSettings.put("importance", deviceInfo.getNotificationSettings().getImportance());
 
         if (AndroidVersionUtils.isOreoOrAbove()) {
@@ -898,16 +898,16 @@ public class MobileEngageInternalTest {
 
             for (ChannelSettings channelSettings : deviceInfo.getNotificationSettings().getChannelSettings()) {
                 Map<String, Object> channelSettingsMap = new HashMap<>();
-                channelSettingsMap.put("channelId", channelSettings.getChannelId());
+                channelSettingsMap.put("channel_id", channelSettings.getChannelId());
                 channelSettingsMap.put("importance", channelSettings.getImportance());
-                channelSettingsMap.put("canBypassDnd", channelSettings.isCanBypassDnd());
-                channelSettingsMap.put("canShowBadge", channelSettings.isCanShowBadge());
-                channelSettingsMap.put("shouldVibrate", channelSettings.isShouldVibrate());
-                channelSettingsMap.put("shouldShowLights", channelSettings.isShouldShowLights());
+                channelSettingsMap.put("can_bypass_dnd", channelSettings.isCanBypassDnd());
+                channelSettingsMap.put("can_show_badge", channelSettings.isCanShowBadge());
+                channelSettingsMap.put("should_vibrate", channelSettings.isShouldVibrate());
+                channelSettingsMap.put("should_show_lights", channelSettings.isShouldShowLights());
                 channelSettingsList.add(channelSettingsMap);
             }
 
-            pushSettings.put("channelSettings", channelSettingsList);
+            pushSettings.put("channel_settings", channelSettingsList);
         }
         payload.put("platform", deviceInfo.getPlatform());
         payload.put("language", deviceInfo.getLanguage());
@@ -916,7 +916,7 @@ public class MobileEngageInternalTest {
         payload.put("application_version", deviceInfo.getApplicationVersion());
         payload.put("os_version", deviceInfo.getOsVersion());
         payload.put("ems_sdk", MOBILEENGAGE_SDK_VERSION);
-        payload.put("pushSettings", pushSettings);
+        payload.put("push_settings", pushSettings);
 
         String pushToken = mobileEngage.getPushToken();
         if (pushToken == null) {
