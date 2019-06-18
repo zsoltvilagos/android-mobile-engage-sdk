@@ -19,6 +19,7 @@ import android.support.v4.content.ContextCompat;
 import com.emarsys.core.DeviceInfo;
 import com.emarsys.core.activity.ActivityLifecycleWatchdog;
 import com.emarsys.core.notification.NotificationSettings;
+import com.emarsys.core.provider.HardwareIdProvider;
 import com.emarsys.core.resource.MetaDataReader;
 import com.emarsys.mobileengage.MobileEngageCoreCompletionHandler;
 import com.emarsys.mobileengage.RequestContext;
@@ -96,7 +97,7 @@ public class MessagingServiceUtilsTest {
     @SuppressWarnings("unchecked")
     public void init() throws Exception {
         context = InstrumentationRegistry.getContext();
-        deviceInfo = new DeviceInfo(context, mock(NotificationSettings.class));
+        deviceInfo = new DeviceInfo(context, mock(NotificationSettings.class), mock(HardwareIdProvider.class));
         Field cacheField = NotificationCache.class.getDeclaredField("internalCache");
         cacheField.setAccessible(true);
         notificationCache = (List) cacheField.get(null);

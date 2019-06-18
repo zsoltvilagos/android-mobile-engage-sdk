@@ -6,6 +6,7 @@ import android.support.test.InstrumentationRegistry;
 import com.emarsys.core.DeviceInfo;
 import com.emarsys.core.notification.ChannelSettings;
 import com.emarsys.core.notification.NotificationSettings;
+import com.emarsys.core.provider.HardwareIdProvider;
 import com.emarsys.core.request.RequestIdProvider;
 import com.emarsys.core.timestamp.TimestampProvider;
 import com.emarsys.mobileengage.BuildConfig;
@@ -94,7 +95,7 @@ public class RequestPayloadUtilsTest {
 
         requestContext = new RequestContext(
                 config,
-                new DeviceInfo(InstrumentationRegistry.getContext(), mockNotificationSettings),
+                new DeviceInfo(InstrumentationRegistry.getContext(), mockNotificationSettings,mock(HardwareIdProvider.class)),
                 mock(AppLoginStorage.class),
                 mock(MeIdStorage.class),
                 mock(MeIdSignatureStorage.class),

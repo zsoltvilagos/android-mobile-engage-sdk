@@ -1,15 +1,18 @@
 package com.emarsys.mobileengage;
 
-import android.app.Activity;
 import android.app.Application;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.test.InstrumentationRegistry;
+import android.support.test.rule.ActivityTestRule;
 
 import com.emarsys.mobileengage.config.MobileEngageConfig;
 import com.emarsys.mobileengage.di.DependencyInjection;
 import com.emarsys.mobileengage.experimental.MobileEngageFeature;
+import com.emarsys.mobileengage.fake.FakeActivity;
 import com.emarsys.mobileengage.fake.FakeStatusListener;
 import com.emarsys.mobileengage.inbox.model.Notification;
 import com.emarsys.mobileengage.storage.AppLoginStorage;
@@ -17,6 +20,7 @@ import com.emarsys.mobileengage.storage.MeIdStorage;
 import com.emarsys.mobileengage.testUtil.ConnectionTestUtils;
 import com.emarsys.mobileengage.testUtil.DatabaseTestUtils;
 import com.emarsys.mobileengage.testUtil.ExperimentalTestUtils;
+import com.emarsys.mobileengage.testUtil.SharedPrefsUtils;
 import com.emarsys.mobileengage.testUtil.TimeoutUtils;
 
 import org.json.JSONObject;
@@ -25,13 +29,13 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
-import org.mockito.Mockito;
 
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
+import static com.emarsys.mobileengage.storage.Storage.SHARED_PREFERENCES_NAMESPACE;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -39,18 +43,16 @@ import static org.mockito.Mockito.mock;
 
 public class MobileEngageIntegrationTest {
 
-    static {
-        mock(Activity.class);
-    }
-
     private CountDownLatch latch;
     private FakeStatusListener listener;
 
     private Application context;
-    private Activity activity;
 
     @Rule
     public TestRule timeout = TimeoutUtils.getTimeoutRule();
+
+    @Rule
+    public ActivityTestRule<FakeActivity> activityRule = new ActivityTestRule(FakeActivity.class);
 
     @Before
     public void setup() {
@@ -59,13 +61,16 @@ public class MobileEngageIntegrationTest {
         DependencyInjection.tearDown();
 
         context = (Application) InstrumentationRegistry.getTargetContext().getApplicationContext();
-        activity = mock(Activity.class, Mockito.RETURNS_DEEP_STUBS);
         clearStorages();
 
         ConnectionTestUtils.checkConnection(context);
 
         latch = new CountDownLatch(1);
         listener = new FakeStatusListener(latch, FakeStatusListener.Mode.MAIN_THREAD);
+
+        SharedPreferences sharedPreferences = context.getSharedPreferences(SHARED_PREFERENCES_NAMESPACE, Context.MODE_PRIVATE);
+        sharedPreferences.edit().putString("hardwareId", "mobileengage_integration_hwid");
+
         MobileEngageConfig config = new MobileEngageConfig.Builder()
                 .application(context)
                 .credentials("14C19-A121F", "PaNkfOD90AVpYimMBuZopCpm8OWCrREu")
@@ -74,6 +79,7 @@ public class MobileEngageIntegrationTest {
                 .enableExperimentalFeatures(MobileEngageFeature.IN_APP_MESSAGING)
                 .setDefaultInAppEventHandler(mock(EventHandler.class))
                 .build();
+
         MobileEngage.setup(config);
     }
 
@@ -218,7 +224,7 @@ public class MobileEngageIntegrationTest {
     public void testDeepLinkOpen_intent() throws Exception {
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://demo-mobileengage.emarsys.net/something?fancy_url=1&ems_dl=1_2_3_4_5_6"));
 
-        MobileEngage.trackDeepLink(activity, intent);
+        MobileEngage.trackDeepLink(activityRule.getActivity(), intent);
         eventuallyAssertSuccess();
     }
 
@@ -247,6 +253,7 @@ public class MobileEngageIntegrationTest {
     }
 
     private void clearStorages() {
+        SharedPrefsUtils.deleteMobileEngageSharedPrefs();
         new MeIdStorage(context).remove();
         new AppLoginStorage(context).remove();
     }

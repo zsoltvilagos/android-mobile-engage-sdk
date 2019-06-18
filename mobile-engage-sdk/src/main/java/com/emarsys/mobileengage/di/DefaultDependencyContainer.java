@@ -3,6 +3,7 @@ package com.emarsys.mobileengage.di;
 import android.app.Application;
 import android.app.NotificationManager;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
@@ -20,6 +21,7 @@ import com.emarsys.core.database.repository.log.LogRepository;
 import com.emarsys.core.notification.NotificationManagerHelper;
 import com.emarsys.core.notification.NotificationManagerProxy;
 import com.emarsys.core.notification.NotificationSettings;
+import com.emarsys.core.provider.HardwareIdProvider;
 import com.emarsys.core.request.RequestIdProvider;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.request.RestClient;
@@ -63,6 +65,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static com.emarsys.mobileengage.storage.Storage.SHARED_PREFERENCES_NAMESPACE;
 
 public class DefaultDependencyContainer implements DependencyContainer {
 
@@ -159,7 +163,10 @@ public class DefaultDependencyContainer implements DependencyContainer {
         NotificationManagerProxy notificationManagerProxy = new NotificationManagerProxy((NotificationManager) application.getSystemService(Context.NOTIFICATION_SERVICE), NotificationManagerCompat.from(application));
         NotificationSettings notificationSettings = new NotificationManagerHelper(notificationManagerProxy);
 
-        deviceInfo = new DeviceInfo(application, notificationSettings);
+        SharedPreferences sharedPreferences = application.getSharedPreferences(SHARED_PREFERENCES_NAMESPACE, Context.MODE_PRIVATE);
+
+        HardwareIdProvider hardwareIdProvider = new HardwareIdProvider(application, sharedPreferences);
+        deviceInfo = new DeviceInfo(application, notificationSettings, hardwareIdProvider);
 
         buttonClickedRepository = new ButtonClickedRepository(application);
         displayedIamRepository = new DisplayedIamRepository(application);
@@ -190,7 +197,7 @@ public class DefaultDependencyContainer implements DependencyContainer {
 
         requestContext = new RequestContext(
                 config,
-                deviceInfo,
+                getDeviceInfo(),
                 appLoginStorage,
                 meIdStorage,
                 meIdSignatureStorage,
@@ -202,7 +209,7 @@ public class DefaultDependencyContainer implements DependencyContainer {
         RequestModelRepository requestModelRepository = new RequestModelRepository(application);
         if (MobileEngageExperimental.isV3Enabled()) {
             return new RequestRepositoryProxy(
-                    deviceInfo,
+                    getDeviceInfo(),
                     requestModelRepository,
                     displayedIamRepository,
                     buttonClickedRepository,

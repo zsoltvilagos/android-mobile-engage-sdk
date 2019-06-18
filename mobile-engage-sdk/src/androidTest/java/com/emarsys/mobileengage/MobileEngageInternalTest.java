@@ -11,6 +11,7 @@ import android.support.test.runner.AndroidJUnit4;
 import com.emarsys.core.DeviceInfo;
 import com.emarsys.core.notification.ChannelSettings;
 import com.emarsys.core.notification.NotificationSettings;
+import com.emarsys.core.provider.HardwareIdProvider;
 import com.emarsys.core.request.RequestIdProvider;
 import com.emarsys.core.request.RequestManager;
 import com.emarsys.core.request.model.RequestMethod;
@@ -118,7 +119,7 @@ public class MobileEngageInternalTest {
         when(mockChannelSettings.getImportance()).thenReturn(0);
         when(mockChannelSettings.getChannelId()).thenReturn("channelId");
 
-        deviceInfo = new DeviceInfo(application, mockNotificationSettings);
+        deviceInfo = new DeviceInfo(application, mockNotificationSettings,mock(HardwareIdProvider.class));
         appLoginStorage = new AppLoginStorage(application);
         appLoginStorage.remove();
 

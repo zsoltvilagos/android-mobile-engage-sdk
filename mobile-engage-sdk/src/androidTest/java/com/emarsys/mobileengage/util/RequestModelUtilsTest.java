@@ -5,6 +5,7 @@ import android.support.test.InstrumentationRegistry;
 
 import com.emarsys.core.DeviceInfo;
 import com.emarsys.core.notification.NotificationSettings;
+import com.emarsys.core.provider.HardwareIdProvider;
 import com.emarsys.core.request.RequestIdProvider;
 import com.emarsys.core.request.model.RequestMethod;
 import com.emarsys.core.request.model.RequestModel;
@@ -73,7 +74,7 @@ public class RequestModelUtilsTest {
         when(timestampProvider.provideTimestamp()).thenReturn(TIMESTAMP);
         requestContext = new RequestContext(
                 config,
-                new DeviceInfo(InstrumentationRegistry.getContext(), mock(NotificationSettings.class)),
+                new DeviceInfo(InstrumentationRegistry.getContext(), mock(NotificationSettings.class), mock(HardwareIdProvider.class)),
                 mock(AppLoginStorage.class),
                 meIdStorage,
                 mock(MeIdSignatureStorage.class),
