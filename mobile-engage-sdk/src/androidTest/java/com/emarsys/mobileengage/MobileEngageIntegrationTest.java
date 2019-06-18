@@ -69,7 +69,7 @@ public class MobileEngageIntegrationTest {
         listener = new FakeStatusListener(latch, FakeStatusListener.Mode.MAIN_THREAD);
 
         SharedPreferences sharedPreferences = context.getSharedPreferences(SHARED_PREFERENCES_NAMESPACE, Context.MODE_PRIVATE);
-        sharedPreferences.edit().putString("hardwareId", "mobileengage_integration_hwid");
+        sharedPreferences.edit().putString("hardwareId", "mobileengage_integration_hwid").commit();
 
         MobileEngageConfig config = new MobileEngageConfig.Builder()
                 .application(context)
